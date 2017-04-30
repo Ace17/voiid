@@ -121,12 +121,6 @@ struct Rockman : Player, Damageable
     if(ground)
       doubleJumped = false;
 
-    if(vel.x > 0)
-      dir = RIGHT;
-
-    if(vel.x < 0)
-      dir = LEFT;
-
     // gravity
     vel.z -= 0.00005;
 
@@ -137,13 +131,13 @@ struct Rockman : Player, Damageable
       if(ground)
       {
         game->playSound(SND_JUMP);
-        vel.z = 0.015;
+        vel.z = 0.03;
         doubleJumped = false;
       }
       else if((upgrades & UPGRADE_DJUMP) && !doubleJumped)
       {
         game->playSound(SND_JUMP);
-        vel.z = 0.015;
+        vel.z = 0.03;
         doubleJumped = true;
       }
     }
@@ -153,41 +147,39 @@ struct Rockman : Player, Damageable
       vel.z = 0;
 
     vel.x = clamp(vel.x, -MAX_HORZ_SPEED, MAX_HORZ_SPEED);
-    vel.y = max(vel.y, -MAX_FALL_SPEED);
+    vel.y = clamp(vel.y, -MAX_HORZ_SPEED, MAX_HORZ_SPEED);
+    vel.z = max(vel.z, -MAX_FALL_SPEED);
   }
 
   void airMove(Control c)
   {
-    float wantedSpeed = 0;
+    auto const forward = Vector(cos(lookAngleHorz), sin(lookAngleHorz), 0);
+    auto const left = Vector(cos(lookAngleHorz + M_PI / 2), sin(lookAngleHorz + M_PI / 2), 0);
+
+    Vector wantedVel = Vector(0, 0, 0);
 
     if(!climbDelay)
     {
+      if(c.backward)
+        wantedVel -= forward * WALK_SPEED;
+
+      if(c.forward)
+        wantedVel += forward * WALK_SPEED;
+
       if(c.left)
-        wantedSpeed -= WALK_SPEED;
+        wantedVel += left * WALK_SPEED;
 
       if(c.right)
-        wantedSpeed += WALK_SPEED;
+        wantedVel -= left * WALK_SPEED;
     }
 
-    if(upgrades & UPGRADE_DASH)
-    {
-      if(dashbutton.toggle(c.dash) && ground && dashDelay == 0)
-      {
-        game->playSound(SND_JUMP);
-        dashDelay = 400;
-      }
-    }
-
-    if(dashDelay > 0)
-    {
-      wantedSpeed *= 4;
-      vel.x = wantedSpeed;
-    }
-
-    vel.x = (vel.x * 0.95 + wantedSpeed * 0.05);
+    vel = vel * 0.95 + wantedVel * 0.05;
 
     if(abs(vel.x) < 0.00001)
       vel.x = 0;
+
+    if(abs(vel.y) < 0.00001)
+      vel.y = 0;
   }
 
   virtual void tick() override
@@ -222,7 +214,7 @@ struct Rockman : Player, Damageable
     }
     else
     {
-      if(vel.y < 0 && !ground)
+      if(vel.z < 0 && !ground)
       {
         if(tryActivate(debounceLanding, 150))
           game->playSound(SND_LAND);
@@ -231,7 +223,7 @@ struct Rockman : Player, Damageable
         dashDelay = 0;
       }
 
-      vel.y = 0;
+      vel.z = 0;
     }
 
     decrement(debounceFire);
@@ -292,7 +284,6 @@ struct Rockman : Player, Damageable
 
   int debounceFire = 0;
   int debounceLanding = 0;
-  ORIENTATION dir = RIGHT;
   float lookAngleHorz = 0;
   float lookAngleVert = 0;
   bool ground = false;

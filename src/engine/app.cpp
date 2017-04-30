@@ -141,6 +141,7 @@ private:
     m_control.jump = keys[SDL_SCANCODE_SPACE];
 
     m_control.restart = keys[SDL_SCANCODE_R];
+    m_control.debug = keys[SDL_SCANCODE_SCROLLLOCK];
   }
 
   void draw()
