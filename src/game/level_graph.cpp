@@ -1,7 +1,7 @@
 #include "room.h"
 #include "entity_factory.h"
 
-Room Graph_loadRoom(int roomIdx, IGame* /*game*/)
+Room Graph_loadRoom(int /*roomIdx*/, IGame* /*game*/)
 {
   Room r;
 

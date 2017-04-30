@@ -72,7 +72,6 @@ struct Game : Scene, IGame
     vector<Actor> r;
 
     auto cameraPos = m_player->pos;
-    cameraPos.y += 1.5;
 
     addActorsForTileMap(r, cameraPos);
 

@@ -23,7 +23,6 @@
 auto const WALK_SPEED = 0.0075f;
 auto const MAX_HORZ_SPEED = 0.02f;
 auto const MAX_FALL_SPEED = 0.02f;
-auto const CLIMB_DELAY = 100;
 auto const HURT_DELAY = 500;
 
 enum ORIENTATION
@@ -91,6 +90,10 @@ struct Rockman : Player, Damageable
     r.scale = UnitSize;
     r.focus = true;
 
+    r.orientation.x = cos(lookAngleHorz) * cos(lookAngleVert);
+    r.orientation.y = sin(lookAngleHorz) * cos(lookAngleVert);
+    r.orientation.z = sin(lookAngleVert);
+
     return r;
   }
 
@@ -125,7 +128,7 @@ struct Rockman : Player, Damageable
       dir = LEFT;
 
     // gravity
-    vel.y -= 0.00005;
+    vel.z -= 0.00005;
 
     sliding = false;
 
@@ -134,20 +137,20 @@ struct Rockman : Player, Damageable
       if(ground)
       {
         game->playSound(SND_JUMP);
-        vel.y = 0.015;
+        vel.z = 0.015;
         doubleJumped = false;
       }
       else if((upgrades & UPGRADE_DJUMP) && !doubleJumped)
       {
         game->playSound(SND_JUMP);
-        vel.y = 0.015;
+        vel.z = 0.015;
         doubleJumped = true;
       }
     }
 
     // stop jump if the player release the button early
-    if(vel.y > 0 && !c.jump)
-      vel.y = 0;
+    if(vel.z > 0 && !c.jump)
+      vel.z = 0;
 
     vel.x = clamp(vel.x, -MAX_HORZ_SPEED, MAX_HORZ_SPEED);
     vel.y = max(vel.y, -MAX_FALL_SPEED);
@@ -197,6 +200,9 @@ struct Rockman : Player, Damageable
 
     if(hurtDelay || life <= 0)
       control = Control {};
+
+    lookAngleVert = control.look_vert;
+    lookAngleHorz = control.look_horz;
 
     if(decrement(respawnDelay))
     {
@@ -287,6 +293,8 @@ struct Rockman : Player, Damageable
   int debounceFire = 0;
   int debounceLanding = 0;
   ORIENTATION dir = RIGHT;
+  float lookAngleHorz = 0;
+  float lookAngleVert = 0;
   bool ground = false;
   Toggle jumpbutton, firebutton, dashbutton;
   int time = 0;

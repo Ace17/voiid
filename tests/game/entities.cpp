@@ -155,18 +155,3 @@ unittest("Entity: animate")
   assert(nearlyEquals(1, maxVal));
 }
 
-#include "game/entities/rockman.h"
-
-unittest("Entity: rockman falls")
-{
-  auto player = makeRockman();
-  auto game = NullGame();
-  auto physics = NullPhysicsProbe();
-  player->game = &game;
-  player->physics = &physics;
-  player->pos.y = 10;
-  player->tick();
-
-  assertEquals(ACTION_FALL, player->getActor().action);
-}
-

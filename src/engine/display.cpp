@@ -506,7 +506,7 @@ void Display_beginDraw()
 
   {
     auto const ambientLoc = glGetUniformLocation(g_ProgramId, "ambientLight");
-    SAFE_GL(glUniform3f(ambientLoc, 0, 0, 0));
+    SAFE_GL(glUniform3f(ambientLoc, 1, 1, 1));
   }
 
   {

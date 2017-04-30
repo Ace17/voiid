@@ -145,7 +145,7 @@ private:
 
   void draw()
   {
-    // Display_setAmbientLight(m_scene->ambientLight);
+    Display_setAmbientLight(m_scene->ambientLight);
 
     Display_beginDraw();
 
