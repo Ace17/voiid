@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+set -x
+
+readonly tmpDir=/tmp/update-github-naarrow
+mkdir -p $tmpDir
+trap "rm -rf $tmpDir" EXIT
+
+git clone bzr::http://code.alaiwan.org/bzr/games/naarrow $tmpDir/repo
+cd $tmpDir/repo
+git remote add github https://github.com/Ace17/naarrow.git
+git push -f github

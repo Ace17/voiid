@@ -1,0 +1,10 @@
+{
+  "type" : "sheet",
+  "sheet" : "sign.png",
+  "width" : 128,
+  "height" : 64,
+  "actions": [
+    { "name": "", "frames": [ 0 ] },
+    { "name": "", "frames": [ 16 ] }
+  ]
+}

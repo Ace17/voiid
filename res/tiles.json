@@ -1,0 +1,30 @@
+{
+  "type" : "sheet",
+  "sheet" : "sheet.png",
+  "width" : "32",
+  "height" : "32",
+  "actions": [
+    { "name": "", "frames": [ "0" ] },
+    { "name": "", "frames": [ "1" ] },
+    { "name": "", "frames": [ "2" ] },
+    { "name": "", "frames": [ "3" ] },
+    { "name": "", "frames": [ "4" ] },
+    { "name": "", "frames": [ "5" ] },
+    { "name": "", "frames": [ "6" ] },
+    { "name": "", "frames": [ "7" ] },
+    { "name": "", "frames": [ "8" ] },
+    { "name": "", "frames": [ "9" ] },
+    { "name": "", "frames": [ "10" ] },
+    { "name": "", "frames": [ "11" ] },
+    { "name": "", "frames": [ "12" ] },
+    { "name": "", "frames": [ "13" ] },
+    { "name": "", "frames": [ "14" ] },
+    { "name": "", "frames": [ "15" ] },
+    { "name": "", "frames": [ "16" ] },
+    { "name": "", "frames": [ "17" ] },
+    { "name": "", "frames": [ "18" ] },
+    { "name": "", "frames": [ "19" ] },
+    { "name": "", "frames": [ "20" ] },
+    { "name": "", "frames": [ "21" ] }
+  ]
+}
