@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include "room.h"
 #include "entity_factory.h"
 
@@ -13,7 +14,10 @@ Room Graph_loadRoom(int /*roomIdx*/, IGame* /*game*/)
       if(z <= 2 || z >= 5)
         r.tiles.set(x, y, z, 1);
 
-      if(x == 0 || y == 0)
+      if(x == 0 || y == 0 || x == 63 || y == 63)
+        r.tiles.set(x, y, z, 1);
+
+      if(rand()%13==0)
         r.tiles.set(x, y, z, 1);
     };
 
