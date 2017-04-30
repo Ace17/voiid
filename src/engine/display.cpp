@@ -25,6 +25,10 @@ using namespace std;
 #include "base/geom.h"
 #include "model.h"
 
+static GLint g_MVP;
+static GLint g_colorId;
+static GLint g_ambientLoc;
+
 static GLuint g_ProgramId;
 static vector<Model> g_Models;
 static Model g_fontModel;
@@ -362,6 +366,15 @@ void Display_init(int width, int height)
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
   g_fontModel = loadTiledAnimation("res/font.png", 256, 16, 8);
+
+  g_MVP = glGetUniformLocation(g_ProgramId, "MVP");
+  assert(g_MVP >= 0);
+
+  g_colorId = glGetUniformLocation(g_ProgramId, "v_color");
+  assert(g_colorId >= 0);
+
+  g_ambientLoc = glGetUniformLocation(g_ProgramId, "ambientLight");
+  assert(g_ambientLoc >= 0);
 }
 
 bool cameraPosOk = false;
@@ -420,9 +433,7 @@ using namespace glm;
 static
 void drawModel(Rect3f where, Model& model, bool blinking, int actionIdx, float ratio)
 {
-  auto const colorId = glGetUniformLocation(g_ProgramId, "v_color");
-
-  SAFE_GL(glUniform4f(colorId, 0, 0, 0, 0));
+  SAFE_GL(glUniform4f(g_colorId, 0, 0, 0, 0));
 
   if(blinking)
   {
@@ -430,7 +441,7 @@ void drawModel(Rect3f where, Model& model, bool blinking, int actionIdx, float r
     blinkCounter++;
 
     if((blinkCounter / 4) % 2)
-      SAFE_GL(glUniform4f(colorId, 0.8, 0.4, 0.4, 0));
+      SAFE_GL(glUniform4f(g_colorId, 0.8, 0.4, 0.4, 0));
   }
 
   if(actionIdx < 0 || actionIdx >= (int)model.actions.size())
@@ -461,10 +472,7 @@ void drawModel(Rect3f where, Model& model, bool blinking, int actionIdx, float r
 
   auto mat = perspective * view * pos * scale;
 
-  auto const MVP = glGetUniformLocation(g_ProgramId, "MVP");
-  assert(MVP >= 0);
-
-  SAFE_GL(glUniformMatrix4fv(MVP, 1, GL_FALSE, glm::value_ptr(mat)));
+  SAFE_GL(glUniformMatrix4fv(g_MVP, 1, GL_FALSE, glm::value_ptr(mat)));
 
   SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, model.buffer));
   SAFE_GL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, model.indices));
@@ -504,10 +512,7 @@ void Display_beginDraw()
   SAFE_GL(glClearColor(0, 0, 0, 1));
   SAFE_GL(glClear(GL_COLOR_BUFFER_BIT));
 
-  {
-    auto const ambientLoc = glGetUniformLocation(g_ProgramId, "ambientLight");
-    SAFE_GL(glUniform3f(ambientLoc, 1, 1, 1));
-  }
+  SAFE_GL(glUniform3f(g_ambientLoc, 1, 1, 1));
 
   {
     auto const positionLoc = glGetAttribLocation(g_ProgramId, "a_position");
