@@ -20,7 +20,7 @@ struct RoomBoundaryDetector : Entity
 {
   RoomBoundaryDetector()
   {
-    size = Size2f(1, 1);
+    size = UnitSize;
     solid = false;
     collisionGroup = 0;
     collidesWith = CG_PLAYER | CG_SOLIDPLAYER;
@@ -44,14 +44,14 @@ struct RoomBoundaryDetector : Entity
   }
 
   int targetLevel = 0;
-  Vector2f transform;
+  Vector transform;
 };
 
 struct RoomBoundaryBlocker : Entity
 {
   RoomBoundaryBlocker(int groupsToBlock)
   {
-    size = Size2f(1, 1);
+    size = UnitSize;
     solid = true;
     collisionGroup = CG_WALLS;
     collidesWith = groupsToBlock;

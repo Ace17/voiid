@@ -1,6 +1,12 @@
 #include <functional>
 #include "base/geom.h"
 
+typedef GenericVector3<float> Vector;
+typedef GenericSize3<float> Size;
+typedef GenericBox3<float> Box;
+
+static auto const UnitSize = Size(1, 1, 1);
+
 using namespace std;
 
 struct Body
@@ -11,8 +17,8 @@ struct Body
 
   bool solid = false;
   bool pusher = false; // push and crush?
-  Vector2f pos;
-  Size2f size = Size2f(1, 1);
+  Vector pos;
+  Size size = UnitSize;
   int collisionGroup = 1;
   int collidesWith = 0xFFFF;
   Body* ground = nullptr; // the body we rest on (if any)
@@ -24,13 +30,15 @@ struct Body
   {
   }
 
-  Rect2f getRect() const
+  Box getRect() const
   {
-    Rect2f r;
+    Box r;
     r.x = pos.x;
     r.y = pos.y;
-    r.height = size.height;
-    r.width = size.width;
+    r.z = pos.z;
+    r.cx = size.cx;
+    r.cy = size.cy;
+    r.cz = size.cz;
     return r;
   }
 };
@@ -38,9 +46,9 @@ struct Body
 struct IPhysicsProbe
 {
   // called by entities
-  virtual bool moveBody(Body* body, Vector2f delta) = 0;
-  virtual bool isSolid(const Body* body, Rect2f) const = 0;
-  virtual Body* getBodiesInRect(Rect2f myRect, int collisionGroup, bool onlySolid = false, const Body* except = nullptr) const = 0;
+  virtual bool moveBody(Body* body, Vector delta) = 0;
+  virtual bool isSolid(const Body* body, Box) const = 0;
+  virtual Body* getBodiesInRect(Box myRect, int collisionGroup, bool onlySolid = false, const Body* except = nullptr) const = 0;
 };
 
 struct IPhysics : IPhysicsProbe
@@ -50,6 +58,6 @@ struct IPhysics : IPhysicsProbe
   virtual void removeBody(Body* body) = 0;
   virtual void clearBodies() = 0;
   virtual void checkForOverlaps() = 0;
-  virtual void setEdifice(function<bool(Rect2f)> isSolid) = 0;
+  virtual void setEdifice(function<bool(Box)> isSolid) = 0;
 };
 

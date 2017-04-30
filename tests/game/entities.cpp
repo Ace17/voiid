@@ -65,9 +65,9 @@ struct NullGame : IGame
   {
   }
 
-  virtual Vector2f getPlayerPosition()
+  virtual Vector3f getPlayerPosition()
   {
-    return Vector2f(0, 0);
+    return Vector3f(0, 0, 0);
   }
 
   virtual void textBox(char const*)
@@ -78,25 +78,25 @@ struct NullGame : IGame
 struct NullPhysicsProbe : IPhysicsProbe
 {
   // called by entities
-  bool moveBody(Body* body, Vector2f delta)
+  bool moveBody(Body* body, Vector delta)
   {
-    auto rect = body->getRect();
-    rect.x += delta.x;
-    rect.y += delta.y;
+    auto box = body->getRect();
+    box.x += delta.x;
+    box.y += delta.y;
 
-    if(isSolid(body, rect))
+    if(isSolid(body, box))
       return false;
 
     body->pos += delta;
     return true;
   }
 
-  bool isSolid(const Body* /*body*/, Rect2f rect) const
+  bool isSolid(const Body* /*body*/, Box box) const
   {
-    return rect.y < 0;
+    return box.y < 0;
   }
 
-  Body* getBodiesInRect(Rect2f, int, bool, const Body*) const
+  Body* getBodiesInRect(Box, int, bool, const Body*) const
   {
     return nullptr;
   }
@@ -168,43 +168,5 @@ unittest("Entity: rockman falls")
   player->tick();
 
   assertEquals(ACTION_FALL, player->getActor().action);
-}
-
-unittest("Entity: rockman stands on ground, then walks")
-{
-  auto player = makeRockman();
-  auto game = NullGame();
-  auto physics = NullPhysicsProbe();
-  player->game = &game;
-  player->physics = &physics;
-
-  player->pos.y = 0;
-
-  for(int i = 0; i < 10; ++i)
-    player->tick();
-
-  assertEquals(ACTION_STAND, player->getActor().action);
-
-  {
-    Control cmd {};
-    cmd.right = true;
-    player->think(cmd);
-  }
-
-  player->tick();
-
-  assertEquals(ACTION_WALK, player->getActor().action);
-  assert(player->getActor().scale.width > 0);
-
-  {
-    Control cmd {};
-    cmd.left = true;
-    player->think(cmd);
-  }
-
-  player->tick();
-
-  assertEquals(ACTION_WALK, player->getActor().action);
-  assert(player->getActor().scale.width < 0);
 }
 

@@ -31,24 +31,34 @@ enum class Effect
 // a game object, as seen by the user-interface, i.e a displayable object.
 struct Actor
 {
-  Actor(Vector2f pos_ = Vector2f(0, 0), MODEL model_ = 0) : pos(pos_), model(model_)
+  Actor(Vector3f pos_ = Vector3f(0, 0, 0), MODEL model_ = 0)
   {
+    model = model_;
+    pos = pos_;
   }
 
-  Vector2f pos = Vector2f(0, 0);
+  Vector3f pos;
+  Vector3f orientation = Vector3f(1, 0, 0);
   MODEL model = 0;
   int action = 0;
   float ratio = 0; // in [0 .. 1]
-  Size2f scale = Size2f(1, 1);
+  Size3f scale = Size3f(1, 1, 1);
   Effect effect = Effect::Normal;
+  bool focus = false; // is it the camera?
 };
 
 struct Control
 {
-  bool left, right, up, down;
+  bool forward, backward;
+  float look_horz = 0;
+  float look_vert = 0;
+
+  bool left, right;
+
   bool fire;
-  bool jump;
   bool dash;
+  bool use;
+  bool jump;
 
   bool restart; // restart level in case one gets stuck
 
@@ -69,5 +79,7 @@ struct Scene
   virtual int getMusic() const = 0;
   virtual vector<Actor> getActors() const = 0;
   virtual vector<SOUND> readSounds() = 0;
+
+  float ambientLight = 0;
 };
 

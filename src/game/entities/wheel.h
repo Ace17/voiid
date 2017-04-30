@@ -17,7 +17,7 @@ struct Wheel : Entity, Damageable
   Wheel()
   {
     dir = -1.0f;
-    size = Size2f(1.5, 1.5);
+    size = UnitSize * 1.5;
     collisionGroup = CG_WALLS;
     collidesWith = CG_SOLIDPLAYER;
   }
@@ -26,17 +26,13 @@ struct Wheel : Entity, Damageable
   {
     auto r = Actor(pos, MDL_WHEEL);
 
-    r.scale = Size2f(3, 3);
-    r.pos += Vector2f(-(r.scale.width - size.width) * 0.5, -0.3);
+    r.scale = UnitSize * 3;
 
     if(blinking)
       r.effect = Effect::Blinking;
 
     r.action = 0;
     r.ratio = (time % 200) / 200.0f;
-
-    if(dir > 0)
-      r.scale.width = -r.scale.width;
 
     return r;
   }
@@ -50,10 +46,10 @@ struct Wheel : Entity, Damageable
 
     auto trace = slideMove(this, vel);
 
-    if(!trace.horz)
+    if(!trace.tx || !trace.ty)
       dir = -dir;
 
-    if(!trace.vert)
+    if(!trace.tz)
       vel.y = 0;
 
     decrement(blinking);

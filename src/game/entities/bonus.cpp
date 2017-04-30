@@ -27,14 +27,14 @@ struct Bonus : Entity
     modelAction = modelAction_;
     type = type_;
     msg = msg_;
-    size = Size2f(1, 1);
+    size = UnitSize;
   }
 
   virtual Actor getActor() const override
   {
     auto s = sin(time * 0.01);
     auto r = Actor(pos, MDL_BONUS);
-    r.scale = Size2f(1, 1);
+    r.scale = UnitSize;
     r.ratio = max(s, 0.0);
     r.action = modelAction;
 

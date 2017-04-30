@@ -27,6 +27,8 @@ ifeq (ERROR,$(PKG_LDFLAGS))
   $(error At least one library was not found in the build environment)
 endif
 
+CXXFLAGS+=-Iextra
+
 CXXFLAGS+=-Wall -Wextra
 CXXFLAGS+=-Isrc
 CXXFLAGS+=-I.
@@ -60,7 +62,6 @@ SRCS:=\
 	src/game/entity_factory.cpp\
 	src/game/game.cpp\
 	src/game/level_graph.cpp\
-	src/game/level_tiled.cpp\
 	src/game/physics.cpp\
 	src/game/resources.cpp\
 	src/game/smarttiles.cpp\
@@ -88,17 +89,12 @@ SRCS_TESTS:=\
 	tests/base64.cpp\
 	tests/decompress.cpp\
 	tests/game/entities.cpp\
-	tests/game/level_graph.cpp\
 	tests/game/physics.cpp\
 	tests/json.cpp\
 	tests/tests.cpp\
 	tests/tests_main.cpp\
 	tests/tokenizer.cpp\
 	tests/util.cpp\
-
-# get rid of those
-SRCS_TESTS+=\
-	src/game/level_tiled.cpp\
 
 $(BIN)/tests$(EXT): $(SRCS_TESTS:%.cpp=$(BIN)/%_cpp.o)
 	@mkdir -p $(dir $@)

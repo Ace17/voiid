@@ -32,6 +32,8 @@ struct SdlAudio : Audio
     if(ret == -1)
       throw runtime_error("Can't allocate channels");
 
+    playMusic(1);
+
     {
       int freq;
       Uint16 fmt;
@@ -39,8 +41,6 @@ struct SdlAudio : Audio
       Mix_QuerySpec(&freq, &fmt, &channels);
       printf("Audio: %d Hz %d channels\n", freq, channels);
     }
-
-    playMusic(1);
   }
 
   ~SdlAudio()

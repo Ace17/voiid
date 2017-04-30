@@ -9,7 +9,7 @@ struct Conveyor : Entity
 {
   Conveyor()
   {
-    size = Size2f(1, 1);
+    size = UnitSize;
     collisionGroup = CG_WALLS;
     collidesWith = CG_PLAYER;
     solid = 1;
@@ -20,7 +20,6 @@ struct Conveyor : Entity
     auto r = Actor(pos, MDL_RECT);
     r.action = 2;
     r.scale = size;
-    r.scale.width *= -1;
     return r;
   }
 
@@ -37,7 +36,7 @@ struct Conveyor : Entity
       return;
 
     noRecurse = true;
-    physics->moveBody(other, Vector2f(-0.004, 0));
+    physics->moveBody(other, Vector(-0.004, 0, 0));
     noRecurse = false;
   }
 

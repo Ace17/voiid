@@ -10,7 +10,7 @@ struct CrumbleBlock : Entity
 {
   CrumbleBlock()
   {
-    size = Size2f(1, 1);
+    size = UnitSize;
     collisionGroup = CG_WALLS;
   }
 
@@ -22,7 +22,7 @@ struct CrumbleBlock : Entity
     r.action = 3;
 
     if(!solid)
-      r.scale = Size2f(0.01, 0.01);
+      r.scale = UnitSize * 0.01;
 
     return r;
   }
@@ -34,7 +34,7 @@ struct CrumbleBlock : Entity
 
   void touch(Body* other)
   {
-    if(other->pos.y > pos.y + size.height)
+    if(other->pos.z > pos.z + size.cz)
     {
       disappearTimer = 1000;
       game->playSound(SND_DISAPPEAR);
@@ -66,7 +66,7 @@ struct FragileBlock : Entity, Damageable
 {
   FragileBlock()
   {
-    size = Size2f(1, 1);
+    size = UnitSize;
     reappear();
   }
 

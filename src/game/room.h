@@ -4,16 +4,16 @@
 
 struct Room
 {
-  Vector2i pos;
-  Size2i size;
+  Vector3i pos;
+  Size3i size;
   int theme = 0;
-  Matrix2<int> tiles;
-  Vector2i start;
+  Matrix3<int> tiles;
+  Vector3i start;
   std::string name;
 
   struct Thing
   {
-    Vector2f pos;
+    Vector pos;
     std::string name;
   };
 

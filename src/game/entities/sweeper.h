@@ -13,12 +13,13 @@ struct Sweeper : Entity, Damageable
 {
   Sweeper()
   {
-    size = Size2f(0.8, 0.8);
+    size = UnitSize * 0.8;
     collisionGroup = CG_WALLS;
     collidesWith = CG_SOLIDPLAYER;
 
     vel.x = 0.003;
     vel.y = 0.003;
+    vel.z = 0.003;
   }
 
   virtual Actor getActor() const override
@@ -26,7 +27,6 @@ struct Sweeper : Entity, Damageable
     auto r = Actor(pos, MDL_RECT);
 
     r.scale = size;
-    r.pos += Vector2f(-(r.scale.width - size.width) * 0.5, 0);
 
     if(blinking)
       r.effect = Effect::Blinking;
@@ -43,11 +43,14 @@ struct Sweeper : Entity, Damageable
 
     auto trace = slideMove(this, vel);
 
-    if(!trace.horz)
+    if(!trace.tx)
       vel.x = -vel.x;
 
-    if(!trace.vert)
+    if(!trace.ty)
       vel.y = -vel.y;
+
+    if(!trace.tz)
+      vel.z = -vel.z;
 
     decrement(blinking);
   }

@@ -43,11 +43,12 @@ struct Physics : IPhysics
     m_bodies.clear();
   }
 
-  bool moveBody(Body* body, Vector2f delta)
+  bool moveBody(Body* body, Vector delta)
   {
     auto rect = body->getRect();
     rect.x += delta.x;
     rect.y += delta.y;
+    rect.z += delta.z;
 
     auto const blocked = isSolid(body, rect);
 
@@ -80,15 +81,15 @@ struct Physics : IPhysics
     if(!body->pusher)
     {
       auto feet = rect;
-      feet.y -= 0.01;
-      feet.height = 0.01;
+      feet.z -= 0.01;
+      feet.cz = 0.01;
       body->ground = getSolidBodyInRect(feet, body);
     }
 
     return !blocked;
   }
 
-  bool isSolid(const Body* except, Rect2f rect) const
+  bool isSolid(const Body* except, Box rect) const
   {
     if(getSolidBodyInRect(rect, except))
       return true;
@@ -123,12 +124,12 @@ struct Physics : IPhysics
       me.onCollision(&other);
   }
 
-  void setEdifice(function<bool(Rect2f)> isSolid)
+  void setEdifice(function<bool(Box)> isSolid)
   {
     m_isSolid = isSolid;
   }
 
-  Body* getBodiesInRect(Rect2f myRect, int collisionGroup, bool onlySolid, const Body* except) const
+  Body* getBodiesInRect(Box myRect, int collisionGroup, bool onlySolid, const Body* except) const
   {
     for(auto& body : m_bodies)
     {
@@ -151,13 +152,13 @@ struct Physics : IPhysics
   }
 
 private:
-  Body* getSolidBodyInRect(Rect2f myRect, const Body* except) const
+  Body* getSolidBodyInRect(Box myRect, const Body* except) const
   {
     return getBodiesInRect(myRect, -1, true, except);
   }
 
   vector<Body*> m_bodies;
-  function<bool(Rect2f)> m_isSolid;
+  function<bool(Box)> m_isSolid;
 };
 
 unique_ptr<IPhysics> createPhysics()

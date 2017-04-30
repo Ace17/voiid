@@ -9,7 +9,7 @@
   assertNearlyEqualsFunc(u, v, __FILE__, __LINE__)
 
 static inline
-std::ostream & operator << (std::ostream& o, const Vector2f& v)
+std::ostream & operator << (std::ostream& o, const Vector& v)
 {
   o << "(";
   o << v.x;
@@ -19,7 +19,7 @@ std::ostream & operator << (std::ostream& o, const Vector2f& v)
   return o;
 }
 
-void assertNearlyEqualsFunc(Vector2f expected, Vector2f actual, const char* file, int line)
+void assertNearlyEqualsFunc(Vector expected, Vector actual, const char* file, int line)
 {
   auto delta = expected - actual;
 
@@ -39,7 +39,7 @@ void assertNearlyEqualsFunc(Vector2f expected, Vector2f actual, const char* file
 unique_ptr<IPhysics> createPhysics();
 
 static
-bool isSolid(Rect2f rect)
+bool isSolid(Box rect)
 {
   return rect.y < 0 || rect.x < 0;
 }
@@ -59,39 +59,39 @@ struct Fixture
 unittest("Physics: simple move")
 {
   Fixture fix;
-  fix.mover.pos = Vector2f(10, 10);
+  fix.mover.pos = Vector(10, 10, 10);
 
-  auto allowed = fix.physics->moveBody(&fix.mover, Vector2f(10, 0));
+  auto allowed = fix.physics->moveBody(&fix.mover, Vector(10, 0, 0));
   assert(allowed);
-  assertNearlyEquals(Vector2f(20, 10), fix.mover.pos);
+  assertNearlyEquals(Vector(20, 10, 10), fix.mover.pos);
 }
 
 unittest("Physics: left move, blocked by vertical wall at x=0")
 {
   Fixture fix;
-  fix.mover.pos = Vector2f(10, 10);
+  fix.mover.pos = Vector(10, 10, 0);
 
-  auto allowed = fix.physics->moveBody(&fix.mover, Vector2f(-20, 0));
+  auto allowed = fix.physics->moveBody(&fix.mover, Vector(-20, 0, 0));
   assert(!allowed);
 
-  assertNearlyEquals(Vector2f(10, 10), fix.mover.pos);
+  assertNearlyEquals(Vector(10, 10, 0), fix.mover.pos);
 }
 
 unittest("Physics: left move, blocked by a bigger body")
 {
   Fixture fix;
-  fix.mover.pos = Vector2f(100, 10);
-  fix.mover.size = Size2f(1, 1);
+  fix.mover.pos = Vector(100, 10, 0);
+  fix.mover.size = Size(1, 1, 1);
 
   Body blocker;
-  blocker.pos = Vector2f(200, 5);
-  blocker.size = Size2f(10, 10);
+  blocker.pos = Vector(200, 5, 0);
+  blocker.size = Size(10, 10, 10);
   blocker.solid = true;
   fix.physics->addBody(&blocker);
 
-  auto allowed = fix.physics->moveBody(&fix.mover, Vector2f(100, 0));
+  auto allowed = fix.physics->moveBody(&fix.mover, Vector(100, 0, 0));
   assert(!allowed);
 
-  assertNearlyEquals(Vector2f(100, 10), fix.mover.pos);
+  assertNearlyEquals(Vector(100, 10, 0), fix.mover.pos);
 }
 

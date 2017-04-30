@@ -14,7 +14,7 @@ struct Hopper : Entity, Damageable
   Hopper()
   {
     dir = -1.0f;
-    size = Size2f(1, 0.5);
+    size = UnitSize * 0.5;
     collisionGroup = CG_WALLS;
     collidesWith = CG_SOLIDPLAYER;
   }
@@ -24,16 +24,12 @@ struct Hopper : Entity, Damageable
     auto r = Actor(pos, MDL_RECT);
 
     r.scale = size;
-    r.pos += Vector2f(-(r.scale.width - size.width) * 0.5, 0);
 
     if(blinking)
       r.effect = Effect::Blinking;
 
     r.action = 0;
     r.ratio = (time % 800) / 800.0f;
-
-    if(dir > 0)
-      r.scale.width = -r.scale.width;
 
     return r;
   }
@@ -57,10 +53,10 @@ struct Hopper : Entity, Damageable
 
     auto trace = slideMove(this, vel);
 
-    if(!trace.horz)
+    if(!trace.tx || !trace.ty)
       dir = -dir;
 
-    if(!trace.vert)
+    if(!trace.tz)
     {
       ground = true;
       vel.y = 0;

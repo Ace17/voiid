@@ -24,9 +24,6 @@
 
 using namespace std;
 
-// from smarttiles
-array<int, 4> computeTileFor(Matrix const& m, int x, int y);
-
 // from physics.cpp
 unique_ptr<IPhysics> createPhysics();
 
@@ -34,7 +31,7 @@ struct Game : Scene, IGame
 {
   Game(View* view) :
     m_view(view),
-    m_tiles(Size2i(1, 1))
+    m_tiles(Size3i(1, 1, 1))
   {
     m_shouldLoadLevel = true;
     m_physics = createPhysics();
@@ -77,20 +74,15 @@ struct Game : Scene, IGame
     auto cameraPos = m_player->pos;
     cameraPos.y += 1.5;
 
-    {
-      // prevent camera from going outside the level
-      auto const limit = 8.0f;
-      cameraPos.x = clamp(cameraPos.x, limit, m_tiles.size.width - limit);
-      cameraPos.y = clamp(cameraPos.y, limit, m_tiles.size.height - limit);
-    }
-
     addActorsForTileMap(r, cameraPos);
 
-    Rect2f cameraRect;
-    cameraRect.width = 16;
-    cameraRect.height = 16;
-    cameraRect.x = cameraPos.x - cameraRect.width / 2;
-    cameraRect.y = cameraPos.y - cameraRect.height / 2;
+    Box cameraRect;
+    cameraRect.cx = 16;
+    cameraRect.cx = 16;
+    cameraRect.cz = 16;
+    cameraRect.x = cameraPos.x - cameraRect.cx / 2;
+    cameraRect.y = cameraPos.y - cameraRect.cy / 2;
+    cameraRect.z = cameraPos.z - cameraRect.cz / 2;
 
     for(auto& entity : m_entities)
     {
@@ -101,19 +93,6 @@ struct Game : Scene, IGame
 
       if(m_debug)
         r.push_back(getDebugActor(entity.get()));
-    }
-
-    for(auto& actor : r)
-    {
-      actor.pos -= cameraPos;
-    }
-
-    {
-      Actor lifebar(Vector2f(-6.5, 2), MDL_LIFEBAR);
-      lifebar.action = 0;
-      lifebar.ratio = m_player->health();
-      lifebar.scale = Size2f(0.7, 3);
-      r.push_back(lifebar);
     }
 
     return r;
@@ -129,10 +108,10 @@ struct Game : Scene, IGame
     return m_theme;
   }
 
-  void addActorsForTileMap(vector<Actor>& r, Vector2f cameraPos) const
+  void addActorsForTileMap(vector<Actor>& r, Vector cameraPos) const
   {
     auto onCell =
-      [&] (int x, int y, int tile)
+      [&] (int x, int y, int z, int tile)
       {
         if(!tile)
           return;
@@ -143,18 +122,13 @@ struct Game : Scene, IGame
         if(abs(y - cameraPos.y) > 9)
           return;
 
-        auto composition = computeTileFor(m_tiles, x, y);
+        if(abs(z - cameraPos.z) > 9)
+          return;
 
-        for(int subTile = 0; subTile < 4; ++subTile)
-        {
-          auto const ts = 1.0;
-          auto const posX = (x + (subTile % 2) * 0.5) * ts;
-          auto const posY = (y + (subTile / 2) * 0.5) * ts;
-          auto actor = Actor(Vector2f(posX, posY), MDL_TILES);
-          actor.action = (m_theme % 8) * 16 + composition[subTile];
-          actor.scale = Size2f(0.5, 0.5);
-          r.push_back(actor);
-        }
+        auto actor = Actor(Vector(x, y, z), MDL_TILES);
+        actor.action = (m_theme % 8) * 16;
+        actor.scale = UnitSize * 0.5;
+        r.push_back(actor);
       };
 
     m_tiles.scan(onCell);
@@ -200,7 +174,7 @@ struct Game : Scene, IGame
     if(!m_player)
     {
       m_player = makeRockman().release();
-      m_player->pos = Vector2f(level.start.x, level.start.y);
+      m_player->pos = Vector(level.start.x, level.start.y, level.start.z);
     }
 
     spawn(m_player);
@@ -222,7 +196,7 @@ struct Game : Scene, IGame
 
   int m_level = 1;
   int m_theme = 0;
-  Vector2f m_transform;
+  Vector m_transform;
   bool m_shouldLoadLevel = false;
 
   EventDelegator m_levelBoundary;
@@ -256,7 +230,7 @@ struct Game : Scene, IGame
     m_listeners.erase(sink);
   }
 
-  Vector2f getPlayerPosition() override
+  Vector getPlayerPosition() override
   {
     return m_player->pos;
   }
@@ -300,43 +274,44 @@ struct Game : Scene, IGame
   static Actor getDebugActor(Entity* entity)
   {
     auto rect = entity->getRect();
-    auto r = Actor(Vector2f(rect.x, rect.y), MDL_RECT);
+    auto r = Actor(Vector(rect.x, rect.y, rect.z), MDL_RECT);
     r.scale = rect;
     return r;
   }
 
-  bool isRectSolid(Rect2f rect)
+  bool isRectSolid(Box rect)
   {
-    if(isPointSolid(Vector2f(rect.x, rect.y)))
+    if(isPointSolid(Vector(rect.x, rect.y, rect.z)))
       return true;
 
-    if(isPointSolid(Vector2f(rect.x, rect.y + rect.height)))
+    if(isPointSolid(Vector(rect.x, rect.y + rect.cy, rect.z)))
       return true;
 
-    if(isPointSolid(Vector2f(rect.x + rect.width, rect.y)))
+    if(isPointSolid(Vector(rect.x + rect.cx, rect.y, rect.z)))
       return true;
 
-    if(isPointSolid(Vector2f(rect.x + rect.width, rect.y + rect.height)))
+    if(isPointSolid(Vector(rect.x + rect.cx, rect.y + rect.cy, rect.z)))
       return true;
 
-    if(isPointSolid(Vector2f(rect.x, rect.y + rect.height / 2)))
+    if(isPointSolid(Vector(rect.x, rect.y + rect.cy / 2, rect.z)))
       return true;
 
-    if(isPointSolid(Vector2f(rect.x + rect.width, rect.y + rect.height / 2)))
+    if(isPointSolid(Vector(rect.x + rect.cx, rect.y + rect.cy / 2, rect.z)))
       return true;
 
     return false;
   }
 
-  bool isPointSolid(Vector2f pos)
+  bool isPointSolid(Vector pos)
   {
     auto const x = (int)pos.x;
     auto const y = (int)pos.y;
+    auto const z = (int)pos.z;
 
-    if(!m_tiles.isInside(x, y))
+    if(!m_tiles.isInside(x, y, z))
       return false;
 
-    if(m_tiles.get(x, y) == 0)
+    if(m_tiles.get(x, y, z) == 0)
       return false;
 
     return true;

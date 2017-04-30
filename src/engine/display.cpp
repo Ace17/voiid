@@ -186,25 +186,60 @@ GLuint loadShaders()
 }
 
 static
-Model rectangularModel(float w, float h)
+Model cubeModel()
 {
   const GLfloat myTriangle[] =
   {
-    0, h, 0, 0, 0,
-    0, 0, 0, 0, 1,
-    w, 0, 0, 1, 1,
-    w, h, 0, 1, 0,
+    -0.5, -0.5, +0.5, /* uv */ 0, 1, /* N */ 0, 0, 1,
+    -0.5, +0.5, +0.5, /* uv */ 0, 0, /* N */ 0, 0, 1,
+    +0.5, +0.5, +0.5, /* uv */ 1, 0, /* N */ 0, 0, 1,
+    +0.5, -0.5, +0.5, /* uv */ 1, 1, /* N */ 0, 0, 1,
+    -0.5, -0.5, -0.5, /* uv */ 0, 1, /* N */ 0, 0, -1,
+    +0.5, -0.5, -0.5, /* uv */ 0, 0, /* N */ 0, 0, -1,
+    +0.5, +0.5, -0.5, /* uv */ 1, 0, /* N */ 0, 0, -1,
+    -0.5, +0.5, -0.5, /* uv */ 1, 1, /* N */ 0, 0, -1,
+    -0.5, -0.5, +0.5, /* uv */ 0, 1, /* N */ -1, 0, 0,
+    -0.5, -0.5, -0.5, /* uv */ 0, 0, /* N */ -1, 0, 0,
+    -0.5, +0.5, -0.5, /* uv */ 1, 0, /* N */ -1, 0, 0,
+    -0.5, +0.5, +0.5, /* uv */ 1, 1, /* N */ -1, 0, 0,
+    -0.5, +0.5, +0.5, /* uv */ 0, 1, /* N */ 0, 1, 0,
+    -0.5, +0.5, -0.5, /* uv */ 0, 0, /* N */ 0, 1, 0,
+    +0.5, +0.5, -0.5, /* uv */ 1, 0, /* N */ 0, 1, 0,
+    +0.5, +0.5, +0.5, /* uv */ 1, 1, /* N */ 0, 1, 0,
+    +0.5, +0.5, +0.5, /* uv */ 0, 1, /* N */ 1, 0, 0,
+    +0.5, +0.5, -0.5, /* uv */ 0, 0, /* N */ 1, 0, 0,
+    +0.5, -0.5, -0.5, /* uv */ 1, 0, /* N */ 1, 0, 0,
+    +0.5, -0.5, +0.5, /* uv */ 1, 1, /* N */ 1, 0, 0,
+    -0.5, -0.5, -0.5, /* uv */ 0, 1, /* N */ 0, -1, 0,
+    -0.5, -0.5, +0.5, /* uv */ 0, 0, /* N */ 0, -1, 0,
+    +0.5, -0.5, +0.5, /* uv */ 1, 0, /* N */ 0, -1, 0,
+    +0.5, -0.5, -0.5, /* uv */ 1, 1, /* N */ 0, -1, 0,
   };
 
   const GLushort indices[] =
   {
-    0, 1, 2,
-    2, 3, 0,
+    0, 2, 1,
+    0, 3, 2,
+
+    4, 6, 5,
+    4, 7, 6,
+
+    8, 10, 9,
+    8, 11, 10,
+
+    12, 14, 13,
+    12, 15, 14,
+
+    16, 18, 17,
+    16, 19, 18,
+
+    20, 22, 21,
+    20, 23, 22,
   };
 
   Model model;
 
-  model.size = 4;
+  model.size = 24;
 
   SAFE_GL(glGenBuffers(1, &model.buffer));
   SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, model.buffer));
@@ -222,7 +257,7 @@ Model rectangularModel(float w, float h)
 static
 Model loadTiledAnimation(string path, int count, int COLS, int SIZE)
 {
-  auto m = rectangularModel(1, 1);
+  auto m = cubeModel();
 
   for(int i = 0; i < count; ++i)
   {
@@ -242,7 +277,7 @@ Model loadAnimation(string path)
 {
   if(endsWith(path, ".json"))
   {
-    auto m = rectangularModel(1, 1);
+    auto m = cubeModel();
 
     auto m2 = loadModel(path);
     m.actions = move(m2.actions);
@@ -252,11 +287,11 @@ Model loadAnimation(string path)
   {
     path = setExtension(path, "png");
 
-    return loadTiledAnimation(path, 64 * 2, 8, 16);
+    return loadTiledAnimation(path, 32 * 2, 8, 32);
   }
   else
   {
-    auto m = rectangularModel(1, 1);
+    auto m = cubeModel();
     Action action;
     action.addTexture(path, Rect2i());
     m.actions.push_back(action);
@@ -322,9 +357,40 @@ void Display_init(int width, int height)
   g_ProgramId = loadShaders();
 
   glEnable(GL_BLEND);
+  glEnable(GL_DEPTH_TEST);
+  glEnable(GL_CULL_FACE);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
   g_fontModel = loadTiledAnimation("res/font.png", 256, 16, 8);
+}
+
+bool cameraPosOk = false;
+Vector3f cameraPos;
+Vector3f cameraDir;
+float baseAmbientLight = 0;
+
+void Display_setCamera(Vector3f pos, Vector3f dir)
+{
+  if(!cameraPosOk)
+  {
+    cameraPos.x = pos.x;
+    cameraPos.y = pos.y;
+    cameraPos.z = pos.z;
+    cameraPosOk = true;
+  }
+
+  auto blend = [] (float a, float b)
+               {
+                 auto const alpha = 0.3f;
+                 return a * (1 - alpha) + b * alpha;
+               };
+
+  cameraPos.x = blend(cameraPos.x, pos.x);
+  cameraPos.y = blend(cameraPos.y, pos.y);
+  cameraPos.z = blend(cameraPos.z, pos.z);
+  cameraDir.x = dir.x;
+  cameraDir.y = dir.y;
+  cameraDir.z = dir.z;
 }
 
 void Display_setCaption(const char* caption)
@@ -332,8 +398,27 @@ void Display_setCaption(const char* caption)
   SDL_SetWindowTitle(mainWindow, caption);
 }
 
+void Display_setAmbientLight(float ambientLight_)
+{
+  baseAmbientLight = ambientLight_;
+}
+
+void Display_enableGrab(bool enable)
+{
+  SDL_SetRelativeMouseMode(enable ? SDL_TRUE : SDL_FALSE);
+  SDL_SetWindowGrab(mainWindow, enable ? SDL_TRUE : SDL_FALSE);
+  SDL_ShowCursor(enable ? 0 : 1);
+}
+
+#define GLM_FORCE_RADIANS
+#include "glm/glm.hpp"
+#include "glm/gtx/transform.hpp"
+#include "glm/gtc/matrix_inverse.hpp"
+#include "glm/gtc/type_ptr.hpp"
+using namespace glm;
+
 static
-void drawModel(Rect2f where, Model const& model, bool blinking, int actionIdx, float ratio)
+void drawModel(Rect3f where, Model& model, bool blinking, int actionIdx, float ratio)
 {
   auto const colorId = glGetUniformLocation(g_ProgramId, "v_color");
 
@@ -361,38 +446,25 @@ void drawModel(Rect2f where, Model const& model, bool blinking, int actionIdx, f
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-  if(where.width < 0)
-    where.x -= where.width;
+  auto Vec3 = [] (Vector3f v) { return vec3(v.x, v.y, v.z); };
 
-  if(where.height < 0)
-    where.y -= where.height;
+  auto const target = cameraPos + cameraDir;
+  auto const view = glm::lookAt(Vec3(cameraPos), Vec3(target), vec3(0, 0, 1));
+  auto const pos = glm::translate(vec3(where.x, where.y, where.z));
+  auto const scale = glm::scale(vec3(where.cx, where.cy, where.cz));
 
-  auto const dx = where.x;
-  auto const dy = where.y;
+  static const float fovy = (float)((60.0f / 180) * M_PI);
+  static const float aspect = 1.0f;
+  static const float near_ = 0.1f;
+  static const float far_ = 100.0f;
+  static const auto perspective = glm::perspective(fovy, aspect, near_, far_);
 
-  auto const sx = where.width;
-  auto const sy = where.height;
-
-  float mat[16] =
-  {
-    sx, 0, 0, 0,
-    0, sy, 0, 0,
-    0, 0, 1, 0,
-    dx, dy, 0, 1,
-  };
-
-  // scaling
-  {
-    for(auto& val : mat)
-      val *= 0.125;
-
-    mat[15] = 1;
-  }
+  auto mat = perspective * view * pos * scale;
 
   auto const MVP = glGetUniformLocation(g_ProgramId, "MVP");
   assert(MVP >= 0);
 
-  SAFE_GL(glUniformMatrix4fv(MVP, 1, GL_FALSE, mat));
+  SAFE_GL(glUniformMatrix4fv(MVP, 1, GL_FALSE, glm::value_ptr(mat)));
 
   SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, model.buffer));
   SAFE_GL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, model.indices));
@@ -400,7 +472,7 @@ void drawModel(Rect2f where, Model const& model, bool blinking, int actionIdx, f
   SAFE_GL(glDrawElements(GL_TRIANGLES, model.numIndices, GL_UNSIGNED_SHORT, 0));
 }
 
-void Display_drawActor(Rect2f where, int modelId, bool blinking, int actionIdx, float ratio)
+void Display_drawActor(Rect3f where, int modelId, bool blinking, int actionIdx, float ratio)
 {
   auto& model = g_Models.at(modelId);
   drawModel(where, model, blinking, actionIdx, ratio);
@@ -408,16 +480,18 @@ void Display_drawActor(Rect2f where, int modelId, bool blinking, int actionIdx, 
 
 void Display_drawText(Vector2f pos, char const* text)
 {
-  Rect2f rect;
-  rect.width = 0.5;
-  rect.height = 0.5;
-  rect.x = pos.x - strlen(text) * rect.width / 2;
+  Rect3f rect;
+  rect.cx = 0.5;
+  rect.cy = 0.5;
+  rect.cz = 0.5;
+  rect.x = pos.x - strlen(text) * rect.cx / 2;
   rect.y = pos.y;
+  rect.z = 0;
 
   while(*text)
   {
     drawModel(rect, g_fontModel, false, *text, 0);
-    rect.x += rect.width;
+    rect.x += rect.cx;
     ++text;
   }
 }
@@ -426,23 +500,35 @@ void Display_beginDraw()
 {
   SAFE_GL(glUseProgram(g_ProgramId));
 
+  SAFE_GL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
   SAFE_GL(glClearColor(0, 0, 0, 1));
   SAFE_GL(glClear(GL_COLOR_BUFFER_BIT));
 
   {
+    auto const ambientLoc = glGetUniformLocation(g_ProgramId, "ambientLight");
+    SAFE_GL(glUniform3f(ambientLoc, 0, 0, 0));
+  }
+
+  {
     auto const positionLoc = glGetAttribLocation(g_ProgramId, "a_position");
     auto const texCoordLoc = glGetAttribLocation(g_ProgramId, "a_texCoord");
+    auto const normalLoc = glGetAttribLocation(g_ProgramId, "a_normal");
 
     assert(positionLoc >= 0);
     assert(texCoordLoc >= 0);
+    assert(normalLoc >= 0);
 
     // connect the xyz to the "a_position" attribute of the vertex shader
     SAFE_GL(glEnableVertexAttribArray(positionLoc));
-    SAFE_GL(glVertexAttribPointer(positionLoc, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), nullptr));
+    SAFE_GL(glVertexAttribPointer(positionLoc, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), nullptr));
+
+    // connect the N to the "a_normal" attribute of the vertex shader
+    SAFE_GL(glEnableVertexAttribArray(normalLoc));
+    SAFE_GL(glVertexAttribPointer(normalLoc, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const GLvoid*)(5 * sizeof(GLfloat))));
 
     // connect the uv coords to the "v_texCoord" attribute of the vertex shader
     SAFE_GL(glEnableVertexAttribArray(texCoordLoc));
-    SAFE_GL(glVertexAttribPointer(texCoordLoc, 2, GL_FLOAT, GL_TRUE, 5 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat))));
+    SAFE_GL(glVertexAttribPointer(texCoordLoc, 2, GL_FLOAT, GL_TRUE, 8 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat))));
   }
 }
 

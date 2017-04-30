@@ -36,7 +36,7 @@ struct Bullet : Entity
 {
   Bullet()
   {
-    size = Size2f(0.4, 0.4);
+    size = UnitSize * 0.4;
     collisionGroup = 0;
     collidesWith = CG_WALLS;
   }
@@ -71,7 +71,7 @@ struct Bullet : Entity
   int life = 1000;
 };
 
-static auto const NORMAL_SIZE = Size2f(0.7, 1.7);
+static auto const NORMAL_SIZE = Size(0.7, 0.7, 1.5);
 
 struct Rockman : Player, Damageable
 {
@@ -88,82 +88,8 @@ struct Rockman : Player, Damageable
   virtual Actor getActor() const override
   {
     auto r = Actor(pos, MDL_ROCKMAN);
-    r.scale = Size2f(3, 3);
-
-    // re-center
-    r.pos += Vector2f(-(r.scale.width - size.width) * 0.5, -0.1);
-
-    if(ball)
-    {
-      r.action = ACTION_BALL;
-      r.ratio = (time % 300) / 300.0f;
-    }
-    else if(sliding)
-    {
-      r.action = ACTION_SLIDE;
-      r.ratio = (time % 300) / 300.0f;
-    }
-    else if(hurtDelay || life < 0)
-    {
-      r.action = ACTION_HURT;
-      r.ratio = 1.0f - hurtDelay / float(HURT_DELAY);
-    }
-    else
-    {
-      if(!ground)
-      {
-        if(climbDelay)
-        {
-          r.action = ACTION_CLIMB;
-          r.ratio = 1.0f - climbDelay / float(CLIMB_DELAY);
-          r.scale.width *= -1;
-        }
-        else
-        {
-          r.action = shootDelay ? ACTION_FALL_SHOOT : ACTION_FALL;
-          r.ratio = vel.y > 0 ? 0 : 1;
-        }
-      }
-      else
-      {
-        if(vel.x != 0)
-        {
-          if(dashDelay)
-          {
-            r.ratio = min(400 - dashDelay, 400) / 100.0f;
-            r.action = ACTION_DASH;
-          }
-          else
-          {
-            r.ratio = (time % 500) / 500.0f;
-
-            if(shootDelay == 0)
-              r.action = ACTION_WALK;
-            else
-              r.action = ACTION_WALK_SHOOT;
-          }
-        }
-        else
-        {
-          if(shootDelay == 0)
-          {
-            r.ratio = (time % 1000) / 1000.0f;
-            r.action = ACTION_STAND;
-          }
-          else
-          {
-            r.ratio = 0;
-            r.action = ACTION_STAND_SHOOT;
-          }
-        }
-      }
-    }
-
-    if(dir == LEFT)
-      r.scale.width *= -1;
-
-    if(blinking)
-      r.effect = Effect::Blinking;
+    r.scale = UnitSize;
+    r.focus = true;
 
     return r;
   }
@@ -203,20 +129,6 @@ struct Rockman : Player, Damageable
 
     sliding = false;
 
-    if(upgrades & UPGRADE_SLIDE)
-    {
-      if(!ball && !ground)
-      {
-        if(vel.y < 0 && facingWall() && (c.left || c.right))
-        {
-          doubleJumped = false;
-          vel.y *= 0.97;
-          sliding = true;
-          dashDelay = 0;
-        }
-      }
-    }
-
     if(jumpbutton.toggle(c.jump))
     {
       if(ground)
@@ -224,16 +136,6 @@ struct Rockman : Player, Damageable
         game->playSound(SND_JUMP);
         vel.y = 0.015;
         doubleJumped = false;
-      }
-      else if(facingWall() && (upgrades & UPGRADE_CLIMB))
-      {
-        game->playSound(SND_JUMP);
-        // wall climbing
-        vel.x = dir == RIGHT ? -0.04 : 0.04;
-        vel.y = 0.015;
-        climbDelay = CLIMB_DELAY;
-        doubleJumped = false;
-        dashDelay = 0;
       }
       else if((upgrades & UPGRADE_DJUMP) && !doubleJumped)
       {
@@ -308,7 +210,7 @@ struct Rockman : Player, Damageable
 
     auto trace = slideMove(this, vel);
 
-    if(trace.vert)
+    if(trace.tz)
     {
       ground = false;
     }
@@ -336,41 +238,12 @@ struct Rockman : Player, Damageable
       if(firebutton.toggle(control.fire) && tryActivate(debounceFire, 150))
       {
         auto b = make_unique<Bullet>();
-        auto sign = (dir == LEFT ? -1 : 1);
-        auto offsetV = vel.x ? Vector2f(0, 1) : Vector2f(0, 1);
-        auto offsetH = vel.x ? Vector2f(0.8, 0) : Vector2f(0.7, 0);
 
-        if(sliding)
-        {
-          sign = -sign;
-        }
-
-        b->pos = pos + offsetV + offsetH * sign;
-        b->vel = Vector2f(0.025, 0) * sign;
+        b->pos = pos;
+        b->vel = Vector(0.025, 0, 0);
         game->spawn(b.release());
         game->playSound(SND_FIRE);
         shootDelay = 300;
-      }
-    }
-
-    if(control.down && !ball && (upgrades & UPGRADE_BALL))
-    {
-      ball = true;
-      size = Size2f(NORMAL_SIZE.width, 0.9);
-    }
-
-    if(control.up && ball)
-    {
-      Rect2f rect;
-      rect.width = NORMAL_SIZE.width;
-      rect.height = NORMAL_SIZE.height;
-      rect.x = pos.x;
-      rect.y = pos.y;
-
-      if(!physics->isSolid(this, rect))
-      {
-        ball = false;
-        size = NORMAL_SIZE;
       }
     }
 
@@ -404,22 +277,6 @@ struct Rockman : Player, Damageable
     }
   }
 
-  bool facingWall() const
-  {
-    auto const front = dir == RIGHT ? 0.7 : -0.7;
-
-    Rect2f rect;
-    rect.x = pos.x + size.width / 2 + front;
-    rect.y = pos.y + 0.3;
-    rect.width = 0.01;
-    rect.height = 0.9;
-
-    if(physics->isSolid(this, rect))
-      return true;
-
-    return false;
-  }
-
   void die()
   {
     game->playSound(SND_DIE);
@@ -444,7 +301,7 @@ struct Rockman : Player, Damageable
   Control control {};
 
   int respawnDelay = 0;
-  Vector2f respawnPoint;
+  Vector respawnPoint;
 
   int upgrades = 0;
 };

@@ -58,8 +58,32 @@ struct GenericSize
   T width, height;
 };
 
+template<typename T>
+struct GenericSize3
+{
+  typedef GenericSize3<T> MyType;
+
+  GenericSize3() : cx(0), cy(0), cz(0)
+  {
+  }
+
+  GenericSize3(T cx_, T cy_, T cz_) : cx(cx_), cy(cy_), cz(cz_)
+  {
+  }
+
+  template<typename F>
+  friend MyType operator * (MyType const& a, F val)
+  {
+    return MyType(a.cx * val, a.cy * val, a.cz * val);
+  }
+
+  T cx, cy, cz;
+};
+
 typedef GenericSize<int> Size2i;
 typedef GenericSize<float> Size2f;
+typedef GenericSize3<int> Size3i;
+typedef GenericSize3<float> Size3f;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Vector
@@ -127,8 +151,79 @@ struct GenericVector
   T x, y;
 };
 
+template<typename T>
+struct GenericVector3
+{
+  typedef GenericVector3<T> MyType;
+
+  GenericVector3() : x(0), y(0), z(0)
+  {
+  }
+
+  GenericVector3(T x_, T y_, T z_) : x(x_), y(y_), z(z_)
+  {
+  }
+
+  GenericVector3(GenericSize3<T> size) : x(size.cx), y(size.cy), z(size.cz)
+  {
+  }
+
+  MyType operator += (MyType const& other)
+  {
+    x += other.x;
+    y += other.y;
+    z += other.z;
+    return *this;
+  }
+
+  MyType operator -= (MyType const& other)
+  {
+    x -= other.x;
+    y -= other.y;
+    z -= other.z;
+    return *this;
+  }
+
+  template<typename F>
+  friend MyType operator * (MyType const& a, F val)
+  {
+    return MyType(a.x * val, a.y * val, a.z * val);
+  }
+
+  template<typename F>
+  friend MyType operator * (F val, MyType const& a)
+  {
+    return MyType(a.x * val, a.y * val, a.z * val);
+  }
+
+  friend MyType operator + (MyType const& a, MyType const& b)
+  {
+    MyType r = a;
+    r += b;
+    return r;
+  }
+
+  friend MyType operator - (MyType const& a, MyType const& b)
+  {
+    MyType r = a;
+    r -= b;
+    return r;
+  }
+
+  T x, y, z;
+};
+
+template<typename T>
+inline T dotProduct(GenericVector3<T> a, GenericVector3<T> b)
+{
+  return a.x * b.x + a.y * b.y + a.z * b.z;
+}
+
 typedef GenericVector<int> Vector2i;
 typedef GenericVector<float> Vector2f;
+
+typedef GenericVector3<int> Vector3i;
+typedef GenericVector3<float> Vector3f;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Rect
@@ -148,8 +243,24 @@ struct GenericRect : GenericVector<T>, GenericSize<T>
   }
 };
 
+template<typename T>
+struct GenericBox3 : GenericVector3<T>, GenericSize3<T>
+{
+  GenericBox3()
+  {
+  }
+
+  GenericBox3(T x, T y, T z, T cx, T cy, T cz) :
+    GenericVector3<T>(x, y, z),
+    GenericSize3<T>(cx, cy, cz)
+  {
+  }
+};
+
 typedef GenericRect<int> Rect2i;
 typedef GenericRect<float> Rect2f;
+
+typedef GenericBox3<float> Rect3f;
 
 template<typename T>
 bool segmentsOverlap(T s1x1, T s1x2, T s2x1, T s2x2)
@@ -164,17 +275,22 @@ bool segmentsOverlap(T s1x1, T s1x2, T s2x1, T s2x2)
 }
 
 template<typename T>
-bool overlaps(GenericRect<T> const& a, GenericRect<T> const& b)
+bool overlaps(GenericBox3<T> const& a, GenericBox3<T> const& b)
 {
-  assert(a.width >= 0);
-  assert(a.height >= 0);
-  assert(b.width >= 0);
-  assert(b.height >= 0);
+  assert(a.cx >= 0);
+  assert(a.cy >= 0);
+  assert(a.cz >= 0);
+  assert(b.cx >= 0);
+  assert(b.cy >= 0);
+  assert(b.cz >= 0);
 
-  if(!segmentsOverlap(a.x, a.x + a.width, b.x, b.x + b.width))
+  if(!segmentsOverlap(a.x, a.x + a.cx, b.x, b.x + b.cx))
     return false;
 
-  if(!segmentsOverlap(a.y, a.y + a.height, b.y, b.y + b.height))
+  if(!segmentsOverlap(a.y, a.y + a.cy, b.y, b.y + b.cy))
+    return false;
+
+  if(!segmentsOverlap(a.z, a.z + a.cz, b.z, b.z + b.cz))
     return false;
 
   return true;
@@ -281,6 +397,118 @@ private:
   int raster(int x, int y) const
   {
     return y * size.width + x;
+  }
+};
+
+template<typename T>
+struct Matrix3
+{
+  Matrix3() = default;
+
+  Matrix3(Size3i size_) : size(size_)
+  {
+    resize(size_);
+  }
+
+  ~Matrix3()
+  {
+    delete[] data;
+  }
+
+  Matrix3(Matrix3&& other)
+  {
+    data = other.data;
+    size = other.size;
+    other.data = nullptr;
+  }
+
+  void operator = (Matrix3&& other)
+  {
+    delete[] data;
+    data = other.data;
+    size = other.size;
+    other.data = nullptr;
+  }
+
+  Matrix3(Matrix3 const& other)
+  {
+    *this = other;
+  }
+
+  void operator = (Matrix3 const& other)
+  {
+    resize(other.size);
+
+    for(int i = 0; i < size.cx * size.cy * size.cz; ++i)
+      data[i] = other.data[i];
+  }
+
+  void resize(Size3i size_)
+  {
+    delete[] data;
+
+    size = size_;
+    data = new T[size.cx * size.cy * size.cz];
+
+    for(int i = 0; i < size.cx * size.cy * size.cz; ++i)
+      data[i] = T();
+  }
+
+  Size3i size;
+
+  T& get(int x, int y, int z)
+  {
+    assert(isInside(x, y, z));
+    return data[raster(x, y, z)];
+  }
+
+  const T& get(int x, int y, int z) const
+  {
+    assert(isInside(x, y, z));
+    return data[raster(x, y, z)];
+  }
+
+  void set(int x, int y, int z, T const& val)
+  {
+    assert(isInside(x, y, z));
+    get(x, y, z) = val;
+  }
+
+  template<typename Lambda>
+  void scan(Lambda f)
+  {
+    for(int z = 0; z < size.cz; z++)
+      for(int y = 0; y < size.cy; y++)
+        for(int x = 0; x < size.cx; x++)
+          f(x, y, z, get(x, y, z));
+  }
+
+  template<typename Lambda>
+  void scan(Lambda f) const
+  {
+    for(int z = 0; z < size.cz; z++)
+      for(int y = 0; y < size.cy; y++)
+        for(int x = 0; x < size.cx; x++)
+          f(x, y, z, get(x, y, z));
+  }
+
+  bool isInside(int x, int y, int z) const
+  {
+    if(x < 0 || y < 0 || z < 0)
+      return false;
+
+    if(x >= size.cx || y >= size.cy || z >= size.cz)
+      return false;
+
+    return true;
+  }
+
+private:
+  T* data = nullptr;
+
+  int raster(int x, int y, int z) const
+  {
+    return (z * size.cy + y) * size.cx + x;
   }
 };
 

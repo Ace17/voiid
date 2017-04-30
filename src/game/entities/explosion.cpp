@@ -13,7 +13,7 @@ struct Explosion : Entity
 {
   Explosion()
   {
-    size = Size2f(0.1, 0.1);
+    size = UnitSize * 0.1;
   }
 
   virtual void tick() override
@@ -32,8 +32,8 @@ struct Explosion : Entity
     auto r = Actor(pos, MDL_EXPLOSION);
 
     r.ratio = time / (float)DURATION;
-    r.scale = Size2f(1.5, 1.5);
-    r.pos += Vector2f(-r.scale.width * 0.5, -r.scale.height * 0.5);
+    r.scale = UnitSize * 1.5;
+    r.pos -= r.scale * 0.5;
 
     return r;
   }

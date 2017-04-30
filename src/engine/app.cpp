@@ -34,8 +34,11 @@ void Display_setCaption(const char* caption);
 void Display_loadModel(int id, const char* imagePath);
 void Display_beginDraw();
 void Display_endDraw();
-void Display_drawActor(Rect2f where, int modelId, bool blinking, int actionIdx, float frame);
+void Display_drawActor(Rect3f where, int modelId, bool blinking, int actionIdx, float frame);
 void Display_drawText(Vector2f pos, char const* text);
+void Display_setCamera(Vector3f pos, Vector3f dir);
+void Display_setAmbientLight(float ambientLight);
+void Display_enableGrab(bool enable);
 
 Audio* createAudio(bool dummy = false);
 
@@ -59,6 +62,8 @@ public:
 
     for(auto model : getModels())
       Display_loadModel(model.id, model.path);
+
+    Display_enableGrab(m_doGrab);
 
     m_lastTime = SDL_GetTicks();
   }
@@ -112,6 +117,9 @@ private:
     {
       switch(event.type)
       {
+      case SDL_MOUSEMOTION:
+        onMouseMotion(&event);
+        break;
       case SDL_QUIT:
         onQuit();
         break;
@@ -124,26 +132,39 @@ private:
       }
     }
 
-    m_control.left = keys[SDL_SCANCODE_LEFT];
-    m_control.right = keys[SDL_SCANCODE_RIGHT];
-    m_control.up = keys[SDL_SCANCODE_UP];
-    m_control.down = keys[SDL_SCANCODE_DOWN];
+    m_control.left = keys[SDL_SCANCODE_LEFT] || keys[SDL_SCANCODE_A];
+    m_control.right = keys[SDL_SCANCODE_RIGHT] || keys[SDL_SCANCODE_D];
+    m_control.forward = keys[SDL_SCANCODE_UP] || keys[SDL_SCANCODE_W];
+    m_control.backward = keys[SDL_SCANCODE_DOWN] || keys[SDL_SCANCODE_S];
 
-    m_control.fire = keys[SDL_SCANCODE_Z];
-    m_control.jump = keys[SDL_SCANCODE_X];
-    m_control.dash = keys[SDL_SCANCODE_C];
+    m_control.use = keys[SDL_SCANCODE_E] || keys[SDL_SCANCODE_RETURN];
+    m_control.jump = keys[SDL_SCANCODE_SPACE];
 
     m_control.restart = keys[SDL_SCANCODE_R];
-    m_control.debug = keys[SDL_SCANCODE_SCROLLLOCK];
   }
 
   void draw()
   {
+    // Display_setAmbientLight(m_scene->ambientLight);
+
     Display_beginDraw();
 
-    for(auto& actor : m_scene->getActors())
+    auto actors = m_scene->getActors();
+
+    for(auto& actor : actors)
     {
-      auto where = Rect2f(actor.pos.x, actor.pos.y, actor.scale.width, actor.scale.height);
+      if(actor.focus)
+      {
+        Display_setCamera(actor.pos, actor.orientation);
+        break;
+      }
+    }
+
+    for(auto& actor : actors)
+    {
+      auto where = Rect3f(
+        actor.pos.x, actor.pos.y, actor.pos.z,
+        actor.scale.cx, actor.scale.cy, actor.scale.cz);
       Display_drawActor(where, (int)actor.model, actor.effect == Effect::Blinking, actor.action, actor.ratio);
     }
 
@@ -176,13 +197,32 @@ private:
   void fpsChanged(int fps)
   {
     char title[128];
-    sprintf(title, "Naarrow (%d FPS)", fps);
+    sprintf(title, "Maaze (%d FPS)", fps);
     Display_setCaption(title);
   }
 
   void onQuit()
   {
     m_running = 0;
+  }
+
+  void onMouseMotion(SDL_Event* evt)
+  {
+    auto const speed = 0.001;
+
+    // skip first mouse event from SDL, seems to contain garbage
+    static bool m_firstMotion = true;
+
+    if(m_firstMotion)
+    {
+      m_firstMotion = false;
+      return;
+    }
+
+    m_control.look_horz -= evt->motion.xrel * speed;
+    m_control.look_vert -= evt->motion.yrel * speed;
+
+    m_control.look_vert = clamp<float>(m_control.look_vert, -M_PI * 0.4, M_PI * 0.4);
   }
 
   void onKeyDown(SDL_Event* evt)
@@ -200,6 +240,12 @@ private:
     {
       m_audio->playSound(0);
       m_paused = !m_paused;
+    }
+
+    if(evt->key.keysym.scancode == SDL_SCANCODE_RCTRL)
+    {
+      m_doGrab = !m_doGrab;
+      Display_enableGrab(m_doGrab);
     }
 
     keys[evt->key.keysym.scancode] = 1;
@@ -228,6 +274,7 @@ private:
   unique_ptr<Scene> m_scene;
   bool m_slowMotion = false;
   bool m_paused = false;
+  bool m_doGrab = true;
   unique_ptr<Audio> m_audio;
 
   string m_textbox;

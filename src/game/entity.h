@@ -46,14 +46,14 @@ struct Entity : Body
   virtual void onCollide(Entity* /*other*/) {}
 
   bool dead = false;
-  Vector2f vel;
+  Vector vel;
   int blinking = 0;
   IGame* game = nullptr;
   IPhysicsProbe* physics = nullptr;
 
-  Vector2f getCenter() const
+  Vector getCenter() const
   {
-    return Vector2f(pos.x + size.width / 2, pos.y + size.height / 2);
+    return pos + size * 0.5;
   }
 };
 
