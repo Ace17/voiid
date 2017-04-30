@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-readonly tmpDir=/tmp/ld38-naarrow-deliver-$$
+readonly tmpDir=/tmp/ld38-maaze-deliver-$$
 trap "rm -rf $tmpDir" EXIT
 mkdir -p $tmpDir
 
@@ -10,7 +10,7 @@ mkdir -p $tmpDir
 #------------------------------------------------------------------------------
 # create game directory
 #------------------------------------------------------------------------------
-readonly gameDir=$tmpDir/naarrow
+readonly gameDir=$tmpDir/maaze
 mkdir -p $gameDir
 
 rsync \
@@ -27,10 +27,10 @@ cp index.html $gameDir/index.html
 # archive it
 #------------------------------------------------------------------------------
 pushd $tmpDir
-zip naarrow.zip -r naarrow
+zip maaze.zip -r maaze
 popd
 
-mv $tmpDir/naarrow.zip .
+mv $tmpDir/maaze.zip .
 
 #------------------------------------------------------------------------------
 # upload it to code.alaiwan.org
@@ -38,5 +38,5 @@ mv $tmpDir/naarrow.zip .
 rsync \
   --compress \
   --delete \
-  -vr $gameDir/* alaiwans@code.alaiwan.org:public_html/games/naarrow
+  -vr $gameDir/* alaiwans@code.alaiwan.org:public_html/games/maaze
 

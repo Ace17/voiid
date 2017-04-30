@@ -17,7 +17,7 @@ Room Graph_loadRoom(int /*roomIdx*/, IGame* /*game*/)
       if(x == 0 || y == 0 || x == 63 || y == 63)
         r.tiles.set(x, y, z, 1);
 
-      if(rand()%13==0)
+      if(rand() % 13 == 0)
         r.tiles.set(x, y, z, 1);
     };
 
