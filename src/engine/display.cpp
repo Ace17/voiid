@@ -433,7 +433,7 @@ void Display_enableGrab(bool enable)
 using namespace glm;
 
 static
-void drawModel(Rect3f where, Model& model, bool blinking, int actionIdx, float ratio)
+void drawModel(Rect3f where, Camera const& camera, Model& model, bool blinking, int actionIdx, float ratio)
 {
   SAFE_GL(glUniform4f(g_colorId, 0, 0, 0, 0));
 
@@ -461,8 +461,8 @@ void drawModel(Rect3f where, Model& model, bool blinking, int actionIdx, float r
 
   auto Vec3 = [] (Vector3f v) { return vec3(v.x, v.y, v.z); };
 
-  auto const target = g_camera.pos + g_camera.dir;
-  auto const view = glm::lookAt(Vec3(g_camera.pos), Vec3(target), vec3(0, 0, 1));
+  auto const target = camera.pos + camera.dir;
+  auto const view = glm::lookAt(Vec3(camera.pos), Vec3(target), vec3(0, 0, 1));
   auto const pos = glm::translate(vec3(where.x, where.y, where.z));
   auto const scale = glm::scale(vec3(where.cx, where.cy, where.cz));
 
@@ -485,22 +485,26 @@ void drawModel(Rect3f where, Model& model, bool blinking, int actionIdx, float r
 void Display_drawActor(Rect3f where, int modelId, bool blinking, int actionIdx, float ratio)
 {
   auto& model = g_Models.at(modelId);
-  drawModel(where, model, blinking, actionIdx, ratio);
+  drawModel(where, g_camera, model, blinking, actionIdx, ratio);
 }
 
 void Display_drawText(Vector2f pos, char const* text)
 {
   Rect3f rect;
   rect.cx = 0.5;
-  rect.cy = 0.5;
+  rect.cy = 0;
   rect.cz = 0.5;
   rect.x = pos.x - strlen(text) * rect.cx / 2;
-  rect.y = pos.y;
-  rect.z = 0;
+  rect.y = 0;
+  rect.z = pos.y;
+
+  auto cam = (Camera { Vector3f(0, -10, 0), Vector3f(0, 1, 0) });
+
+  glDisable(GL_DEPTH_TEST);
 
   while(*text)
   {
-    drawModel(rect, g_fontModel, false, *text, 0);
+    drawModel(rect, cam, g_fontModel, false, *text, 0);
     rect.x += rect.cx;
     ++text;
   }
@@ -510,6 +514,7 @@ void Display_beginDraw()
 {
   SAFE_GL(glUseProgram(g_ProgramId));
 
+  glEnable(GL_DEPTH_TEST);
   SAFE_GL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
   SAFE_GL(glClearColor(0, 0, 0, 1));
   SAFE_GL(glClear(GL_COLOR_BUFFER_BIT));
