@@ -191,8 +191,6 @@ private:
 
     for(auto sound : sounds)
       m_audio->playSound(sound);
-
-    m_audio->playMusic(m_scene->getMusic());
   }
 
   void fpsChanged(int fps)
@@ -262,6 +260,11 @@ private:
   {
     m_textbox = msg;
     m_textboxDelay = 60 * 2;
+  }
+
+  void playMusic(int id) override
+  {
+    m_audio->playMusic(id);
   }
 
   int keys[SDL_NUM_SCANCODES] {};

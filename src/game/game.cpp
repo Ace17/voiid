@@ -102,11 +102,6 @@ struct Game : Scene, IGame
     return std::move(m_sounds);
   }
 
-  int getMusic() const override
-  {
-    return m_theme;
-  }
-
   void addActorsForTileMap(vector<Actor>& r, Vector cameraPos) const
   {
     auto onCell =
@@ -168,6 +163,7 @@ struct Game : Scene, IGame
     auto level = Graph_loadRoom(levelIdx, this);
     m_tiles = move(level.tiles);
     m_theme = level.theme;
+    m_view->playMusic(level.theme);
     printf("Now in: %s\n", level.name.c_str());
 
     if(!m_player)
