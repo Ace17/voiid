@@ -97,11 +97,6 @@ struct Game : Scene, IGame
     return r;
   }
 
-  vector<SOUND> readSounds() override
-  {
-    return std::move(m_sounds);
-  }
-
   void addActorsForTileMap(vector<Actor>& r, Vector cameraPos) const
   {
     auto onCell =
@@ -201,7 +196,7 @@ struct Game : Scene, IGame
 
   void playSound(SOUND sound) override
   {
-    m_sounds.push_back(sound);
+    m_view->playSound(sound);
   }
 
   void spawn(Entity* e) override
@@ -244,7 +239,6 @@ struct Game : Scene, IGame
   set<IEventSink*> m_listeners;
 
   Matrix m_tiles;
-  vector<SOUND> m_sounds;
   bool m_debug;
   bool m_debugFirstTime = true;
 

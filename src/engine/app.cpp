@@ -93,7 +93,6 @@ public:
     if(dirty)
     {
       draw();
-      playSounds();
       m_fps.tick(now);
     }
 
@@ -185,14 +184,6 @@ private:
     Display_endDraw();
   }
 
-  void playSounds()
-  {
-    auto sounds = m_scene->readSounds();
-
-    for(auto sound : sounds)
-      m_audio->playSound(sound);
-  }
-
   void fpsChanged(int fps)
   {
     char title[128];
@@ -265,6 +256,11 @@ private:
   void playMusic(int id) override
   {
     m_audio->playMusic(id);
+  }
+
+  void playSound(int sound) override
+  {
+    m_audio->playSound(sound);
   }
 
   int keys[SDL_NUM_SCANCODES] {};

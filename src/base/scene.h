@@ -70,6 +70,7 @@ struct View
 {
   virtual void textBox(char const* msg) = 0;
   virtual void playMusic(int id) = 0;
+  virtual void playSound(int id) = 0;
 };
 
 // game, seen by the outside world
@@ -78,7 +79,6 @@ struct Scene
 {
   virtual void tick(Control const& c) = 0;
   virtual vector<Actor> getActors() const = 0;
-  virtual vector<SOUND> readSounds() = 0;
 
   float ambientLight = 0;
 };
