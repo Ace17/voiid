@@ -125,7 +125,7 @@ struct Game : Scene, IGame
           return;
 
         auto actor = Actor(Vector(x, y, z), MDL_TILES);
-        actor.action = (m_theme % 8) * 16;
+        actor.action = (m_theme % 8) * 8;
         actor.scale = UnitSize;
         r.push_back(actor);
       };
