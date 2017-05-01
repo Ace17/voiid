@@ -20,10 +20,11 @@
 #include "game/toggle.h"
 #include "rockman.h"
 
-auto const GRAVITY = 0.00015;
+auto const GRAVITY = 0.00005;
+auto const JUMP_SPEED = 0.012;
 auto const WALK_SPEED = 0.0075f;
 auto const MAX_HORZ_SPEED = 0.02f;
-auto const MAX_FALL_SPEED = 100.0f;
+auto const MAX_FALL_SPEED = 0.01f;
 auto const HURT_DELAY = 500;
 
 enum ORIENTATION
@@ -133,13 +134,13 @@ struct Rockman : Player, Damageable
       if(ground)
       {
         game->playSound(SND_JUMP);
-        vel.z = 0.1;
+        vel.z = JUMP_SPEED;
         doubleJumped = false;
       }
       else if((upgrades & UPGRADE_DJUMP) && !doubleJumped)
       {
         game->playSound(SND_JUMP);
-        vel.z = 0.1;
+        vel.z = JUMP_SPEED;
         doubleJumped = true;
       }
     }
@@ -175,13 +176,17 @@ struct Rockman : Player, Damageable
         wantedVel -= left * WALK_SPEED;
     }
 
-    vel = vel * 0.95 + wantedVel * 0.05;
+    vel.x = vel.x * 0.95 + wantedVel.x * 0.05;
+    vel.y = vel.y * 0.95 + wantedVel.y * 0.05;
 
     if(abs(vel.x) < 0.00001)
       vel.x = 0;
 
     if(abs(vel.y) < 0.00001)
       vel.y = 0;
+
+    if(abs(vel.z) < 0.00001)
+      vel.z = 0;
   }
 
   virtual void tick() override
