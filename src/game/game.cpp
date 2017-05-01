@@ -115,10 +115,10 @@ struct Game : Scene, IGame
         if(!tile)
           return;
 
-        if(abs(x - cameraPos.x) > 9)
+        if(abs(x - cameraPos.x) > 16)
           return;
 
-        if(abs(y - cameraPos.y) > 9)
+        if(abs(y - cameraPos.y) > 16)
           return;
 
         if(abs(z - cameraPos.z) > 9)
@@ -280,23 +280,20 @@ struct Game : Scene, IGame
 
   bool isRectSolid(Box rect)
   {
-    if(isPointSolid(Vector(rect.x, rect.y, rect.z)))
-      return true;
+    auto const x1 = (int)min(rect.x, rect.x + rect.cx);
+    auto const x2 = (int)max(rect.x, rect.x + rect.cx);
 
-    if(isPointSolid(Vector(rect.x, rect.y + rect.cy, rect.z)))
-      return true;
+    auto const y1 = (int)min(rect.y, rect.y + rect.cy);
+    auto const y2 = (int)max(rect.y, rect.y + rect.cy);
 
-    if(isPointSolid(Vector(rect.x + rect.cx, rect.y, rect.z)))
-      return true;
+    auto const z1 = (int)min(rect.z, rect.z + rect.cz);
+    auto const z2 = (int)max(rect.z, rect.z + rect.cz);
 
-    if(isPointSolid(Vector(rect.x + rect.cx, rect.y + rect.cy, rect.z)))
-      return true;
-
-    if(isPointSolid(Vector(rect.x, rect.y + rect.cy / 2, rect.z)))
-      return true;
-
-    if(isPointSolid(Vector(rect.x + rect.cx, rect.y + rect.cy / 2, rect.z)))
-      return true;
+    for(int x = x1; x <= x2; ++x)
+      for(int y = y1; y <= y2; ++y)
+        for(int z = z1; z <= z2; ++z)
+          if(isPointSolid(Vector(x, y, z)))
+            return true;
 
     return false;
   }

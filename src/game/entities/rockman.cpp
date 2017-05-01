@@ -20,9 +20,10 @@
 #include "game/toggle.h"
 #include "rockman.h"
 
+auto const GRAVITY = 0.00015;
 auto const WALK_SPEED = 0.0075f;
 auto const MAX_HORZ_SPEED = 0.02f;
-auto const MAX_FALL_SPEED = 0.02f;
+auto const MAX_FALL_SPEED = 100.0f;
 auto const HURT_DELAY = 500;
 
 enum ORIENTATION
@@ -87,8 +88,10 @@ struct Rockman : Player, Damageable
   virtual Actor getActor() const override
   {
     auto r = Actor(pos, MDL_ROCKMAN);
-    r.scale = UnitSize;
+    r.scale = UnitSize * 0;
     r.focus = true;
+
+    r.pos.z += 1.5;
 
     r.orientation.x = cos(lookAngleHorz) * cos(lookAngleVert);
     r.orientation.y = sin(lookAngleHorz) * cos(lookAngleVert);
@@ -121,8 +124,7 @@ struct Rockman : Player, Damageable
     if(ground)
       doubleJumped = false;
 
-    // gravity
-    vel.z -= 0.00005;
+    vel.z -= GRAVITY;
 
     sliding = false;
 
@@ -131,13 +133,13 @@ struct Rockman : Player, Damageable
       if(ground)
       {
         game->playSound(SND_JUMP);
-        vel.z = 0.03;
+        vel.z = 0.1;
         doubleJumped = false;
       }
       else if((upgrades & UPGRADE_DJUMP) && !doubleJumped)
       {
         game->playSound(SND_JUMP);
-        vel.z = 0.03;
+        vel.z = 0.1;
         doubleJumped = true;
       }
     }

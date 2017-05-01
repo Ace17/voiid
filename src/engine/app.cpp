@@ -54,7 +54,7 @@ public:
   {
     SDL_Init(0);
 
-    Display_init(512, 512);
+    Display_init(1024, 1024);
     m_audio.reset(createAudio());
 
     for(auto sound : getSounds())
