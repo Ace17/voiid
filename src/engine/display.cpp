@@ -405,7 +405,7 @@ void Display_setCamera(Vector3f pos, Vector3f dir)
                };
 
   g_camera.pos = blend(g_camera.pos, cam.pos);
-  g_camera.dir = g_camera.dir;
+  g_camera.dir = cam.dir;
 }
 
 void Display_setCaption(const char* caption)
