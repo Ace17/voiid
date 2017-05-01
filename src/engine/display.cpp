@@ -377,33 +377,35 @@ void Display_init(int width, int height)
   assert(g_ambientLoc >= 0);
 }
 
-bool cameraPosOk = false;
-Vector3f cameraPos;
-Vector3f cameraDir;
+struct Camera
+{
+  Vector3f pos;
+  Vector3f dir;
+  bool valid = false;
+};
+
+Camera g_camera;
+
 float baseAmbientLight = 0;
 
 void Display_setCamera(Vector3f pos, Vector3f dir)
 {
-  if(!cameraPosOk)
+  auto cam = (Camera { pos, dir });
+
+  if(!g_camera.valid)
   {
-    cameraPos.x = pos.x;
-    cameraPos.y = pos.y;
-    cameraPos.z = pos.z;
-    cameraPosOk = true;
+    g_camera = cam;
+    g_camera.valid = true;
   }
 
-  auto blend = [] (float a, float b)
+  auto blend = [] (Vector3f a, Vector3f b)
                {
                  auto const alpha = 0.3f;
                  return a * (1 - alpha) + b * alpha;
                };
 
-  cameraPos.x = blend(cameraPos.x, pos.x);
-  cameraPos.y = blend(cameraPos.y, pos.y);
-  cameraPos.z = blend(cameraPos.z, pos.z);
-  cameraDir.x = dir.x;
-  cameraDir.y = dir.y;
-  cameraDir.z = dir.z;
+  g_camera.pos = blend(g_camera.pos, cam.pos);
+  g_camera.dir = g_camera.dir;
 }
 
 void Display_setCaption(const char* caption)
@@ -459,8 +461,8 @@ void drawModel(Rect3f where, Model& model, bool blinking, int actionIdx, float r
 
   auto Vec3 = [] (Vector3f v) { return vec3(v.x, v.y, v.z); };
 
-  auto const target = cameraPos + cameraDir;
-  auto const view = glm::lookAt(Vec3(cameraPos), Vec3(target), vec3(0, 0, 1));
+  auto const target = g_camera.pos + g_camera.dir;
+  auto const view = glm::lookAt(Vec3(g_camera.pos), Vec3(target), vec3(0, 0, 1));
   auto const pos = glm::translate(vec3(where.x, where.y, where.z));
   auto const scale = glm::scale(vec3(where.cx, where.cy, where.cz));
 
