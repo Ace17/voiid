@@ -66,11 +66,11 @@ SRCS:=\
 	src/game/resources.cpp\
 	src/game/smarttiles.cpp\
 
-$(BIN)/naarrow$(EXT): $(SRCS:%.cpp=$(BIN)/%_cpp.o)
+$(BIN)/game$(EXT): $(SRCS:%.cpp=$(BIN)/%_cpp.o)
 	@mkdir -p $(dir $@)
 	$(CXX) $^ -o '$@' $(LDFLAGS)
 
-TARGETS+=$(BIN)/naarrow$(EXT)
+TARGETS+=$(BIN)/game$(EXT)
 
 #------------------------------------------------------------------------------
 
