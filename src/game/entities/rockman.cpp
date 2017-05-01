@@ -233,10 +233,14 @@ struct Rockman : Player, Damageable
       vel.z = 0;
     }
 
+    decrement(debounceUse);
     decrement(debounceFire);
     decrement(debounceLanding);
     decrement(climbDelay);
     decrement(shootDelay);
+
+    if(control.use && tryActivate(debounceUse, 250))
+      game->playSound(SND_SWITCH);
 
     if(upgrades & UPGRADE_SHOOT && !ball)
     {
@@ -289,6 +293,7 @@ struct Rockman : Player, Damageable
     respawnDelay = 1000;
   }
 
+  int debounceUse = 0;
   int debounceFire = 0;
   int debounceLanding = 0;
   float lookAngleHorz = 0;
