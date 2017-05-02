@@ -457,7 +457,8 @@ void drawModel(Rect3f where, Camera const& camera, Model& model, bool blinking, 
   if(action.textures.empty())
     throw runtime_error("action has no textures");
 
-  auto const idx = ::clamp<int>(ratio * action.textures.size(), 0, action.textures.size() - 1);
+  auto const N = (int)action.textures.size();
+  auto const idx = ::clamp<int>(ratio * N, 0, N - 1);
   glBindTexture(GL_TEXTURE_2D, action.textures[idx]);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
