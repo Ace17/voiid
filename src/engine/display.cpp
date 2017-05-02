@@ -139,6 +139,9 @@ int loadTexture(string path, Rect2i rect)
   if(rect.width == 0 && rect.height == 0)
     rect = Rect2i(0, 0, surface->w, surface->h);
 
+  if(rect.x < 0 || rect.y < 0 || rect.x + rect.width > surface->w || rect.y + rect.height > surface->h)
+    throw runtime_error("Invalid boundaries for '" + path + "'");
+
   GLuint texture;
 
   auto const bpp = surface->format->BytesPerPixel;
@@ -291,7 +294,7 @@ Model loadAnimation(string path)
   {
     path = setExtension(path, "png");
 
-    return loadTiledAnimation(path, 32 * 2, 8, 32);
+    return loadTiledAnimation(path, 32, 4, 32);
   }
   else
   {
