@@ -195,7 +195,7 @@ GLuint loadShaders()
 static
 Model cubeModel()
 {
-  const GLfloat myTriangle[] =
+  const GLfloat myCube[] =
   {
     -0.5, -0.5, +0.5, /* uv */ 0, 1, /* N */ 0, 0, 1,
     -0.5, +0.5, +0.5, /* uv */ 0, 0, /* N */ 0, 0, 1,
@@ -250,7 +250,7 @@ Model cubeModel()
 
   SAFE_GL(glGenBuffers(1, &model.buffer));
   SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, model.buffer));
-  SAFE_GL(glBufferData(GL_ARRAY_BUFFER, sizeof(myTriangle), myTriangle, GL_STATIC_DRAW));
+  SAFE_GL(glBufferData(GL_ARRAY_BUFFER, sizeof(myCube), myCube, GL_STATIC_DRAW));
 
   SAFE_GL(glGenBuffers(1, &model.indices));
   SAFE_GL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, model.indices));
