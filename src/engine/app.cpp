@@ -136,7 +136,7 @@ private:
     m_control.forward = keys[SDL_SCANCODE_UP] || keys[SDL_SCANCODE_W];
     m_control.backward = keys[SDL_SCANCODE_DOWN] || keys[SDL_SCANCODE_S];
 
-    m_control.use = keys[SDL_SCANCODE_E] || keys[SDL_SCANCODE_RETURN];
+    m_control.use = keys[SDL_SCANCODE_E];
     m_control.jump = keys[SDL_SCANCODE_SPACE];
 
     m_control.restart = keys[SDL_SCANCODE_R];
