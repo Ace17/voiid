@@ -92,7 +92,7 @@ struct Rockman : Player, Damageable
     r.scale = UnitSize * 0;
     r.focus = true;
 
-    r.pos.z += 1.5;
+    r.pos.z += 1.0;
 
     r.orientation.x = cos(lookAngleHorz) * cos(lookAngleVert);
     r.orientation.y = sin(lookAngleHorz) * cos(lookAngleVert);
