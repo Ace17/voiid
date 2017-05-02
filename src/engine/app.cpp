@@ -200,15 +200,6 @@ private:
   {
     auto const speed = 0.001;
 
-    // skip first mouse event from SDL, seems to contain garbage
-    static bool m_firstMotion = true;
-
-    if(m_firstMotion)
-    {
-      m_firstMotion = false;
-      return;
-    }
-
     m_control.look_horz -= evt->motion.xrel * speed;
     m_control.look_vert -= evt->motion.yrel * speed;
 
