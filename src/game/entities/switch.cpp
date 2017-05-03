@@ -129,7 +129,7 @@ struct Door : Entity, IEventSink
 {
   Door(int id_) : id(id_)
   {
-    size = UnitSize;
+    size = Size3f(1, 2, 2);
     solid = true;
   }
 

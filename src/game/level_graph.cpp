@@ -5,7 +5,7 @@
 static int getTile(Vector3i v);
 static int getTile2(Vector3i v);
 
-Room Graph_loadRoom(int /*roomIdx*/, IGame* /*game*/)
+Room Graph_loadRoom(int /*roomIdx*/, IGame* game)
 {
   Room r;
 
@@ -26,6 +26,18 @@ Room Graph_loadRoom(int /*roomIdx*/, IGame* /*game*/)
 
   r.start = Vector3i(4, 4, 4);
   r.theme = 2;
+
+  for(int k = 0; k < 4; ++k)
+  {
+    auto door = createEntity("door(0)");
+    door->pos = Vector3f(15, 3 + k * 8, 1);
+    door->pos += Vector3f(0.2, 0.5, 0.5);
+    game->spawn(door.release());
+
+    auto switch_ = createEntity("switch(0)");
+    switch_->pos = Vector3f(4, 6 + k * 9, 2);
+    game->spawn(switch_.release());
+  }
 
   return r;
 }

@@ -76,8 +76,8 @@ struct Game : Scene, IGame
     addActorsForTileMap(r, cameraPos);
 
     Box cameraRect;
-    cameraRect.cx = 16;
-    cameraRect.cx = 16;
+    cameraRect.cx = 32;
+    cameraRect.cy = 32;
     cameraRect.cz = 16;
     cameraRect.x = cameraPos.x - cameraRect.cx / 2;
     cameraRect.y = cameraPos.y - cameraRect.cy / 2;
