@@ -193,9 +193,9 @@ GLuint loadShaders()
 }
 
 static
-Model cubeModel()
+Model boxModel()
 {
-  const GLfloat myCube[] =
+  const GLfloat myBox[] =
   {
     -0.5, -0.5, +0.5, /* uv */ 0, 1, /* N */ 0, 0, 1,
     -0.5, +0.5, +0.5, /* uv */ 0, 0, /* N */ 0, 0, 1,
@@ -250,7 +250,7 @@ Model cubeModel()
 
   SAFE_GL(glGenBuffers(1, &model.buffer));
   SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, model.buffer));
-  SAFE_GL(glBufferData(GL_ARRAY_BUFFER, sizeof(myCube), myCube, GL_STATIC_DRAW));
+  SAFE_GL(glBufferData(GL_ARRAY_BUFFER, sizeof(myBox), myBox, GL_STATIC_DRAW));
 
   SAFE_GL(glGenBuffers(1, &model.indices));
   SAFE_GL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, model.indices));
@@ -264,7 +264,7 @@ Model cubeModel()
 static
 Model loadTiledAnimation(string path, int count, int COLS, int SIZE)
 {
-  auto m = cubeModel();
+  auto m = boxModel();
 
   for(int i = 0; i < count; ++i)
   {
@@ -284,7 +284,7 @@ Model loadAnimation(string path)
 {
   if(endsWith(path, ".json"))
   {
-    auto m = cubeModel();
+    auto m = boxModel();
 
     auto m2 = loadModel(path);
     m.actions = move(m2.actions);
@@ -298,7 +298,7 @@ Model loadAnimation(string path)
   }
   else
   {
-    auto m = cubeModel();
+    auto m = boxModel();
     Action action;
     action.addTexture(path, Rect2i());
     m.actions.push_back(action);
