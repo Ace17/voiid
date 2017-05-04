@@ -5,12 +5,7 @@ ifneq (,$(CROSS_COMPILE))
 CXX:=$(CROSS_COMPILE)g++
 endif
 
-ARCH:=$(shell $(CXX) -dumpmachine)
-
-EXT:=.exe
-ifeq ($(ARCH),asmjs-unknown-emscripten)
-	EXT:=.html
-endif
+EXT?=.exe
 
 all: true_all
 

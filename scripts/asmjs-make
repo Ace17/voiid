@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# This scripts builds the project for the asmjs target,
+# by injectiing the proper parameters into the Makefile.
+#
+
+set -euo pipefail
+
+readonly EMCC_ROOT=/tmp/toolchains/emscripten
+
+export PKG_CONFIG_LIBDIR=$EMCC_ROOT/system/lib/pkgconfig
+export PATH=$EMCC_ROOT:/tmp/toolchains/llvm-js/bin:$PATH
+
+export BIN=bin/asmjs
+export CXX=emcc
+export EXT=".html"
+export CXXFLAGS="-O3 -g0 -DNDEBUG"
+export LDFLAGS="-O3 -g0 --use-preload-plugins --preload-file res -s USE_OGG=1 -s USE_VORBIS=1 -s TOTAL_MEMORY=32000000"
+
+make "$@"
+
