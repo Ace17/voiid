@@ -83,6 +83,18 @@ Room Graph_loadRoom(int /*roomIdx*/, IGame* game)
     game->spawn(switch_.release());
   }
 
+  {
+    auto switch_ = createEntity("upgrade_shoot");
+    switch_->pos = Vector3f(10, 13, 2);
+    game->spawn(switch_.release());
+  }
+
+  {
+    auto switch_ = createEntity("upgrade_ball");
+    switch_->pos = Vector3f(20, 13, 2);
+    game->spawn(switch_.release());
+  }
+
   return r;
 }
 
