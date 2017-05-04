@@ -13,14 +13,7 @@ mkdir -p $tmpDir
 readonly gameDir=$tmpDir/maaze
 mkdir -p $gameDir
 
-rsync \
-  --compress \
-  --delete-excluded \
-  --exclude "*.dep" \
-  --exclude "*.bc" \
-  --exclude "*.o" \
-  --exclude "*.deps" \
-  -vr bin/asmjs/* $gameDir
+cp -a bin/asmjs/rel/* $gameDir
 cp index.html $gameDir/index.html
 
 #------------------------------------------------------------------------------
