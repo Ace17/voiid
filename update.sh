@@ -1,7 +1,9 @@
 #!/bin/bash
 set -euo pipefail
 
-readonly tmpDir=/tmp/ld38-maaze-deliver-$$
+readonly NAME="maaze"
+
+readonly tmpDir=/tmp/ld38-$NAME-deliver-$$
 trap "rm -rf $tmpDir" EXIT
 mkdir -p $tmpDir
 
@@ -10,7 +12,7 @@ mkdir -p $tmpDir
 #------------------------------------------------------------------------------
 # create game directory
 #------------------------------------------------------------------------------
-readonly gameDir=$tmpDir/maaze
+readonly gameDir=$tmpDir/$NAME
 mkdir -p $gameDir
 
 cp -a bin/asmjs/rel/* $gameDir
@@ -20,10 +22,10 @@ cp index.html $gameDir/index.html
 # archive it
 #------------------------------------------------------------------------------
 pushd $tmpDir
-zip maaze.zip -r maaze
+zip $NAME.zip -r $NAME
 popd
 
-mv $tmpDir/maaze.zip .
+mv $tmpDir/$NAME.zip .
 
 #------------------------------------------------------------------------------
 # upload it to code.alaiwan.org
@@ -31,5 +33,5 @@ mv $tmpDir/maaze.zip .
 rsync \
   --compress \
   --delete \
-  -vr $gameDir/* alaiwans@code.alaiwan.org:public_html/games/maaze
+  -vr $gameDir/* alaiwans@code.alaiwan.org:public_html/games/$NAME
 
