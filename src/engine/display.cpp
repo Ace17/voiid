@@ -368,7 +368,7 @@ void Display_init(int width, int height)
   glEnable(GL_CULL_FACE);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-  g_fontModel = loadTiledAnimation("res/font.png", 256, 16, 8);
+  g_fontModel = loadTiledAnimation("res/font.png", 256, 16, 16);
 
   g_MVP = glGetUniformLocation(g_ProgramId, "MVP");
   assert(g_MVP >= 0);
