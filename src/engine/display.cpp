@@ -470,7 +470,7 @@ void drawModel(Rect3f where, Camera const& camera, Model& model, bool blinking, 
   auto const pos = glm::translate(vec3(where.x, where.y, where.z));
   auto const scale = glm::scale(vec3(where.cx, where.cy, where.cz));
 
-  static const float fovy = (float)((60.0f / 180) * M_PI);
+  static const float fovy = (float)((60.0f / 180) * PI);
   static const float aspect = 1.0f;
   static const float near_ = 0.1f;
   static const float far_ = 100.0f;

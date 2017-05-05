@@ -157,7 +157,7 @@ struct Rockman : Player, Damageable
   void airMove(Control c)
   {
     auto const forward = Vector(cos(lookAngleHorz), sin(lookAngleHorz), 0);
-    auto const left = Vector(cos(lookAngleHorz + M_PI / 2), sin(lookAngleHorz + M_PI / 2), 0);
+    auto const left = Vector(cos(lookAngleHorz + PI / 2), sin(lookAngleHorz + PI / 2), 0);
 
     Vector wantedVel = Vector(0, 0, 0);
 

@@ -203,7 +203,7 @@ private:
     m_control.look_horz -= evt->motion.xrel * speed;
     m_control.look_vert -= evt->motion.yrel * speed;
 
-    m_control.look_vert = clamp<float>(m_control.look_vert, -M_PI * 0.4, M_PI * 0.4);
+    m_control.look_vert = clamp<float>(m_control.look_vert, -PI * 0.4, PI * 0.4);
   }
 
   void onKeyDown(SDL_Event* evt)
