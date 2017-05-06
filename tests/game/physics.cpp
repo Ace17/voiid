@@ -1,5 +1,5 @@
-#include "tests/tests.h"
-#include "game/body.h"
+#include "engine/tests/tests.h"
+#include "src/body.h"
 #include <cmath>
 #include <memory>
 

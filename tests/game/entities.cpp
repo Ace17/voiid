@@ -1,10 +1,10 @@
 #include <algorithm>
 
-#include "game/entities/wheel.h"
-#include "game/entities/bonus.h"
-#include "game/entities/explosion.h"
+#include "src/entities/wheel.h"
+#include "src/entities/bonus.h"
+#include "src/entities/explosion.h"
 
-#include "tests/tests.h"
+#include "engine/tests/tests.h"
 
 unittest("Entity: explosion")
 {
@@ -20,7 +20,7 @@ unittest("Entity: explosion")
   assertEquals(100, int(explosion->getActor().ratio * 100));
 }
 
-#include "game/entities/player.h"
+#include "src/entities/player.h"
 
 struct NullPlayer : Player
 {
