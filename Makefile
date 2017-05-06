@@ -88,8 +88,8 @@ SRCS_TESTS:=\
 	engine/tests/tests_main.cpp\
 	engine/tests/tokenizer.cpp\
 	engine/tests/util.cpp\
-	tests/game/entities.cpp\
-	tests/game/physics.cpp\
+	tests/entities.cpp\
+	tests/physics.cpp\
 
 $(BIN)/tests$(EXT): $(SRCS_TESTS:%.cpp=$(BIN)/%_cpp.o)
 	@mkdir -p $(dir $@)
