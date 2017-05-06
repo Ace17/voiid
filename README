@@ -8,7 +8,7 @@ Demo
 
 An online demo is available here:
 
-http://code.alaiwan.org/games/naarrow
+http://code.alaiwan.org/games/maaze
 
 Description
 -----------
@@ -29,21 +29,22 @@ powerups, bullets, ..) from your I/O code (display, audio, input).
 Directory structure
 -------------------
 
-bin:        output directory for binaries.
-./check:    main check script. Call this to build native and asmjs versions.
-src/engine: I/O code (game-agnostic)
-src/game:   game logic (engine-agnostic)
-src/base:   utilities shared between game logic and I/O code ; scene declaration
-res:        game resources (sounds, sprites, tiles)
+bin:            output directory for binaries.
+./check:        main check script. Call this to build native and asmjs versions.
+engine/src:     I/O code (game-agnostic)
+engine/include: representation of the outside world, as seen by the game logic.
+src:            game logic (only depends on 'engine/include')
+tests:          game logic tests
+res:            game resources (sounds, sprites, tiles)
 
 
 Build
 -----
 
 Requirements:
-* libsdl1.2-dev
-* libsdl-mixer1.2-dev
-* libsdl-image1.2-dev
+* libsdl2-dev
+* libsdl2-mixer-dev
+* libsdl2-image-dev
 
 It can be compiled to native code using your native compiler (gcc or clang):
 
@@ -57,13 +58,16 @@ In theory, it's as simple as:
 
 $ CXX=emcc make
 
-However, in practise, more options need to be injected to the makefile.
-See how the ./check script works for more information about this.
+However, in practise, more options need to be injected to the makefile,
+like setting EXT (program extension) to ".html", etc.
+There's a make wrapper that does exactly that:
+
+$ ./scripts/asmjs-make
 
 Run the game
 ------------
 
 Just run the following command:
 
-$ bin/naarrow.exe
+$ bin/rel/game.exe
 
