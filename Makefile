@@ -22,7 +22,7 @@ ifeq (ERROR,$(PKG_LDFLAGS))
   $(error At least one library was not found in the build environment)
 endif
 
-CXXFLAGS+=-Iextra
+CXXFLAGS+=-Iengine/extra
 
 CXXFLAGS+=-Wall -Wextra
 CXXFLAGS+=-Isrc
@@ -55,7 +55,7 @@ SRCS_GAME:=\
 
 SRCS:=\
 	$(SRCS_GAME)\
-	extra/miniz.c\
+	engine/extra/miniz.c\
 	$(BIN)/fragment.glsl.cpp\
 	$(BIN)/vertex.glsl.cpp\
 	engine/src/app.cpp\
@@ -77,7 +77,7 @@ TARGETS+=$(BIN)/rel/game$(EXT)
 
 SRCS_TESTS:=\
 	$(SRCS_GAME)\
-	extra/miniz.c\
+	engine/extra/miniz.c\
 	engine/src/base64.cpp\
 	engine/src/decompress.cpp\
 	engine/src/json.cpp\

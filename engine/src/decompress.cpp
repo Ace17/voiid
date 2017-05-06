@@ -1,7 +1,7 @@
 #include "decompress.h"
 
 #define MINIZ_HEADER_FILE_ONLY 1
-#include "extra/miniz.c"
+#include "../extra/miniz.c"
 
 #include <cstring>
 #include <vector>
