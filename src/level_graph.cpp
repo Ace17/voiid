@@ -75,7 +75,7 @@ Room Graph_loadRoom(int /*roomIdx*/, IGame* game)
   {
     auto door = createEntity("door(0)");
     door->pos = Vector3f(15, 3 + k * 8, 1);
-    door->pos += Vector3f(0.2, 0.5, 0.5);
+    door->pos += Vector3f(0, 0.5, 0.5);
     game->spawn(door.release());
 
     auto switch_ = createEntity("switch(0)");
