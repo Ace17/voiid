@@ -40,7 +40,7 @@ void Display_setCamera(Vector3f pos, Vector3f dir);
 void Display_setAmbientLight(float ambientLight);
 void Display_enableGrab(bool enable);
 
-Audio* createAudio(bool dummy = false);
+Audio* createAudio();
 
 Scene* createGame(View* view, vector<string> argv);
 

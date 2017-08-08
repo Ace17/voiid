@@ -13,7 +13,8 @@ PKGS:=\
 	gl\
 	sdl2\
 	SDL2_image\
-	SDL2_mixer\
+	ogg \
+	vorbisfile \
 
 PKG_CFLAGS:=$(shell pkg-config $(PKGS) --cflags)
 PKG_LDFLAGS:=$(shell pkg-config $(PKGS) --libs || echo "ERROR")
@@ -23,6 +24,8 @@ ifeq (ERROR,$(PKG_LDFLAGS))
 endif
 
 CXXFLAGS+=-Iengine/extra
+
+DBGFLAGS?=-g
 
 CXXFLAGS+=-Wall -Wextra
 CXXFLAGS+=-Isrc
@@ -34,8 +37,8 @@ LDFLAGS+=$(PKG_LDFLAGS)
 
 CXXFLAGS+=-O3
 
-#CXXFLAGS+=-g3
-#LDFLAGS+=-g
+CXXFLAGS+=$(DBGFLAGS)
+LDFLAGS+=$(DBGFLAGS)
 
 #------------------------------------------------------------------------------
 
@@ -72,6 +75,9 @@ $(BIN)/rel/game$(EXT): $(SRCS:%.cpp=$(BIN)/%_cpp.o)
 	$(CXX) $^ -o '$@' $(LDFLAGS)
 
 TARGETS+=$(BIN)/rel/game$(EXT)
+
+#------------------------------------------------------------------------------
+include res-src/project.mk
 
 #------------------------------------------------------------------------------
 
