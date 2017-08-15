@@ -389,3 +389,4 @@ static int roomStairs(Vector3i v)
   };
   return data[v.z % 8][v.y % 8][v.x % 8];
 }
+

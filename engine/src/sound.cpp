@@ -1,5 +1,3 @@
-// Audio stuff
-
 /*
  * Copyright (C) 2017 - Sebastien Alaiwan <sebastien.alaiwan@gmail.com>
  * This program is free software: you can redistribute it and/or modify
@@ -7,6 +5,8 @@
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
  */
+
+// Audio stuff
 
 #include <cassert>
 #include <memory>
@@ -22,6 +22,7 @@
 #include "sound.h"
 
 #include "base/util.h"
+#include "base/span.h"
 
 using namespace std;
 
@@ -133,7 +134,7 @@ struct Voice
     m_loop = loop;
   }
 
-  int mix(Span<float> output)
+  void mix(Span<float> output)
   {
     while(output.len > 0)
     {
@@ -154,8 +155,6 @@ struct Voice
 
       m_player = m_sound->createPlayer();
     }
-
-    return output.len;
   }
 
 private:
@@ -241,9 +240,7 @@ struct SdlAudio : Audio
 
     assert(sound);
 
-    // SDL_PauseAudio(1);
     auto voice = allocVoice();
-    // SDL_PauseAudio(0);
 
     if(!voice)
       return;

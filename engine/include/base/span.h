@@ -8,14 +8,31 @@
 
 #pragma once
 
-#include "span.h"
+#include <stddef.h>
 
-struct Resource
+template<typename T>
+struct Span
 {
-  int id;
-  char const* path;
+  T* data;
+  int len;
+
+  T* begin() const
+  {
+    return data;
+  }
+
+  T* end() const
+  {
+    return data + len;
+  }
 };
 
-Span<const Resource> getSounds();
-Span<const Resource> getModels();
+template<typename T, size_t N>
+Span<T> makeSpan(T(&tab)[N])
+{
+  Span<T> r;
+  r.data = tab;
+  r.len = N;
+  return r;
+}
 
