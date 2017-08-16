@@ -93,10 +93,7 @@ struct Rockman : Player, Damageable
     r.focus = true;
 
     r.pos.z += 1.0;
-
-    r.orientation.x = cos(lookAngleHorz) * cos(lookAngleVert);
-    r.orientation.y = sin(lookAngleHorz) * cos(lookAngleVert);
-    r.orientation.z = sin(lookAngleVert);
+    r.orientation = vectorFromAngles(lookAngleHorz, lookAngleVert);
 
     return r;
   }
@@ -156,8 +153,8 @@ struct Rockman : Player, Damageable
 
   void airMove(Control c)
   {
-    auto const forward = Vector(cos(lookAngleHorz), sin(lookAngleHorz), 0);
-    auto const left = Vector(cos(lookAngleHorz + PI / 2), sin(lookAngleHorz + PI / 2), 0);
+    auto const forward = vectorFromAngles(lookAngleHorz, 0);
+    auto const left = vectorFromAngles(lookAngleHorz + PI / 2, 0);
 
     Vector wantedVel = Vector(0, 0, 0);
 

@@ -21,3 +21,13 @@ Trace slideMove(Entity* ent, Vector vel)
   return r;
 }
 
+inline
+Vector vectorFromAngles(float alpha, float beta)
+{
+  auto const x = cos(alpha) * cos(beta);
+  auto const y = sin(alpha) * cos(beta);
+  auto const z = sin(beta);
+
+  return Vector(x, y, z);
+}
+

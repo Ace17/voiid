@@ -36,11 +36,7 @@ struct Editor : Player
     r.scale = UnitSize * 0;
     r.focus = true;
 
-    r.pos.z += 1.0;
-
-    r.orientation.x = cos(lookAngleHorz) * cos(lookAngleVert);
-    r.orientation.y = sin(lookAngleHorz) * cos(lookAngleVert);
-    r.orientation.z = sin(lookAngleVert);
+    r.orientation = vectorFromAngles(lookAngleHorz, lookAngleVert);
 
     return r;
   }
@@ -101,15 +97,6 @@ struct Editor : Player
 
     if(abs(vel.z) < 0.00001)
       vel.z = 0;
-  }
-
-  static Vector vectorFromAngles(float alpha, float beta)
-  {
-    auto const x = cos(alpha) * cos(beta);
-    auto const y = sin(alpha) * cos(beta);
-    auto const z = sin(beta);
-
-    return Vector(x, y, z);
   }
 
   virtual void tick() override
