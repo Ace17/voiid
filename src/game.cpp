@@ -165,7 +165,7 @@ struct Game : Scene, IGame
     if(!m_player)
     {
       if(m_editorMode)
-        m_player = makeEditor().release();
+        m_player = makeEditor(m_tiles).release();
       else
         m_player = makeRockman().release();
 

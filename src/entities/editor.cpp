@@ -25,7 +25,7 @@ auto const MAX_SPEED = 0.02f;
 
 struct Editor : Player
 {
-  Editor()
+  Editor(Matrix& tiles_) : tiles(tiles_)
   {
     size = Size(0.5, 0.5, 0.5);
   }
@@ -123,8 +123,19 @@ struct Editor : Player
 
     decrement(debounceFire);
 
-    if(firebutton.toggle(control.fire) && tryActivate(debounceFire, 150))
+    if(firebutton.toggle(control.jump) && tryActivate(debounceFire, 150))
     {
+      auto const forward = vectorFromAngles(lookAngleHorz, lookAngleVert) * 1.1;
+
+      auto const x = (int)(pos.x + forward.x);
+      auto const y = (int)(pos.y + forward.y);
+      auto const z = (int)(pos.z + forward.z);
+
+      if(tiles.isInside(x, y, z))
+      {
+        auto t = tiles.get(x, y, z);
+        tiles.set(x, y, z, t ? 0 : 1);
+      }
     }
 
     collisionGroup = CG_PLAYER;
@@ -139,10 +150,11 @@ struct Editor : Player
   int respawnDelay = 0;
 
   int upgrades = 0;
+  Matrix& tiles;
 };
 
-std::unique_ptr<Player> makeEditor()
+std::unique_ptr<Player> makeEditor(Matrix& tiles)
 {
-  return make_unique<Editor>();
+  return make_unique<Editor>(tiles);
 }
 
