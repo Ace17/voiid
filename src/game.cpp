@@ -18,6 +18,7 @@
 #include "base/util.h"
 #include "entities/player.h"
 #include "entities/rockman.h"
+#include "entities/editor.h"
 #include "game.h"
 #include "models.h" // MDL_TILES
 #include "room.h"
@@ -163,7 +164,11 @@ struct Game : Scene, IGame
 
     if(!m_player)
     {
-      m_player = makeRockman().release();
+      if(m_editorMode)
+        m_player = makeEditor().release();
+      else
+        m_player = makeRockman().release();
+
       m_player->pos = Vector(level.start.x, level.start.y, level.start.z);
     }
 
@@ -186,6 +191,7 @@ struct Game : Scene, IGame
 
   int m_level = 1;
   int m_theme = 0;
+  int m_editorMode = 0;
   Vector m_transform;
   bool m_shouldLoadLevel = false;
 
@@ -308,8 +314,11 @@ Scene* createGame(View* view, vector<string> args)
 {
   auto r = make_unique<Game>(view);
 
-  if(args.size() == 1)
+  if(args.size() >= 1)
     r->m_level = atoi(args[0].c_str());
+
+  if(args.size() >= 2)
+    r->m_editorMode = atoi(args[1].c_str());
 
   return r.release();
 }
