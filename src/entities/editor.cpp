@@ -32,7 +32,7 @@ struct Editor : Player
 
   virtual Actor getActor() const override
   {
-    auto r = Actor(pos, MDL_ROCKMAN);
+    auto r = Actor(pos - size * 0.5, MDL_ROCKMAN);
     r.scale = UnitSize * 0;
     r.focus = true;
 
@@ -67,7 +67,7 @@ struct Editor : Player
   void airMove(Control c)
   {
     auto const forward = vectorFromAngles(lookAngleHorz, lookAngleVert);
-    auto const left = vectorFromAngles(lookAngleHorz + PI / 2, lookAngleVert);
+    auto const left = vectorFromAngles(lookAngleHorz + PI / 2, 0);
 
     Vector wantedVel = Vector(0, 0, 0);
 
@@ -112,7 +112,7 @@ struct Editor : Player
 
     if(firebutton.toggle(control.jump) && tryActivate(debounceFire, 150))
     {
-      auto const forward = vectorFromAngles(lookAngleHorz, lookAngleVert) * 1.1;
+      auto const forward = vectorFromAngles(lookAngleHorz, lookAngleVert) * 2.0;
 
       auto const x = (int)(pos.x + forward.x);
       auto const y = (int)(pos.y + forward.y);
@@ -131,12 +131,9 @@ struct Editor : Player
   int debounceFire = 0;
   float lookAngleHorz = 0;
   float lookAngleVert = 0;
-  Toggle jumpbutton, firebutton, dashbutton;
+  Toggle firebutton;
   Control control {};
 
-  int respawnDelay = 0;
-
-  int upgrades = 0;
   Matrix& tiles;
 };
 
