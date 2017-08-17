@@ -433,7 +433,6 @@ void Display_enableGrab(bool enable)
 #include "glm/gtx/transform.hpp"
 #include "glm/gtc/matrix_inverse.hpp"
 #include "glm/gtc/type_ptr.hpp"
-using namespace glm;
 
 static
 void drawModel(Rect3f where, Camera const& camera, Model& model, bool blinking, int actionIdx, float ratio)
@@ -463,12 +462,12 @@ void drawModel(Rect3f where, Camera const& camera, Model& model, bool blinking, 
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-  auto Vec3 = [] (Vector3f v) { return vec3(v.x, v.y, v.z); };
+  auto Vec3 = [] (Vector3f v) { return glm::vec3(v.x, v.y, v.z); };
 
   auto const target = camera.pos + camera.dir;
-  auto const view = glm::lookAt(Vec3(camera.pos), Vec3(target), vec3(0, 0, 1));
-  auto const pos = glm::translate(vec3(where.x, where.y, where.z));
-  auto const scale = glm::scale(vec3(where.cx, where.cy, where.cz));
+  auto const view = glm::lookAt(Vec3(camera.pos), Vec3(target), glm::vec3(0, 0, 1));
+  auto const pos = glm::translate(glm::vec3(where.x, where.y, where.z));
+  auto const scale = glm::scale(glm::vec3(where.cx, where.cy, where.cz));
 
   static const float fovy = (float)((60.0f / 180) * PI);
   static const float aspect = 1.0f;
