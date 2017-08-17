@@ -3,7 +3,7 @@ set -euo pipefail
 
 readonly NAME="maaze"
 
-readonly tmpDir=/tmp/ld38-$NAME-deliver-$$
+readonly tmpDir=/tmp/deliver-$NAME-$$
 trap "rm -rf $tmpDir" EXIT
 mkdir -p $tmpDir
 
