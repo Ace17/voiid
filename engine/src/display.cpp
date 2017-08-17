@@ -387,9 +387,9 @@ struct Camera
   bool valid = false;
 };
 
-Camera g_camera;
+static Camera g_camera;
 
-float baseAmbientLight = 0;
+static float baseAmbientLight = 0;
 
 void Display_setCamera(Vector3f pos, Vector3f dir)
 {
