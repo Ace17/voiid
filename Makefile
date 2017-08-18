@@ -53,7 +53,6 @@ SRCS_GAME:=\
 	src/level_graph.cpp\
 	src/physics.cpp\
 	src/resources.cpp\
-	src/smarttiles.cpp\
 
 #------------------------------------------------------------------------------
 
