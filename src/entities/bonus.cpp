@@ -12,6 +12,7 @@
  */
 
 #include <algorithm>
+#include <math.h>
 
 #include "base/util.h"
 #include "base/scene.h"
