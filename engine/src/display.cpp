@@ -192,71 +192,18 @@ GLuint loadShaders()
   return progId;
 }
 
+Model boxModel();
+
 static
-Model boxModel()
+Model sendToOpengl(Model&& model)
 {
-  const GLfloat myBox[] =
-  {
-    -0.5, -0.5, +0.5, /* uv */ 0, 1, /* N */ 0, 0, 1,
-    -0.5, +0.5, +0.5, /* uv */ 0, 0, /* N */ 0, 0, 1,
-    +0.5, +0.5, +0.5, /* uv */ 1, 0, /* N */ 0, 0, 1,
-    +0.5, -0.5, +0.5, /* uv */ 1, 1, /* N */ 0, 0, 1,
-    -0.5, -0.5, -0.5, /* uv */ 0, 1, /* N */ 0, 0, -1,
-    +0.5, -0.5, -0.5, /* uv */ 0, 0, /* N */ 0, 0, -1,
-    +0.5, +0.5, -0.5, /* uv */ 1, 0, /* N */ 0, 0, -1,
-    -0.5, +0.5, -0.5, /* uv */ 1, 1, /* N */ 0, 0, -1,
-    -0.5, -0.5, +0.5, /* uv */ 0, 1, /* N */ -1, 0, 0,
-    -0.5, -0.5, -0.5, /* uv */ 0, 0, /* N */ -1, 0, 0,
-    -0.5, +0.5, -0.5, /* uv */ 1, 0, /* N */ -1, 0, 0,
-    -0.5, +0.5, +0.5, /* uv */ 1, 1, /* N */ -1, 0, 0,
-    -0.5, +0.5, +0.5, /* uv */ 0, 1, /* N */ 0, 1, 0,
-    -0.5, +0.5, -0.5, /* uv */ 0, 0, /* N */ 0, 1, 0,
-    +0.5, +0.5, -0.5, /* uv */ 1, 0, /* N */ 0, 1, 0,
-    +0.5, +0.5, +0.5, /* uv */ 1, 1, /* N */ 0, 1, 0,
-    +0.5, +0.5, +0.5, /* uv */ 0, 1, /* N */ 1, 0, 0,
-    +0.5, +0.5, -0.5, /* uv */ 0, 0, /* N */ 1, 0, 0,
-    +0.5, -0.5, -0.5, /* uv */ 1, 0, /* N */ 1, 0, 0,
-    +0.5, -0.5, +0.5, /* uv */ 1, 1, /* N */ 1, 0, 0,
-    -0.5, -0.5, -0.5, /* uv */ 0, 1, /* N */ 0, -1, 0,
-    -0.5, -0.5, +0.5, /* uv */ 0, 0, /* N */ 0, -1, 0,
-    +0.5, -0.5, +0.5, /* uv */ 1, 0, /* N */ 0, -1, 0,
-    +0.5, -0.5, -0.5, /* uv */ 1, 1, /* N */ 0, -1, 0,
-  };
-
-  const GLushort indices[] =
-  {
-    0, 2, 1,
-    0, 3, 2,
-
-    4, 6, 5,
-    4, 7, 6,
-
-    8, 10, 9,
-    8, 11, 10,
-
-    12, 14, 13,
-    12, 15, 14,
-
-    16, 18, 17,
-    16, 19, 18,
-
-    20, 22, 21,
-    20, 23, 22,
-  };
-
-  Model model;
-
-  model.size = 24;
-
   SAFE_GL(glGenBuffers(1, &model.buffer));
   SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, model.buffer));
-  SAFE_GL(glBufferData(GL_ARRAY_BUFFER, sizeof(myBox), myBox, GL_STATIC_DRAW));
+  SAFE_GL(glBufferData(GL_ARRAY_BUFFER, sizeof(float) * model.vertices.size(), model.vertices.data(), GL_STATIC_DRAW));
 
   SAFE_GL(glGenBuffers(1, &model.indices));
   SAFE_GL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, model.indices));
-  SAFE_GL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW));
-
-  model.numIndices = sizeof(indices) / sizeof(*indices);
+  SAFE_GL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(short) * model.faces.size(), model.faces.data(), GL_STATIC_DRAW));
 
   return model;
 }
@@ -311,7 +258,7 @@ void Display_loadModel(int id, const char* path)
   if((int)g_Models.size() <= id)
     g_Models.resize(id + 1);
 
-  g_Models[id] = loadAnimation(path);
+  g_Models[id] = sendToOpengl(loadAnimation(path));
 }
 
 static
@@ -482,7 +429,7 @@ void drawModel(Rect3f where, Camera const& camera, Model& model, bool blinking, 
   SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, model.buffer));
   SAFE_GL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, model.indices));
 
-  SAFE_GL(glDrawElements(GL_TRIANGLES, model.numIndices, GL_UNSIGNED_SHORT, 0));
+  SAFE_GL(glDrawElements(GL_TRIANGLES, model.faces.size(), GL_UNSIGNED_SHORT, 0));
 }
 
 void Display_drawActor(Rect3f where, int modelId, bool blinking, int actionIdx, float ratio)
