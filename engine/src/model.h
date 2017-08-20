@@ -28,7 +28,12 @@ struct Model
   vector<Action> actions;
 
   // mesh data
-  vector<float> vertices;
+  struct Vertex
+  {
+    float x, y, z, u, v, nx, ny, nz;
+  };
+
+  vector<Vertex> vertices;
   vector<short> faces;
 };
 
