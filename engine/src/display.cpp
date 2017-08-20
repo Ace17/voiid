@@ -199,11 +199,11 @@ Model sendToOpengl(Model&& model)
 {
   SAFE_GL(glGenBuffers(1, &model.buffer));
   SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, model.buffer));
-  SAFE_GL(glBufferData(GL_ARRAY_BUFFER, sizeof(float) * model.vertices.size(), model.vertices.data(), GL_STATIC_DRAW));
+  SAFE_GL(glBufferData(GL_ARRAY_BUFFER, sizeof(model.vertices[0]) * model.vertices.size(), model.vertices.data(), GL_STATIC_DRAW));
 
   SAFE_GL(glGenBuffers(1, &model.indices));
   SAFE_GL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, model.indices));
-  SAFE_GL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(short) * model.faces.size(), model.faces.data(), GL_STATIC_DRAW));
+  SAFE_GL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(model.faces[0]) * model.faces.size(), model.faces.data(), GL_STATIC_DRAW));
 
   return model;
 }
