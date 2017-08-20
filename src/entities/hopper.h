@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stdlib.h> // rand
 #include <algorithm>
 
 #include "base/util.h"
