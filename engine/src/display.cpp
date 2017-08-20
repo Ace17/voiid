@@ -52,7 +52,7 @@ void ensureGl(char const* expr, int line)
   ss << "OpenGL error" << endl;
   ss << "Expr: " << expr << endl;
   ss << "Line: " << line << endl;
-  ss << "Code: " << errorCode;
+  ss << "Code: 0x" << std::hex << errorCode;
   throw runtime_error(ss.str());
 }
 
@@ -478,7 +478,7 @@ void Display_beginDraw()
 
     // connect the xyz to the "a_position" attribute of the vertex shader
     SAFE_GL(glEnableVertexAttribArray(positionLoc));
-    SAFE_GL(glVertexAttribPointer(positionLoc, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), nullptr));
+    SAFE_GL(glVertexAttribPointer(positionLoc, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const GLvoid*)(0 * sizeof(GLfloat))));
 
     // connect the N to the "a_normal" attribute of the vertex shader
     SAFE_GL(glEnableVertexAttribArray(normalLoc));
@@ -486,7 +486,7 @@ void Display_beginDraw()
 
     // connect the uv coords to the "v_texCoord" attribute of the vertex shader
     SAFE_GL(glEnableVertexAttribArray(texCoordLoc));
-    SAFE_GL(glVertexAttribPointer(texCoordLoc, 2, GL_FLOAT, GL_TRUE, 8 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat))));
+    SAFE_GL(glVertexAttribPointer(texCoordLoc, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat))));
   }
 }
 
