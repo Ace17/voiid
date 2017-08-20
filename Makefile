@@ -66,6 +66,7 @@ SRCS:=\
 	engine/src/decompress.cpp\
 	engine/src/display.cpp\
 	engine/src/json.cpp\
+	engine/src/3ds.cpp\
 	engine/src/main.cpp\
 	engine/src/model.cpp\
 	engine/src/sound.cpp\
@@ -87,9 +88,11 @@ SRCS_TESTS:=\
 	engine/src/base64.cpp\
 	engine/src/decompress.cpp\
 	engine/src/json.cpp\
+	engine/src/3ds.cpp\
 	engine/tests/base64.cpp\
 	engine/tests/decompress.cpp\
 	engine/tests/json.cpp\
+	engine/tests/3ds.cpp\
 	engine/tests/tests.cpp\
 	engine/tests/tests_main.cpp\
 	engine/tests/tokenizer.cpp\

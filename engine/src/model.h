@@ -24,7 +24,6 @@ struct Action
 struct Model
 {
   uint32_t buffer = 0;
-  uint32_t indices = 0;
   vector<Action> actions;
 
   // mesh data
@@ -34,7 +33,6 @@ struct Model
   };
 
   vector<Vertex> vertices;
-  vector<short> faces;
 };
 
 Model loadModel(string jsonPath);

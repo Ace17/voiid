@@ -6,10 +6,12 @@
  * License, or (at your option) any later version.
  */
 
+#include <fstream>
 #include "model.h"
 #include "base/geom.h"
 #include "base/util.h"
 #include "json.h"
+#include "3ds.h"
 
 extern int loadTexture(string path, Rect2i rect = Rect2i(0, 0, 0, 0));
 
@@ -87,15 +89,58 @@ Model boxModel()
 
   Model model;
 
-  model.vertices.assign(begin(vertices), end(vertices));
-  model.faces.assign(begin(faces), end(faces));
+  for(auto idx : faces)
+    model.vertices.push_back(vertices[idx]);
 
   return model;
 }
 
+Model modelFrom3ds(string path3ds)
+{
+  auto const mesh = tds::load(path3ds);
+
+  Model r;
+
+  auto addVertex = [&] (tds::Mesh::Vertex vert)
+                   {
+                     Model::Vertex vt {};
+
+                     vt.x = vert.x;
+                     vt.y = vert.y;
+                     vt.z = vert.z;
+
+                     vt.u = vert.u;
+                     vt.v = vert.v;
+
+                     // TODO: compute normals
+                     vt.nx = 0;
+                     vt.ny = 0;
+                     vt.nz = 0;
+
+                     r.vertices.push_back(vt);
+                   };
+
+  for(auto& face : mesh->faces)
+  {
+    addVertex(mesh->vertices[face.i1]);
+    addVertex(mesh->vertices[face.i2]);
+    addVertex(mesh->vertices[face.i3]);
+  }
+
+  return r;
+}
+
 Model loadModel(string jsonPath)
 {
-  Model r = boxModel();
+  Model r;
+
+  auto const path3ds = setExtension(jsonPath, "3ds");
+
+  if(ifstream(path3ds).is_open())
+    r = modelFrom3ds(path3ds);
+  else
+    r = boxModel();
+
   auto obj = json::load(jsonPath);
   auto dir = dirName(jsonPath);
 

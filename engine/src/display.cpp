@@ -195,17 +195,12 @@ GLuint loadShaders()
 Model boxModel();
 
 static
-Model sendToOpengl(Model&& model)
+void sendToOpengl(Model& model)
 {
   SAFE_GL(glGenBuffers(1, &model.buffer));
   SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, model.buffer));
   SAFE_GL(glBufferData(GL_ARRAY_BUFFER, sizeof(model.vertices[0]) * model.vertices.size(), model.vertices.data(), GL_STATIC_DRAW));
-
-  SAFE_GL(glGenBuffers(1, &model.indices));
-  SAFE_GL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, model.indices));
-  SAFE_GL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(model.faces[0]) * model.faces.size(), model.faces.data(), GL_STATIC_DRAW));
-
-  return model;
+  SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, 0));
 }
 
 static
@@ -254,7 +249,8 @@ void Display_loadModel(int id, const char* path)
   if((int)g_Models.size() <= id)
     g_Models.resize(id + 1);
 
-  g_Models[id] = sendToOpengl(loadAnimation(path));
+  g_Models[id] = loadAnimation(path);
+  sendToOpengl(g_Models[id]);
 }
 
 static
@@ -312,6 +308,7 @@ void Display_init(int width, int height)
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
   g_fontModel = loadTiledAnimation("res/font.png", 256, 16, 16);
+  sendToOpengl(g_fontModel);
 
   g_MVP = glGetUniformLocation(g_ProgramId, "MVP");
   assert(g_MVP >= 0);
@@ -423,9 +420,29 @@ void drawModel(Rect3f where, Camera const& camera, Model& model, bool blinking, 
   SAFE_GL(glUniformMatrix4fv(g_MVP, 1, GL_FALSE, glm::value_ptr(mat)));
 
   SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, model.buffer));
-  SAFE_GL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, model.indices));
 
-  SAFE_GL(glDrawElements(GL_TRIANGLES, model.faces.size(), GL_UNSIGNED_SHORT, 0));
+  {
+    auto const positionLoc = glGetAttribLocation(g_ProgramId, "a_position");
+    auto const texCoordLoc = glGetAttribLocation(g_ProgramId, "a_texCoord");
+    auto const normalLoc = glGetAttribLocation(g_ProgramId, "a_normal");
+
+    assert(positionLoc >= 0);
+    assert(texCoordLoc >= 0);
+    assert(normalLoc >= 0);
+
+    // connect the xyz to the "a_position" attribute of the vertex shader
+    SAFE_GL(glEnableVertexAttribArray(positionLoc));
+    SAFE_GL(glVertexAttribPointer(positionLoc, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const GLvoid*)(0 * sizeof(GLfloat))));
+
+    // connect the N to the "a_normal" attribute of the vertex shader
+    SAFE_GL(glEnableVertexAttribArray(normalLoc));
+    SAFE_GL(glVertexAttribPointer(normalLoc, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const GLvoid*)(5 * sizeof(GLfloat))));
+
+    // connect the uv coords to the "v_texCoord" attribute of the vertex shader
+    SAFE_GL(glEnableVertexAttribArray(texCoordLoc));
+    SAFE_GL(glVertexAttribPointer(texCoordLoc, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat))));
+  }
+  SAFE_GL(glDrawArrays(GL_TRIANGLES, 0, model.vertices.size()));
 }
 
 void Display_drawActor(Rect3f where, int modelId, bool blinking, int actionIdx, float ratio)
@@ -466,28 +483,6 @@ void Display_beginDraw()
   SAFE_GL(glClear(GL_COLOR_BUFFER_BIT));
 
   SAFE_GL(glUniform3f(g_ambientLoc, 1, 1, 1));
-
-  {
-    auto const positionLoc = glGetAttribLocation(g_ProgramId, "a_position");
-    auto const texCoordLoc = glGetAttribLocation(g_ProgramId, "a_texCoord");
-    auto const normalLoc = glGetAttribLocation(g_ProgramId, "a_normal");
-
-    assert(positionLoc >= 0);
-    assert(texCoordLoc >= 0);
-    assert(normalLoc >= 0);
-
-    // connect the xyz to the "a_position" attribute of the vertex shader
-    SAFE_GL(glEnableVertexAttribArray(positionLoc));
-    SAFE_GL(glVertexAttribPointer(positionLoc, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const GLvoid*)(0 * sizeof(GLfloat))));
-
-    // connect the N to the "a_normal" attribute of the vertex shader
-    SAFE_GL(glEnableVertexAttribArray(normalLoc));
-    SAFE_GL(glVertexAttribPointer(normalLoc, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const GLvoid*)(5 * sizeof(GLfloat))));
-
-    // connect the uv coords to the "v_texCoord" attribute of the vertex shader
-    SAFE_GL(glEnableVertexAttribArray(texCoordLoc));
-    SAFE_GL(glVertexAttribPointer(texCoordLoc, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat))));
-  }
 }
 
 void Display_endDraw()
