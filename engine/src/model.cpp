@@ -95,7 +95,7 @@ Model boxModel()
 
 Model loadModel(string jsonPath)
 {
-  Model r;
+  Model r = boxModel();
   auto obj = json::load(jsonPath);
   auto dir = dirName(jsonPath);
 

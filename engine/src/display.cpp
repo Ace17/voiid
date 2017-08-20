@@ -231,11 +231,7 @@ Model loadAnimation(string path)
 {
   if(endsWith(path, ".json"))
   {
-    auto m = boxModel();
-
-    auto m2 = loadModel(path);
-    m.actions = move(m2.actions);
-    return m;
+    return loadModel(path);
   }
   else if(endsWith(path, ".mdl"))
   {
