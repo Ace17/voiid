@@ -7,6 +7,7 @@
  */
 
 #include <fstream>
+#include <math.h>
 #include "model.h"
 #include "base/geom.h"
 #include "base/util.h"
@@ -95,36 +96,81 @@ Model boxModel()
   return model;
 }
 
+auto magnitude(Vector3f v)
+{
+  return sqrt(dotProduct(v, v));
+}
+
+auto normalize(Vector3f v)
+{
+  return v * (1.0f / magnitude(v));
+}
+
+auto crossProduct(Vector3f a, Vector3f b)
+{
+  Vector3f r;
+  r.x = a.y * b.z - a.z * b.y;
+  r.y = a.z * b.x - b.z * a.x;
+  r.z = a.x * b.y - a.y * b.x;
+  return r;
+}
+
+Vector3f computeNormal(tds::Mesh::Vertex V1, tds::Mesh::Vertex V2, tds::Mesh::Vertex V3)
+{
+  auto toVector3f =
+    [] (tds::Mesh::Vertex V)
+    {
+      return Vector3f(V.x, V.y, V.z);
+    };
+
+  auto const v1 = toVector3f(V1);
+  auto const v2 = toVector3f(V2);
+  auto const v3 = toVector3f(V3);
+
+  auto const u = v2 - v1;
+  auto const v = v3 - v1;
+
+  auto const N = crossProduct(u, v);
+
+  return normalize(N);
+}
+
 Model modelFrom3ds(string path3ds)
 {
   auto const mesh = tds::load(path3ds);
 
   Model r;
 
-  auto addVertex = [&] (tds::Mesh::Vertex vert)
-                   {
-                     Model::Vertex vt {};
+  auto addVertex =
+    [&] (tds::Mesh::Vertex vert, Vector3f N)
+    {
+      Model::Vertex vt {};
 
-                     vt.x = vert.x;
-                     vt.y = vert.y;
-                     vt.z = vert.z;
+      vt.x = vert.x;
+      vt.y = vert.y;
+      vt.z = vert.z;
 
-                     vt.u = vert.u;
-                     vt.v = vert.v;
+      vt.u = vert.u;
+      vt.v = vert.v;
 
-                     // TODO: compute normals
-                     vt.nx = 0;
-                     vt.ny = 0;
-                     vt.nz = 0;
+      vt.nx = N.x;
+      vt.ny = N.y;
+      vt.nz = N.z;
 
-                     r.vertices.push_back(vt);
-                   };
+      r.vertices.push_back(vt);
+    };
 
   for(auto& face : mesh->faces)
   {
-    addVertex(mesh->vertices[face.i1]);
-    addVertex(mesh->vertices[face.i2]);
-    addVertex(mesh->vertices[face.i3]);
+    auto const V1 = mesh->vertices[face.i1];
+    auto const V2 = mesh->vertices[face.i2];
+    auto const V3 = mesh->vertices[face.i3];
+
+    auto const N = computeNormal(V1, V2, V3);
+
+    addVertex(V1, N);
+    addVertex(V2, N);
+    addVertex(V3, N);
   }
 
   return r;
