@@ -28,6 +28,9 @@ using namespace std;
 static GLint g_MVP;
 static GLint g_colorId;
 static GLint g_ambientLoc;
+static GLint g_positionLoc;
+static GLint g_texCoordLoc;
+static GLint g_normalLoc;
 
 static GLuint g_ProgramId;
 static vector<Model> g_Models;
@@ -318,6 +321,15 @@ void Display_init(int width, int height)
 
   g_ambientLoc = glGetUniformLocation(g_ProgramId, "ambientLight");
   assert(g_ambientLoc >= 0);
+
+  g_positionLoc = glGetAttribLocation(g_ProgramId, "a_position");
+  assert(g_positionLoc >= 0);
+
+  g_texCoordLoc = glGetAttribLocation(g_ProgramId, "a_texCoord");
+  assert(g_texCoordLoc >= 0);
+
+  g_normalLoc = glGetAttribLocation(g_ProgramId, "a_normal");
+  assert(g_normalLoc >= 0);
 }
 
 struct Camera
@@ -422,25 +434,17 @@ void drawModel(Rect3f where, Camera const& camera, Model& model, bool blinking, 
   SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, model.buffer));
 
   {
-    auto const positionLoc = glGetAttribLocation(g_ProgramId, "a_position");
-    auto const texCoordLoc = glGetAttribLocation(g_ProgramId, "a_texCoord");
-    auto const normalLoc = glGetAttribLocation(g_ProgramId, "a_normal");
-
-    assert(positionLoc >= 0);
-    assert(texCoordLoc >= 0);
-    assert(normalLoc >= 0);
-
     // connect the xyz to the "a_position" attribute of the vertex shader
-    SAFE_GL(glEnableVertexAttribArray(positionLoc));
-    SAFE_GL(glVertexAttribPointer(positionLoc, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const GLvoid*)(0 * sizeof(GLfloat))));
+    SAFE_GL(glEnableVertexAttribArray(g_positionLoc));
+    SAFE_GL(glVertexAttribPointer(g_positionLoc, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const GLvoid*)(0 * sizeof(GLfloat))));
 
     // connect the N to the "a_normal" attribute of the vertex shader
-    SAFE_GL(glEnableVertexAttribArray(normalLoc));
-    SAFE_GL(glVertexAttribPointer(normalLoc, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const GLvoid*)(5 * sizeof(GLfloat))));
+    SAFE_GL(glEnableVertexAttribArray(g_normalLoc));
+    SAFE_GL(glVertexAttribPointer(g_normalLoc, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const GLvoid*)(5 * sizeof(GLfloat))));
 
     // connect the uv coords to the "v_texCoord" attribute of the vertex shader
-    SAFE_GL(glEnableVertexAttribArray(texCoordLoc));
-    SAFE_GL(glVertexAttribPointer(texCoordLoc, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat))));
+    SAFE_GL(glEnableVertexAttribArray(g_texCoordLoc));
+    SAFE_GL(glVertexAttribPointer(g_texCoordLoc, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat))));
   }
   SAFE_GL(glDrawArrays(GL_TRIANGLES, 0, model.vertices.size()));
 }
