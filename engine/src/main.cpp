@@ -58,7 +58,9 @@ int main(int argc, char* argv[])
 {
   try
   {
-    vector<string> args { argv + 1, argv + argc };
+    vector<string> args {
+      argv + 1, argv + argc
+    };
 
     auto app = App_create(args);
 

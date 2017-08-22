@@ -288,17 +288,17 @@ struct Game : Scene, IGame
     for(int x = x1; x <= x2; ++x)
       for(int y = y1; y <= y2; ++y)
         for(int z = z1; z <= z2; ++z)
-          if(isPointSolid(Vector(x, y, z)))
+          if(isPointSolid(Vector3i(x, y, z)))
             return true;
 
     return false;
   }
 
-  bool isPointSolid(Vector pos)
+  bool isPointSolid(Vector3i pos)
   {
-    auto const x = (int)pos.x;
-    auto const y = (int)pos.y;
-    auto const z = (int)pos.z;
+    auto const x = pos.x;
+    auto const y = pos.y;
+    auto const z = pos.z;
 
     if(!m_tiles.isInside(x, y, z))
       return false;
