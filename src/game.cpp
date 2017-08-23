@@ -1,5 +1,3 @@
-// Game logic
-
 /*
  * Copyright (C) 2017 - Sebastien Alaiwan <sebastien.alaiwan@gmail.com>
  * This program is free software: you can redistribute it and/or modify
@@ -8,11 +6,12 @@
  * License, or (at your option) any later version.
  */
 
+// Game logic
+
 #include <cmath>
 #include <cstdlib>
 #include <algorithm>
 #include <array>
-#include <map>
 #include <set>
 #include "base/scene.h"
 #include "base/util.h"
