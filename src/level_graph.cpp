@@ -1,3 +1,4 @@
+#include <map>
 #include <stdlib.h>
 #include "room.h"
 #include "entity_factory.h"
@@ -14,8 +15,12 @@ Room Graph_loadRoom(int /*roomIdx*/, IGame* game)
 
   r.name = "test room";
 
+  auto const CX = 4;
+  auto const CY = 4;
+  auto const CZ = 2;
+
   // high-level map
-  static const char minimap[4][4][4] =
+  static const char minimap[CZ][CY][CX] =
   {
     {
       { 'A', 'S', 'B', 'A' },
@@ -29,52 +34,31 @@ Room Graph_loadRoom(int /*roomIdx*/, IGame* game)
       { 'A', 'A', 'A', 'A' },
       { 'A', 'A', 'A', 'A' },
     },
-    {
-      { 'A', 'A', 'A', 'A' },
-      { 'A', 'A', 'A', 'A' },
-      { 'A', 'A', 'A', 'A' },
-      { 'A', 'A', 'A', 'A' },
-    },
-    {
-      { 'A', 'A', 'A', 'A' },
-      { 'A', 'A', 'A', 'A' },
-      { 'A', 'A', 'A', 'A' },
-      { 'A', 'A', 'A', 'A' },
-    },
   };
+
+  typedef int (* TileFunc)(Vector3i);
+  map<char, TileFunc> funcs;
+  funcs['A'] = &roomA;
+  funcs['B'] = &roomB;
+  funcs['.'] = &fullRoom;
+  funcs[' '] = &emptyRoom;
+  funcs['S'] = &roomStairs;
+
+  auto const SIZE = 16;
 
   auto onCell =
     [&] (int x, int y, int z, int /*tile*/)
     {
-      auto const cx = clamp(x / 8, 0, 4);
-      auto const cy = clamp(y / 8, 0, 4);
-      auto const cz = clamp(z / 8, 0, 4);
+      auto const cx = clamp(x / SIZE, 0, CX);
+      auto const cy = clamp(y / SIZE, 0, CY);
+      auto const cz = clamp(z / SIZE, 0, CZ);
 
-      int (* tileFunc)(Vector3i) = &roomA;
-      switch(minimap[cz][cy][cx])
-      {
-      case 'A': tileFunc = &roomA;
-        break;
-      case 'B': tileFunc = &roomB;
-        break;
-      case '.': tileFunc = &fullRoom;
-        break;
-      case ' ': tileFunc = &emptyRoom;
-        break;
-      case 'S': tileFunc = &roomStairs;
-        break;
-      default: tileFunc = &roomA;
-        break;
-      }
-
-      auto tile = tileFunc(Vector3i(x % 8, y % 8, z % 8));
+      auto func = funcs.at(minimap[cz][cy][cx]);
+      auto tile = func(Vector3i(x % SIZE, y % SIZE, z % SIZE));
       r.tiles.set(x, y, z, tile);
-
-      if(rand() % 123 == 0)
-        r.tiles.set(x, y, z, 1);
     };
 
-  r.tiles.resize(Size3i(64, 64, 16));
+  r.tiles.resize(Size3i(SIZE * CX, SIZE * CY, SIZE * CZ));
   r.tiles.scan(onCell);
 
   r.start = Vector3i(8 + 4, 4, 8 + 4);
@@ -109,6 +93,9 @@ Room Graph_loadRoom(int /*roomIdx*/, IGame* game)
 
 static int roomA(Vector3i v)
 {
+  v.x = clamp(v.x, 0, 7);
+  v.y = clamp(v.y, 0, 7);
+  v.z = clamp(v.z, 0, 7);
   static int const data[8][8][8] =
   {
     {
@@ -198,6 +185,9 @@ static int roomA(Vector3i v)
 
 static int roomB(Vector3i v)
 {
+  v.x = clamp(v.x, 0, 7);
+  v.y = clamp(v.y, 0, 7);
+  v.z = clamp(v.z, 0, 7);
   int data[8][8][8] =
   {
     {
