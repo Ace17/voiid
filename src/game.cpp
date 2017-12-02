@@ -70,6 +70,8 @@ struct Game : Scene, IGame
   {
     vector<Actor> r;
 
+    r.push_back(Actor(Vector(0, 0, 0), MDL_ROOMS));
+
     auto cameraPos = m_player->pos;
 
     Box cameraRect;

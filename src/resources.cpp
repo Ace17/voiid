@@ -32,6 +32,7 @@ static const Resource models[] =
   { MDL_EXPLOSION, "res/sprites/explosion.json" },
   { MDL_SPIKES, "res/sprites/spikes.json" },
   { MDL_SIGN, "res/sprites/sign.json" },
+  { MDL_ROOMS, "res/rooms/room-01.json" },
 };
 
 Span<const Resource> getSounds()

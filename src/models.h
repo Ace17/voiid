@@ -15,5 +15,6 @@ enum
   MDL_EXPLOSION,
   MDL_SPIKES,
   MDL_SIGN,
+  MDL_ROOMS,
 };
 
