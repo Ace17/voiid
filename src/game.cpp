@@ -275,37 +275,7 @@ struct Game : Scene, IGame
 
   bool isRectSolid(Box rect)
   {
-    auto const x1 = (int)min(rect.x, rect.x + rect.cx);
-    auto const x2 = (int)max(rect.x, rect.x + rect.cx);
-
-    auto const y1 = (int)min(rect.y, rect.y + rect.cy);
-    auto const y2 = (int)max(rect.y, rect.y + rect.cy);
-
-    auto const z1 = (int)min(rect.z, rect.z + rect.cz);
-    auto const z2 = (int)max(rect.z, rect.z + rect.cz);
-
-    for(int x = x1; x <= x2; ++x)
-      for(int y = y1; y <= y2; ++y)
-        for(int z = z1; z <= z2; ++z)
-          if(isPointSolid(Vector3i(x, y, z)))
-            return true;
-
-    return false;
-  }
-
-  bool isPointSolid(Vector3i pos)
-  {
-    auto const x = pos.x;
-    auto const y = pos.y;
-    auto const z = pos.z;
-
-    if(!m_tiles.isInside(x, y, z))
-      return false;
-
-    if(m_tiles.get(x, y, z) == 0)
-      return false;
-
-    return true;
+    return rect.z < 0;
   }
 };
 
