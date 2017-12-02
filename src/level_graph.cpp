@@ -15,7 +15,7 @@ Room Graph_loadRoom(int roomIdx, IGame* game)
 
   r.name = "test room";
 
-  r.start = Vector3i(8 + 4, 4, 8 + 4);
+  r.start = Vector3i(0, 0, 0);
   r.theme = 2;
 
   for(int k = 0; k < 4; ++k)
