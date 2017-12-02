@@ -1,4 +1,5 @@
 #pragma once
+#include <memory>
 #include <vector>
 
 struct Mesh
@@ -17,4 +18,6 @@ struct Mesh
   std::vector<Vertex> vertices;
   std::vector<Face> faces;
 };
+
+std::unique_ptr<Mesh> loadMesh(char const* path);
 

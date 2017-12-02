@@ -1,10 +1,17 @@
 #include "room.h"
 #include "entity_factory.h"
 #include "base/mesh.h"
+#include <stdlib.h>
 
-Room Graph_loadRoom(int /*roomIdx*/, IGame* game)
+Room Graph_loadRoom(int roomIdx, IGame* game)
 {
   Room r;
+
+  {
+    char filename[256];
+    snprintf(filename, sizeof filename, "res/rooms/room-%02d.3ds", roomIdx);
+    r.world = *loadMesh(filename);
+  }
 
   r.name = "test room";
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "base/mesh.h"
 #include "game.h"
 
 struct Room
@@ -17,6 +18,7 @@ struct Room
   };
 
   vector<Thing> things;
+  Mesh world;
 };
 
 Room Graph_loadRoom(int levelIdx, IGame* game);

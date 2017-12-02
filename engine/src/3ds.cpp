@@ -436,7 +436,16 @@ unique_ptr<Mesh> load(Span<uint8_t const> buffer)
 unique_ptr<Mesh> load(string filename)
 {
   auto fp = ifstream(filename, std::ios::binary);
+
+  if(!fp.is_open())
+    throw runtime_error("Can't open file '" + filename + "'");
+
   return load(fp);
 }
+}
+
+unique_ptr<Mesh> loadMesh(char const* path)
+{
+  return tds::load(path);
 }
 
