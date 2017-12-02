@@ -36,6 +36,7 @@ unique_ptr<Entity> createEntity(string formula)
 #include "entities/moving_platform.h"
 #include "entities/conveyor.h"
 #include "entities/sign.h"
+#include "entities/finish.h"
 
 static map<string, CreationFunc> getRegistry()
 {
@@ -153,6 +154,12 @@ static map<string, CreationFunc> getRegistry()
     [] (EntityArgs &)
     {
       return make_unique<MovingPlatform>(1);
+    };
+
+  r["finish"] =
+    [] (EntityArgs &)
+    {
+      return make_unique<FinishLine>();
     };
 
   r["conveyor(0)"] =
