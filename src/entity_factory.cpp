@@ -77,7 +77,7 @@ static map<string, CreationFunc> getRegistry()
       return makeBonus(8, UPGRADE_SLIDE, "go against wall while falling");
     };
 
-  r["bonus_life"] =
+  r["bonus"] =
     [] (EntityArgs &)
     {
       return makeBonus(0, 0, "life up");

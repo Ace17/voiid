@@ -18,9 +18,10 @@ vector<Brush> loadEdifice(int roomIdx, IGame* game)
 
   for(int objIdx = 0; objIdx < (int)mesh.objects.size(); ++objIdx)
   {
-    if(mesh.objectNames[objIdx] == "f.bonus")
+    auto name = mesh.objectNames[objIdx];
+    if(name.substr(0, 2) == "f.")
     {
-      auto ent = createEntity("upgrade_shoot");
+      auto ent = createEntity(name.substr(2));
       ent->pos = toVector3f(mesh.vertices[mesh.faces[mesh.objects[objIdx]].i1]);
       game->spawn(ent.release());
       continue;
@@ -58,30 +59,6 @@ Room Graph_loadRoom(int roomIdx, IGame* game)
 
   r.start = Vector3i(0, 0, 5);
   r.theme = roomIdx;
-
-  for(int k = 0; k < 4; ++k)
-  {
-    auto door = createEntity("door(0)");
-    door->pos = Vector3f(15, 3 + k * 8, 1);
-    door->pos += Vector3f(0, 0.5, 0.5);
-    game->spawn(door.release());
-
-    auto switch_ = createEntity("switch(0)");
-    switch_->pos = Vector3f(4, 6 + k * 9, 2);
-    game->spawn(switch_.release());
-  }
-
-  {
-    auto switch_ = createEntity("upgrade_shoot");
-    switch_->pos = Vector3f(10, 13, 2);
-    game->spawn(switch_.release());
-  }
-
-  {
-    auto switch_ = createEntity("upgrade_ball");
-    switch_->pos = Vector3f(20, 13, 2);
-    game->spawn(switch_.release());
-  }
 
   return r;
 }

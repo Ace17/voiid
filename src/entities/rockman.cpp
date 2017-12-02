@@ -90,7 +90,7 @@ struct Rockman : Player, Damageable
   virtual Actor getActor() const override
   {
     auto r = Actor(pos, MDL_ROCKMAN);
-    r.scale = UnitSize;
+    r.scale = size;
     r.focus = true;
 
     r.pos.z += 1.0;
