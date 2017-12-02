@@ -32,7 +32,14 @@ static const Resource models[] =
   { MDL_EXPLOSION, "res/sprites/explosion.json" },
   { MDL_SPIKES, "res/sprites/spikes.json" },
   { MDL_SIGN, "res/sprites/sign.json" },
-  { MDL_ROOMS, "res/rooms/room-01.json" },
+  { MDL_ROOMS+0, "res/rooms/room-00.json" },
+  { MDL_ROOMS+1, "res/rooms/room-01.json" },
+  { MDL_ROOMS+2, "res/rooms/room-02.json" },
+  // { MDL_ROOMS+3, "res/rooms/room-03.json" },
+  // { MDL_ROOMS+4, "res/rooms/room-04.json" },
+  // { MDL_ROOMS+5, "res/rooms/room-05.json" },
+  // { MDL_ROOMS+6, "res/rooms/room-06.json" },
+  // { MDL_ROOMS+7, "res/rooms/room-07.json" },
 };
 
 Span<const Resource> getSounds()
