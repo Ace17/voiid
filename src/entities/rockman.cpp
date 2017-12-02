@@ -24,7 +24,7 @@ auto const GRAVITY = 0.00005;
 auto const JUMP_SPEED = 0.012;
 auto const WALK_SPEED = 0.0075f;
 auto const MAX_HORZ_SPEED = 0.02f;
-auto const MAX_FALL_SPEED = 0.01f;
+auto const MAX_FALL_SPEED = 0.02f;
 auto const HURT_DELAY = 500;
 
 enum ORIENTATION

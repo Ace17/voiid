@@ -411,8 +411,8 @@ void drawModel(Rect3f where, Camera const& camera, Model& model, bool blinking, 
   auto const N = (int)action.textures.size();
   auto const idx = ::clamp<int>(ratio * N, 0, N - 1);
   glBindTexture(GL_TEXTURE_2D, action.textures[idx]);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
   auto Vec3 = [] (Vector3f v) { return glm::vec3(v.x, v.y, v.z); };
 
@@ -486,7 +486,7 @@ void Display_beginDraw()
   SAFE_GL(glClearColor(0, 0, 0, 1));
   SAFE_GL(glClear(GL_COLOR_BUFFER_BIT));
 
-  SAFE_GL(glUniform3f(g_ambientLoc, 1, 1, 1));
+  SAFE_GL(glUniform3f(g_ambientLoc, baseAmbientLight, baseAmbientLight, baseAmbientLight));
 }
 
 void Display_endDraw()
