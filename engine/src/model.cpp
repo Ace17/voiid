@@ -115,10 +115,10 @@ auto crossProduct(Vector3f a, Vector3f b)
   return r;
 }
 
-Vector3f computeNormal(tds::Mesh::Vertex V1, tds::Mesh::Vertex V2, tds::Mesh::Vertex V3)
+Vector3f computeNormal(Mesh::Vertex V1, Mesh::Vertex V2, Mesh::Vertex V3)
 {
   auto toVector3f =
-    [] (tds::Mesh::Vertex V)
+    [] (Mesh::Vertex V)
     {
       return Vector3f(V.x, V.y, V.z);
     };
@@ -142,7 +142,7 @@ Model modelFrom3ds(string path3ds)
   Model r;
 
   auto addVertex =
-    [&] (tds::Mesh::Vertex vert, Vector3f N)
+    [&] (Mesh::Vertex vert, Vector3f N)
     {
       Model::Vertex vt {};
 
