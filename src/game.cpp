@@ -253,7 +253,7 @@ struct Game : Scene, IGame
         return true;
     }
 
-    return box.z < 0;
+    return false;
   }
 
   struct Plane
