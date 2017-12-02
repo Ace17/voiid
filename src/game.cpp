@@ -84,9 +84,6 @@ struct Game : Scene, IGame
 
     for(auto& entity : m_entities)
     {
-      if(!overlaps(entity->getRect(), cameraRect))
-        continue;
-
       r.push_back(entity->getActor());
 
       if(m_debug)

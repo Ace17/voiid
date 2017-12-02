@@ -15,6 +15,6 @@ void main()
   gl_Position = MVP * a_position;
   v_texCoord = a_texCoord;
   vNormal = normalize(a_normal);
-  fogFactor = clamp(1.0/exp(length(gl_Position) * 0.1), 0.0, 1.0);
+  fogFactor = clamp(1.0/exp(length(gl_Position) * 0.01), 0.0, 1.0);
 }
 // vim: syntax=glsl
