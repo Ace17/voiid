@@ -1,5 +1,6 @@
 #include "room.h"
 #include "entity_factory.h"
+#include "base/mesh.h"
 
 Room Graph_loadRoom(int /*roomIdx*/, IGame* game)
 {

@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+readonly tmpDir=/tmp/ct3ds-$$
+trap "rm -rf $tmpDir" EXIT
+mkdir -p $tmpDir
+
+readonly input=$1
+readonly output=$2
+
+function dumpPythonScript
+{
+  echo 'import bpy'
+  echo 'import sys'
+  echo 'import traceback'
+  echo ''
+  echo 'argv = sys.argv'
+  echo 'argv = argv[argv.index("--") + 1:]'
+  echo ''
+  echo 'outputPath = argv[0]'
+  echo ''
+  echo 'def run():'
+  echo "   bpy.ops.object.select_all(action='DESELECT')"
+  echo "   bpy.ops.object.select_all(action='SELECT')"
+  echo '   '
+  echo "   bpy.ops.object.convert(target='MESH')"
+  echo '   '
+  echo '   print("keys before: ", len(bpy.context.scene.objects.keys()))'
+  echo '   '
+  echo '   # join everything into one single object'
+  echo '   if len(bpy.context.scene.objects.keys()) > 1:'
+  echo '     bpy.ops.object.join()'
+  echo '   '
+  echo '   print("keys after: ", len(bpy.context.scene.objects.keys()))'
+  echo '   '
+#  echo "   bpy.ops.object.mode_set(mode='OBJECT', toggle=False)"
+  echo '   '
+  echo "   # apply all transforms"
+  echo "   bpy.ops.object.select_all(action='SELECT')"
+  echo '   bpy.ops.object.transform_apply(location=True, scale=True, rotation=True)'
+  echo '   '
+  echo '   bpy.ops.export_scene.autodesk_3ds(filepath=outputPath)'
+  echo ''
+  echo 'try:'
+  echo '    run()'
+  echo '    sys.exit(0)'
+  echo 'except Exception:'
+  echo '    traceback.print_exc()'
+  echo '    sys.exit(1)'
+}
+
+dumpPythonScript > $tmpDir/run.py
+
+blender "$input" --background \
+  --python $tmpDir/run.py \
+  --python-exit-code \
+  -- "$output" >/dev/null
+
