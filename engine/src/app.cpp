@@ -153,7 +153,8 @@ private:
     {
       if(actor.focus)
       {
-        Display_setCamera(actor.pos, actor.orientation);
+        auto const size = Vector3f(actor.scale.cx, actor.scale.cy, actor.scale.cz);
+        Display_setCamera(actor.pos + size*0.5, actor.orientation);
         break;
       }
     }
