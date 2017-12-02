@@ -50,6 +50,7 @@ SRCS_GAME:=\
 	src/entities/switch.cpp\
 	src/entity_factory.cpp\
 	src/game.cpp\
+	src/room.cpp\
 	src/level_graph.cpp\
 	src/physics.cpp\
 	src/resources.cpp\

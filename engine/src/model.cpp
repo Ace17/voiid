@@ -96,25 +96,6 @@ Model boxModel()
   return model;
 }
 
-auto magnitude(Vector3f v)
-{
-  return sqrt(dotProduct(v, v));
-}
-
-auto normalize(Vector3f v)
-{
-  return v * (1.0f / magnitude(v));
-}
-
-auto crossProduct(Vector3f a, Vector3f b)
-{
-  Vector3f r;
-  r.x = a.y * b.z - a.z * b.y;
-  r.y = a.z * b.x - b.z * a.x;
-  r.z = a.x * b.y - a.y * b.x;
-  return r;
-}
-
 Vector3f computeNormal(Mesh::Vertex V1, Mesh::Vertex V2, Mesh::Vertex V3)
 {
   auto toVector3f =

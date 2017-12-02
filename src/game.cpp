@@ -110,6 +110,8 @@ struct Game : Scene, IGame
     m_spawned.clear();
   }
 
+  vector<Brush> world;
+
   void loadLevel(int levelIdx)
   {
     if(m_player)
@@ -136,6 +138,8 @@ struct Game : Scene, IGame
 
       m_player->pos = Vector(level.start.x, level.start.y, level.start.z);
     }
+
+    world = level.brushes;
 
     spawn(m_player);
 
@@ -238,9 +242,83 @@ struct Game : Scene, IGame
     return r;
   }
 
-  bool isRectSolid(Box rect)
+  bool isRectSolid(Box box)
   {
-    return rect.z < 0;
+    for(auto& brush : world)
+    {
+      auto const pos = Vector3f(box.x, box.y, box.z);
+      auto t = brush.trace(pos, pos, 1.0);
+
+      if(t.fraction < 1.0)
+        return true;
+    }
+
+    return box.z < 0;
+  }
+
+  struct Plane
+  {
+    Vector3f N;
+    float dist;
+  };
+
+  static bool boxIntersectsTriangle(Box b, Vector3f A, Vector3f B, Vector3f C)
+  {
+    auto boxMin = Vector3f(b.x, b.y, b.y);
+    auto boxMax = boxMin + Vector3f(b.cx, b.cy, b.cz);
+
+    // test triangle against one box face
+    if(max3(A.x, B.x, C.x) < boxMin.x)
+      return false;
+
+    if(min3(A.x, B.x, C.x) > boxMax.x)
+      return false;
+
+    // test triangle against one box face
+    if(max3(A.y, B.y, C.y) < boxMin.y)
+      return false;
+
+    if(min3(A.y, B.y, C.y) > boxMax.y)
+      return false;
+
+    // test triangle against one box face
+    if(max3(A.z, B.z, C.z) < boxMin.z)
+      return false;
+
+    if(min3(A.z, B.z, C.z) > boxMax.z)
+      return false;
+
+    // test box against triangle face
+    // auto const N = crossProduct(B - A, C - A);
+    // auto const dist = dotProduct(N, A);
+
+    return true;
+  }
+
+  static float max3(float a, float b, float c)
+  {
+    return max(a, max(b, c));
+  }
+
+  static float min3(float a, float b, float c)
+  {
+    return min(a, min(b, c));
+  }
+
+  static bool boxIntersectsPlane(Box box, Plane p)
+  {
+    auto posMin = Vector3f(box.x, box.y, box.y);
+    auto posMax = posMin + Vector3f(box.cx, box.cy, box.cz);
+
+    if(sign(dotProduct(posMin, p.N)) != sign(dotProduct(posMax, p.N)))
+      return true;
+
+    return false;
+  }
+
+  static float sign(float val)
+  {
+    return val < 0 ? -1 : 1;
   }
 };
 

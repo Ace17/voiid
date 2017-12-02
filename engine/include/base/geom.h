@@ -13,6 +13,7 @@
 
 #pragma once
 
+#include <cmath>
 #include <algorithm>
 #include <cassert>
 
@@ -217,6 +218,28 @@ template<typename T>
 inline T dotProduct(GenericVector3<T> a, GenericVector3<T> b)
 {
   return a.x * b.x + a.y * b.y + a.z * b.z;
+}
+
+template<typename T>
+inline auto magnitude(GenericVector3<T> v)
+{
+  return sqrt(dotProduct(v, v));
+}
+
+template<typename T>
+inline auto normalize(GenericVector3<T> v)
+{
+  return v * (1.0f / magnitude(v));
+}
+
+template<typename T>
+inline auto crossProduct(GenericVector3<T> a, GenericVector3<T> b)
+{
+  GenericVector3<T> r;
+  r.x = a.y * b.z - a.z * b.y;
+  r.y = a.z * b.x - b.z * a.x;
+  r.z = a.x * b.y - a.y * b.x;
+  return r;
 }
 
 typedef GenericVector<int> Vector2i;
