@@ -1,6 +1,7 @@
 #pragma once
 #include <memory>
 #include <vector>
+#include <string>
 
 struct Mesh
 {
@@ -18,6 +19,7 @@ struct Mesh
   std::vector<Vertex> vertices;
   std::vector<Face> faces;
   std::vector<int> objects; // index of each object beginning, in "faces"
+  std::vector<std::string> objectNames;
 };
 
 std::unique_ptr<Mesh> loadMesh(char const* path);

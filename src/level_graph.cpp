@@ -8,7 +8,7 @@ static Vector3f toVector3f(Mesh::Vertex v)
   return Vector3f(v.x, v.y, v.z);
 }
 
-vector<Brush> loadEdifice(int roomIdx)
+vector<Brush> loadEdifice(int roomIdx, IGame* game)
 {
   vector<Brush> brushes;
 
@@ -18,6 +18,14 @@ vector<Brush> loadEdifice(int roomIdx)
 
   for(int objIdx = 0; objIdx < (int)mesh.objects.size(); ++objIdx)
   {
+    if(mesh.objectNames[objIdx] == "f.bonus")
+    {
+      auto ent = createEntity("upgrade_shoot");
+      ent->pos = toVector3f(mesh.vertices[mesh.faces[mesh.objects[objIdx]].i1]);
+      game->spawn(ent.release());
+      continue;
+    }
+
     const int beginFace = mesh.objects[objIdx];
     const int endFace = objIdx + 1 < (int)mesh.objects.size() ? mesh.objects[objIdx + 1] : (int)mesh.faces.size();
 
@@ -46,7 +54,7 @@ Room Graph_loadRoom(int roomIdx, IGame* game)
   Room r;
 
   r.name = "test room";
-  r.brushes = loadEdifice(roomIdx);
+  r.brushes = loadEdifice(roomIdx, game);
 
   r.start = Vector3i(0, 0, 5);
   r.theme = 2;

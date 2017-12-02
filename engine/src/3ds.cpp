@@ -411,8 +411,9 @@ struct MeshLoader : Parser::Listener
     m_idx++;
   }
 
-  void onObjName(string /*Name*/) override
+  void onObjName(string Name) override
   {
+    m_Mesh.objectNames.push_back(Name);
     m_Mesh.objects.push_back((int)m_Mesh.faces.size());
     m_base = (int)m_Mesh.vertices.size();
   }
