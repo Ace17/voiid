@@ -57,7 +57,7 @@ Room Graph_loadRoom(int roomIdx, IGame* game)
   r.brushes = loadEdifice(roomIdx, game);
 
   r.start = Vector3i(0, 0, 5);
-  r.theme = 2;
+  r.theme = roomIdx;
 
   for(int k = 0; k < 4; ++k)
   {
