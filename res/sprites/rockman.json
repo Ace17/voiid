@@ -1,8 +1,8 @@
 {
   "type" : "sheet",
   "sheet" : "rockman.png",
-  "width" : 48,
-  "height" : 48,
+  "width" : 32,
+  "height" : 32,
   "actions": [
     {
       "name": "all",

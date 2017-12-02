@@ -1,8 +1,8 @@
 {
   "type" : "sheet",
   "sheet" : "door.png",
-  "width" : 48,
-  "height" : 48,
+  "width" : 32,
+  "height" : 32,
   "actions": [
     {
       "name": "default",
