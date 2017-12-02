@@ -260,6 +260,9 @@ struct Rockman : Player, Damageable
 
     if(!blinking)
       collisionGroup |= CG_SOLIDPLAYER;
+
+    if(pos.z < -15.0)
+      die();
   }
 
   virtual void onDamage(int amount) override
@@ -288,6 +291,7 @@ struct Rockman : Player, Damageable
     game->playSound(SND_DIE);
     ball = false;
     respawnDelay = 1000;
+    game->textBox("game over");
   }
 
   int debounceUse = 0;
