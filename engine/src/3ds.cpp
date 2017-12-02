@@ -398,6 +398,9 @@ struct MeshLoader : Parser::Listener
 
   void on3dFace(int A, int B, int C, uint32_t /*Flags*/) override
   {
+    A += m_base;
+    B += m_base;
+    C += m_base;
     m_Mesh.faces.push_back({ A, B, C });
   }
 
@@ -408,9 +411,16 @@ struct MeshLoader : Parser::Listener
     m_idx++;
   }
 
+  void onObjName(string /*Name*/) override
+  {
+    m_Mesh.objects.push_back((int)m_Mesh.faces.size());
+    m_base = (int)m_Mesh.vertices.size();
+  }
+
 private:
   Mesh& m_Mesh;
   int m_idx = 0;
+  int m_base = 0;
 };
 
 static

@@ -21,6 +21,7 @@ function dumpPythonScript
   echo 'outputPath = argv[0]'
   echo ''
   echo 'def run():'
+  echo "   bpy.ops.object.mode_set(mode='OBJECT', toggle=False)"
   echo "   bpy.ops.object.select_all(action='DESELECT')"
   echo "   bpy.ops.object.select_all(action='SELECT')"
   echo '   '
@@ -28,11 +29,11 @@ function dumpPythonScript
   echo '   '
   echo '   print("keys before: ", len(bpy.context.scene.objects.keys()))'
   echo '   '
-  echo '   # join everything into one single object'
-  echo '   if len(bpy.context.scene.objects.keys()) > 1:'
-  echo '     bpy.ops.object.join()'
-  echo '   '
-  echo '   print("keys after: ", len(bpy.context.scene.objects.keys()))'
+# echo '   # join everything into one single object'
+# echo '   if len(bpy.context.scene.objects.keys()) > 1:'
+# echo '     bpy.ops.object.join()'
+# echo '   '
+# echo '   print("keys after: ", len(bpy.context.scene.objects.keys()))'
   echo '   '
 #  echo "   bpy.ops.object.mode_set(mode='OBJECT', toggle=False)"
   echo '   '
