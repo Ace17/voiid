@@ -30,8 +30,7 @@ unique_ptr<IPhysics> createPhysics();
 struct Game : Scene, IGame
 {
   Game(View* view) :
-    m_view(view),
-    m_tiles(Size3i(1, 1, 1))
+    m_view(view)
   {
     m_shouldLoadLevel = true;
     m_physics = createPhysics();
@@ -73,8 +72,6 @@ struct Game : Scene, IGame
 
     auto cameraPos = m_player->pos;
 
-    addActorsForTileMap(r, cameraPos);
-
     Box cameraRect;
     cameraRect.cx = 32;
     cameraRect.cy = 32;
@@ -95,32 +92,6 @@ struct Game : Scene, IGame
     }
 
     return r;
-  }
-
-  void addActorsForTileMap(vector<Actor>& r, Vector cameraPos) const
-  {
-    auto onCell =
-      [&] (int x, int y, int z, int tile)
-      {
-        if(!tile)
-          return;
-
-        if(abs(x - cameraPos.x) > 16)
-          return;
-
-        if(abs(y - cameraPos.y) > 16)
-          return;
-
-        if(abs(z - cameraPos.z) > 9)
-          return;
-
-        auto actor = Actor(Vector(x, y, z), MDL_TILES);
-        actor.action = (m_theme % 8) * 8;
-        actor.scale = UnitSize;
-        r.push_back(actor);
-      };
-
-    m_tiles.scan(onCell);
   }
 
   void removeDeadThings()
@@ -156,17 +127,13 @@ struct Game : Scene, IGame
     m_listeners.clear();
 
     auto level = Graph_loadRoom(levelIdx, this);
-    m_tiles = move(level.tiles);
     m_theme = level.theme;
     m_view->playMusic(level.theme);
     printf("Now in: %s\n", level.name.c_str());
 
     if(!m_player)
     {
-      if(m_editorMode)
-        m_player = makeEditor(m_tiles).release();
-      else
-        m_player = makeRockman().release();
+      m_player = makeRockman().release();
 
       m_player->pos = Vector(level.start.x, level.start.y, level.start.z);
     }
@@ -243,7 +210,6 @@ struct Game : Scene, IGame
 
   set<IEventSink*> m_listeners;
 
-  Matrix m_tiles;
   bool m_debug;
   bool m_debugFirstTime = true;
 
