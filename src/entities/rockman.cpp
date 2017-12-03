@@ -89,11 +89,9 @@ struct Rockman : Player, Damageable
 
   virtual Actor getActor() const override
   {
-    auto r = Actor(pos, MDL_ROCKMAN);
+    auto r = Actor(pos, MDL_INVRECT);
     r.scale = size;
     r.focus = true;
-
-    r.pos.z += 1.0;
     r.orientation = vectorFromAngles(lookAngleHorz, lookAngleVert);
 
     return r;

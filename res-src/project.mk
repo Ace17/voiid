@@ -8,6 +8,7 @@ res/%.ogg: res-src/%.ogg
 	@ffmpeg -loglevel 1 -y -i "$<" -ar 22050 -ac 2 "$@" </dev/null
 
 ROOMS_SRC+=$(wildcard res-src/rooms/*.blend)
+ROOMS_SRC+=$(wildcard res-src/sprites/*.blend)
 TARGETS+=$(ROOMS_SRC:res-src/%.blend=res/%.3ds)
 
 res/%.3ds: res-src/%.blend

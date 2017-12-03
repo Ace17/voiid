@@ -32,7 +32,7 @@ struct Editor : Player
 
   virtual Actor getActor() const override
   {
-    auto r = Actor(pos - size * 0.5, MDL_ROCKMAN);
+    auto r = Actor(pos - size * 0.5, MDL_INVRECT);
     r.scale = UnitSize * 0;
     r.focus = true;
 
