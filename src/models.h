@@ -4,6 +4,7 @@ enum
 {
   MDL_RECT,
   MDL_INVRECT,
+  MDL_AMULET,
   MDL_DOOR,
   MDL_SWITCH,
   MDL_TILES,

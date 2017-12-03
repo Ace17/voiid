@@ -1,4 +1,6 @@
 /bin
 /tags
+/res/sounds/*.ogg
+/res/music/*.ogg
 .session.vim
 *.blend1

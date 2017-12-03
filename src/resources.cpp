@@ -22,6 +22,7 @@ static const Resource models[] =
   { MDL_TILES, "res/tiles.mdl" },
   { MDL_DOOR, "res/sprites/door.json" },
   { MDL_RECT, "res/sprites/rect.json" },
+  { MDL_AMULET, "res/sprites/amulet.json" },
   { MDL_INVRECT, "res/sprites/invrect.json" },
   { MDL_SWITCH, "res/sprites/switch.json" },
   { MDL_WHEEL, "res/sprites/wheel.json" },
