@@ -53,7 +53,16 @@ struct Rockman : Player, Damageable
     auto r = Actor(pos, MDL_INVRECT);
     r.scale = size;
     r.focus = true;
-    r.action = 0; // hide debug box
+
+    if(1) // hide debug box
+    {
+      r.action = 0;
+      r.pos += Vector3f(0, 0, r.scale.cz);
+    }
+    else
+    {
+      r.action = 1;
+    }
     r.orientation = vectorFromAngles(lookAngleHorz, lookAngleVert);
 
     return r;
