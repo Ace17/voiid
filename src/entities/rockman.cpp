@@ -62,6 +62,7 @@ struct Rockman : Player, Damageable
     {
       r.action = 1;
     }
+
     r.orientation = vectorFromAngles(lookAngleHorz, lookAngleVert);
 
     return r;

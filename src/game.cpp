@@ -22,6 +22,8 @@
 #include "models.h" // MDL_TILES
 #include "room.h"
 
+#include "entities/finish.h" // TouchFinishLineEvent
+
 using namespace std;
 
 // from physics.cpp
@@ -45,7 +47,6 @@ struct Game : Scene, IGame
     if(m_shouldLoadLevel)
     {
       loadLevel(m_level);
-      m_player->pos += m_transform;
       m_shouldLoadLevel = false;
     }
 
@@ -135,11 +136,9 @@ struct Game : Scene, IGame
     printf("Now in: %s\n", level.name.c_str());
 
     if(!m_player)
-    {
       m_player = makeRockman().release();
 
-      m_player->pos = Vector(level.start.x, level.start.y, level.start.z);
-    }
+    m_player->pos = Vector(level.start.x, level.start.y, level.start.z);
 
     world = level.brushes;
 
@@ -147,23 +146,21 @@ struct Game : Scene, IGame
 
     {
       auto f = bind(&Game::onTouchLevelBoundary, this, std::placeholders::_1);
-      m_levelBoundary = makeDelegator<TouchLevelBoundary>(f);
+      m_levelBoundary = makeDelegator<TouchFinishLineEvent>(f);
       subscribeForEvents(&m_levelBoundary);
     }
   }
 
-  void onTouchLevelBoundary(const TouchLevelBoundary* event)
+  void onTouchLevelBoundary(const TouchFinishLineEvent* event)
   {
     (void)event;
     m_shouldLoadLevel = true;
-    m_transform = event->transform;
-    m_level = event->targetLevel;
+    m_level++;
   }
 
   int m_level = 1;
   int m_theme = 0;
   int m_editorMode = 0;
-  Vector m_transform;
   bool m_shouldLoadLevel = false;
 
   EventDelegator m_levelBoundary;
