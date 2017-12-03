@@ -20,7 +20,7 @@ Room Graph_loadRoom(int roomIdx, IGame* game)
 
   if(!ifstream(filename).is_open())
   {
-    snprintf(filename, sizeof filename, "res/rooms/ending.3ds");
+    snprintf(filename, sizeof filename, "res/rooms/ending/mesh.3ds");
     roomIdx = 0;
   }
 
