@@ -44,7 +44,7 @@ struct Rockman : Player, Damageable
 
   void enter() override
   {
-    game->textBox("OK");
+    game->textBox("MORE");
     respawnPoint = pos;
   }
 
