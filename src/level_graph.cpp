@@ -8,9 +8,11 @@ static Vector3f toVector3f(Mesh::Vertex v)
   return Vector3f(v.x, v.y, v.z);
 }
 
-vector<Brush> loadEdifice(int roomIdx, IGame* game)
+Room Graph_loadRoom(int roomIdx, IGame* game)
 {
-  vector<Brush> brushes;
+  Room r;
+
+  r.name = "test room";
 
   char filename[256];
   snprintf(filename, sizeof filename, "res/rooms/room-%02d.3ds", roomIdx);
@@ -45,18 +47,8 @@ vector<Brush> loadEdifice(int roomIdx, IGame* game)
       brush.planes.push_back(Plane { N, D });
     }
 
-    brushes.push_back(brush);
+    r.brushes.push_back(brush);
   }
-
-  return brushes;
-}
-
-Room Graph_loadRoom(int roomIdx, IGame* game)
-{
-  Room r;
-
-  r.name = "test room";
-  r.brushes = loadEdifice(roomIdx, game);
 
   r.start = Vector3i(0, 0, 5);
   r.theme = roomIdx;
