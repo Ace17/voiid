@@ -19,6 +19,7 @@ vector<Brush> loadEdifice(int roomIdx, IGame* game)
   for(int objIdx = 0; objIdx < (int)mesh.objects.size(); ++objIdx)
   {
     auto name = mesh.objectNames[objIdx];
+
     if(name.substr(0, 2) == "f.")
     {
       auto ent = createEntity(name.substr(2));
