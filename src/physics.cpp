@@ -144,17 +144,6 @@ struct Physics : IPhysics
     return r;
   }
 
-  bool isSolid(const Body* except, Box rect) const
-  {
-    if(getBodiesInRect(rect, -1, true, except))
-      return true;
-
-    if(m_traceEdifice(rect, Vector3f(0, 0, 0)).fraction < 1.0)
-      return true;
-
-    return false;
-  }
-
   void checkForOverlaps()
   {
     for(auto p : allPairs((int)m_bodies.size()))
