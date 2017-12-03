@@ -1,6 +1,6 @@
 {
   "type" : "sheet",
-  "sheet" : "room-00.png",
+  "sheet" : "mesh.png",
   "width" : 128,
   "height" : 128,
   "actions": [
