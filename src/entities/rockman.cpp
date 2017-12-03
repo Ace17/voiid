@@ -33,7 +33,7 @@ enum ORIENTATION
   RIGHT,
 };
 
-static auto const NORMAL_SIZE = Size(1, 1, 1);
+static auto const NORMAL_SIZE = Size(2, 2, 2);
 
 struct Rockman : Player, Damageable
 {
@@ -57,7 +57,6 @@ struct Rockman : Player, Damageable
     if(1) // hide debug box
     {
       r.action = 0;
-      r.pos += Vector3f(0, 0, r.scale.cz);
     }
     else
     {
