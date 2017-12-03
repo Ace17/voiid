@@ -137,6 +137,7 @@ struct Physics : IPhysics
       {
         r.fraction = tr.fraction;
         r.N = tr.plane.N;
+        r.blocker = other;
       }
     }
 
