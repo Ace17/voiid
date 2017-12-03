@@ -2,6 +2,7 @@
 #include "entity_factory.h"
 #include "base/mesh.h"
 #include <stdlib.h>
+#include <fstream>
 
 static Vector3f toVector3f(Mesh::Vertex v)
 {
@@ -16,6 +17,13 @@ Room Graph_loadRoom(int roomIdx, IGame* game)
 
   char filename[256];
   snprintf(filename, sizeof filename, "res/rooms/room-%02d.3ds", roomIdx);
+
+  if(!ifstream(filename).is_open())
+  {
+    snprintf(filename, sizeof filename, "res/rooms/ending.3ds");
+    roomIdx = 0;
+  }
+
   auto mesh = *loadMesh(filename);
 
   for(int objIdx = 0; objIdx < (int)mesh.objects.size(); ++objIdx)

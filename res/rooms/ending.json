@@ -1,0 +1,12 @@
+{
+  "type" : "sheet",
+  "sheet" : "ending.png",
+  "width" : 128,
+  "height" : 128,
+  "actions": [
+    {
+      "name": "default",
+      "frames": [ 0 ]
+    }
+  ]
+}

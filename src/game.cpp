@@ -131,7 +131,6 @@ struct Game : Scene, IGame
     m_listeners.clear();
 
     auto level = Graph_loadRoom(levelIdx, this);
-    m_theme = level.theme;
     m_view->playMusic(level.theme);
     printf("Now in: %s\n", level.name.c_str());
 
@@ -159,7 +158,6 @@ struct Game : Scene, IGame
   }
 
   int m_level = 1;
-  int m_theme = 0;
   int m_editorMode = 0;
   bool m_shouldLoadLevel = false;
 
