@@ -248,8 +248,9 @@ struct Game : Scene, IGame
   {
     for(auto& brush : world)
     {
-      auto const pos = Vector3f(box.x, box.y, box.z);
-      auto t = brush.trace(pos, pos, 1.0);
+      auto const halfSize = Vector3f(box.cx, box.cy, box.cz) * 0.5;
+      auto const pos = Vector3f(box.x, box.y, box.z) + halfSize;
+      auto t = brush.trace(pos, pos, halfSize.x);
 
       if(t.fraction < 1.0)
         return true;

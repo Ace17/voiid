@@ -33,46 +33,7 @@ enum ORIENTATION
   RIGHT,
 };
 
-struct Bullet : Entity
-{
-  Bullet()
-  {
-    size = UnitSize * 0.4;
-    collisionGroup = 0;
-    collidesWith = CG_WALLS;
-  }
-
-  virtual Actor getActor() const override
-  {
-    auto r = Actor(pos, MDL_BULLET);
-    r.scale = size;
-    r.action = 0;
-    r.ratio = 0;
-
-    return r;
-  }
-
-  void tick() override
-  {
-    pos += vel;
-    decrement(life);
-
-    if(life == 0)
-      dead = true;
-  }
-
-  void onCollide(Entity* other) override
-  {
-    if(auto damageable = dynamic_cast<Damageable*>(other))
-      damageable->onDamage(10);
-
-    dead = true;
-  }
-
-  int life = 1000;
-};
-
-static auto const NORMAL_SIZE = Size(0.7, 0.7, 1.5);
+static auto const NORMAL_SIZE = Size(1, 1, 1);
 
 struct Rockman : Player, Damageable
 {
@@ -92,6 +53,7 @@ struct Rockman : Player, Damageable
     auto r = Actor(pos, MDL_INVRECT);
     r.scale = size;
     r.focus = true;
+    r.action = 0; // hide debug box
     r.orientation = vectorFromAngles(lookAngleHorz, lookAngleVert);
 
     return r;
@@ -237,20 +199,6 @@ struct Rockman : Player, Damageable
 
     if(control.use && tryActivate(debounceUse, 250))
       game->playSound(SND_SWITCH);
-
-    if(upgrades & UPGRADE_SHOOT && !ball)
-    {
-      if(firebutton.toggle(control.fire) && tryActivate(debounceFire, 150))
-      {
-        auto b = make_unique<Bullet>();
-
-        b->pos = pos;
-        b->vel = Vector(0.025, 0, 0);
-        game->spawn(b.release());
-        game->playSound(SND_FIRE);
-        shootDelay = 300;
-      }
-    }
 
     if(control.restart)
       onDamage(10000);

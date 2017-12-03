@@ -5,7 +5,11 @@
   "height" : 32,
   "actions": [
     {
-      "name": "default",
+      "name": "hidden",
+      "frames": [ 1 ]
+    },
+    {
+      "name": "visible",
       "frames": [ 0 ]
     }
   ]
