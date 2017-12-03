@@ -83,7 +83,7 @@ struct Physics : IPhysics
     // update ground
     if(!body->pusher)
     {
-      auto const trace = traceBox(rect, Vector3f(0, 0, -0.01), body);
+      auto const trace = traceBox(rect, Vector3f(0, 0, -0.1), body);
 
       if(trace.fraction < 1.0)
         body->ground = trace.blocker;
