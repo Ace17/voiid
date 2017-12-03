@@ -145,7 +145,7 @@ struct Physics : IPhysics
 
   bool isSolid(const Body* except, Box rect) const
   {
-    if(getSolidBodyInRect(rect, except))
+    if(getBodiesInRect(rect, -1, true, except))
       return true;
 
     if(m_traceEdifice(rect, Vector3f(0, 0, 0)).fraction < 1.0)
@@ -206,11 +206,6 @@ struct Physics : IPhysics
   }
 
 private:
-  Body* getSolidBodyInRect(Box myRect, const Body* except) const
-  {
-    return getBodiesInRect(myRect, -1, true, except);
-  }
-
   vector<Body*> m_bodies;
   function<TRACE(Box, Vector3f)> m_traceEdifice;
 };
