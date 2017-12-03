@@ -24,7 +24,7 @@ struct FinishLine : Entity
 {
   FinishLine()
   {
-    size = Size(3, 3, 4);
+    size = Size(2, 2, 2);
     solid = false;
     collisionGroup = 0; // dont' trigger other detectors
     collidesWith = CG_PLAYER | CG_SOLIDPLAYER;
