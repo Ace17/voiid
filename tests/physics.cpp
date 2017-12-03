@@ -39,16 +39,28 @@ void assertNearlyEqualsFunc(Vector expected, Vector actual, const char* file, in
 unique_ptr<IPhysics> createPhysics();
 
 static
-bool isSolid(Box rect)
+IPhysicsProbe::TRACE traceEdifice(Box rect, Vector delta)
 {
-  return rect.y < 0 || rect.x < 0;
+  if(rect.y + delta.y < 0)
+    return IPhysicsProbe::TRACE {
+             0, nullptr, Vector3f(0, 1, 0)
+    };
+
+  if(rect.x + delta.x < 0)
+    return IPhysicsProbe::TRACE {
+             0, nullptr, Vector3f(1, 0, 0)
+    };
+
+  return IPhysicsProbe::TRACE {
+           1, nullptr, Vector3f(0, 0, 0)
+  };
 }
 
 struct Fixture
 {
   Fixture() : physics(createPhysics())
   {
-    physics->setEdifice(&isSolid);
+    physics->setEdifice(&traceEdifice);
     physics->addBody(&mover);
   }
 

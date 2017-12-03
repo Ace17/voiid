@@ -1,5 +1,6 @@
 #include "body.h"
 #include "base/util.h"
+#include "brush.h"
 #include <vector>
 #include <memory>
 
@@ -46,16 +47,18 @@ struct Physics : IPhysics
   bool moveBody(Body* body, Vector delta)
   {
     auto rect = body->getRect();
-    rect.x += delta.x;
-    rect.y += delta.y;
-    rect.z += delta.z;
 
-    auto const blocked = isSolid(body, rect);
+    auto const trace = traceBox(rect, delta, body);
+    auto const blocked = trace.fraction < 1.0f;
+
+    rect.x += delta.x * trace.fraction;
+    rect.y += delta.y * trace.fraction;
+    rect.z += delta.z * trace.fraction;
 
     if(blocked)
     {
-      if(auto blocker = getSolidBodyInRect(rect, body))
-        collideBodies(*body, *blocker);
+      if(trace.blocker)
+        collideBodies(*body, *trace.blocker);
     }
     else
     {
@@ -80,13 +83,64 @@ struct Physics : IPhysics
     // update ground
     if(!body->pusher)
     {
-      auto feet = rect;
-      feet.z -= 0.01;
-      feet.cz = 0.01;
-      body->ground = getSolidBodyInRect(feet, body);
+      auto const trace = traceBox(rect, Vector3f(0, 0, -0.01), body);
+
+      if(trace.fraction < 1.0)
+        body->ground = trace.blocker;
     }
 
     return !blocked;
+  }
+
+  TRACE traceBox(Box rect, Vector3f delta, const Body* except) const
+  {
+    auto traceBodies = traceBoxThroughBodies(rect, delta, except);
+    auto traceEdifice = m_traceEdifice(rect, delta);
+
+    if(traceBodies.fraction < traceEdifice.fraction)
+      return traceBodies;
+    else
+      return traceEdifice;
+  }
+
+  TRACE traceBoxThroughBodies(Box box, Vector3f delta, const Body* except) const
+  {
+    auto const halfSize = Vector3f(box.cx, box.cy, box.cz) * 0.5;
+
+    auto const A = Vector3f(box.x, box.y, box.z) + halfSize;
+    auto const B = A + delta;
+
+    TRACE r {};
+    r.fraction = 1.0;
+
+    Brush b;
+    b.planes.resize(6);
+
+    for(auto other : m_bodies)
+    {
+      if(other == except)
+        continue;
+
+      if(!other->solid)
+        continue;
+
+      b.planes[0] = Plane { Vector3f(-1, 0, 0), -other->pos.x };
+      b.planes[1] = Plane { Vector3f(+1, 0, 0), other->pos.x + other->size.cx };
+      b.planes[2] = Plane { Vector3f(0, -1, 0), -other->pos.y };
+      b.planes[3] = Plane { Vector3f(0, +1, 0), other->pos.y + other->size.cy };
+      b.planes[4] = Plane { Vector3f(0, 0, -1), -other->pos.z };
+      b.planes[5] = Plane { Vector3f(0, 0, +1), other->pos.z + other->size.cz };
+
+      auto tr = b.trace(A, B, halfSize.x);
+
+      if(tr.fraction < r.fraction)
+      {
+        r.fraction = tr.fraction;
+        r.N = tr.plane.N;
+      }
+    }
+
+    return r;
   }
 
   bool isSolid(const Body* except, Box rect) const
@@ -94,7 +148,7 @@ struct Physics : IPhysics
     if(getSolidBodyInRect(rect, except))
       return true;
 
-    if(m_isSolid(rect))
+    if(m_traceEdifice(rect, Vector3f(0, 0, 0)).fraction < 1.0)
       return true;
 
     return false;
@@ -124,9 +178,9 @@ struct Physics : IPhysics
       me.onCollision(&other);
   }
 
-  void setEdifice(function<bool(Box)> isSolid)
+  void setEdifice(function<TRACE(Box, Vector3f)> trace)
   {
-    m_isSolid = isSolid;
+    m_traceEdifice = trace;
   }
 
   Body* getBodiesInRect(Box myRect, int collisionGroup, bool onlySolid, const Body* except) const
@@ -158,7 +212,7 @@ private:
   }
 
   vector<Body*> m_bodies;
-  function<bool(Box)> m_isSolid;
+  function<TRACE(Box, Vector3f)> m_traceEdifice;
 };
 
 unique_ptr<IPhysics> createPhysics()

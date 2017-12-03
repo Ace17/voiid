@@ -45,8 +45,15 @@ struct Body
 
 struct IPhysicsProbe
 {
+  struct TRACE
+  {
+    float fraction;
+    Body* blocker;
+    Vector3f N;
+  };
   // called by entities
   virtual bool moveBody(Body* body, Vector delta) = 0;
+  virtual TRACE traceBox(Box box, Vector3f delta, const Body* except) const = 0;
   virtual bool isSolid(const Body* body, Box) const = 0;
   virtual Body* getBodiesInRect(Box myRect, int collisionGroup, bool onlySolid = false, const Body* except = nullptr) const = 0;
 };
@@ -58,6 +65,6 @@ struct IPhysics : IPhysicsProbe
   virtual void removeBody(Body* body) = 0;
   virtual void clearBodies() = 0;
   virtual void checkForOverlaps() = 0;
-  virtual void setEdifice(function<bool(Box)> isSolid) = 0;
+  virtual void setEdifice(function<TRACE(Box, Vector3f)> isSolid) = 0;
 };
 

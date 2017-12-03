@@ -96,6 +96,16 @@ struct NullPhysicsProbe : IPhysicsProbe
     return box.y < 0;
   }
 
+  virtual TRACE traceBox(Box box, Vector3f delta, const Body* except) const
+  {
+    (void)box;
+    (void)delta;
+    (void)except;
+    return TRACE {
+             1, nullptr, Vector3f(0, 0, 0)
+    };
+  }
+
   Body* getBodiesInRect(Box, int, bool, const Body*) const
   {
     return nullptr;

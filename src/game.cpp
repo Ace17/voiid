@@ -36,7 +36,7 @@ struct Game : Scene, IGame
   {
     m_shouldLoadLevel = true;
     m_physics = createPhysics();
-    m_physics->setEdifice(bind(&Game::isBoxSolid, this, placeholders::_1));
+    m_physics->setEdifice(bind(&Game::traceEdifice, this, placeholders::_1, placeholders::_2));
   }
 
   ////////////////////////////////////////////////////////////////
@@ -241,19 +241,25 @@ struct Game : Scene, IGame
     return r;
   }
 
-  bool isBoxSolid(Box box)
+  IPhysicsProbe::TRACE traceEdifice(Box box, Vector3f delta) const
   {
+    IPhysicsProbe::TRACE r {};
+    r.fraction = 1.0;
+
     for(auto& brush : world)
     {
       auto const halfSize = Vector3f(box.cx, box.cy, box.cz) * 0.5;
       auto const pos = Vector3f(box.x, box.y, box.z) + halfSize;
-      auto t = brush.trace(pos, pos, halfSize.x);
+      auto t = brush.trace(pos, pos + delta, halfSize.x);
 
-      if(t.fraction < 1.0)
-        return true;
+      if(t.fraction < r.fraction)
+      {
+        r.fraction = t.fraction;
+        r.N = t.plane.N;
+      }
     }
 
-    return false;
+    return r;
   }
 };
 
