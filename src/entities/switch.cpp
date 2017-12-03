@@ -171,6 +171,7 @@ struct Door : Entity, IEventSink
       if(trg->idx != id)
         return;
 
+      game->playSound(SND_DOOR);
       state = !state;
 
       if(state)

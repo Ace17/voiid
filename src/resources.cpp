@@ -9,6 +9,7 @@ static const Resource sounds[] =
   { SND_JUMP, "res/sounds/jump.ogg" },
   { SND_LAND, "res/sounds/land.ogg" },
   { SND_SWITCH, "res/sounds/switch.ogg" },
+  { SND_DOOR, "res/sounds/door.ogg" },
   { SND_HURT, "res/sounds/hurt.ogg" },
   { SND_DIE, "res/sounds/die.ogg" },
   { SND_BONUS, "res/sounds/bonus.ogg" },

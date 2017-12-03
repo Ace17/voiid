@@ -7,6 +7,7 @@ enum
   SND_JUMP,
   SND_LAND,
   SND_SWITCH,
+  SND_DOOR,
   SND_HURT,
   SND_DIE,
   SND_BONUS,
