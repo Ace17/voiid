@@ -20,6 +20,7 @@
 #include "entity.h"
 #include "models.h"
 #include "sounds.h"
+#include "move.h"
 #include "toggle.h"
 
 struct TriggerEvent : Event
@@ -147,15 +148,18 @@ struct Door : Entity, IEventSink
   {
     decrement(openingDelay);
 
-    if(openingDelay == 0 && state)
-      solid = false;
+    if(openingDelay > 0)
+    {
+      auto sign = state ? 1 : -1;
+      slideMove(this, Vector3f(0, 0, 0.002) * sign);
+    }
   }
 
   virtual Actor getActor() const override
   {
     auto r = Actor(pos, MDL_DOOR);
     r.action = 1;
-    r.ratio = state ? 1 - (openingDelay / 1000.0f) : 0;
+    r.ratio = 0;
     r.scale = size;
     return r;
   }
