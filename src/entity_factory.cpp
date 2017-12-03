@@ -144,13 +144,13 @@ static map<string, CreationFunc> getRegistry()
       return makeSwitch(0);
     };
 
-  r["moving_platform(0)"] =
+  r["mp(0)"] =
     [] (EntityArgs &)
     {
       return make_unique<MovingPlatform>(0);
     };
 
-  r["moving_platform(1)"] =
+  r["mp(1)"] =
     [] (EntityArgs &)
     {
       return make_unique<MovingPlatform>(1);
