@@ -180,7 +180,7 @@ struct Rockman : Player, Damageable
     time++;
     computeVelocity(control);
 
-    auto trace = slideMove(this, vel);
+    auto trace = slideMove(physics, this, vel);
 
     if(!trace.onGround)
     {

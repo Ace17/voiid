@@ -1,3 +1,5 @@
+#pragma once
+
 #include <functional>
 #include "vec.h"
 #include "trace.h"

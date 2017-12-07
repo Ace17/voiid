@@ -1,7 +1,7 @@
 #pragma once
 
 #include <math.h>
-#include "entity.h"
+#include "body.h"
 
 struct Trace2
 {
@@ -9,13 +9,13 @@ struct Trace2
 };
 
 inline
-Trace2 slideMove(Entity* ent, Vector delta)
+Trace2 slideMove(IPhysicsProbe* physics, Body* body, Vector delta)
 {
   Trace2 r;
 
-  ent->physics->moveBody(ent, Vector(delta.x, 0, 0));
-  ent->physics->moveBody(ent, Vector(0, delta.y, 0));
-  r.onGround = !ent->physics->moveBody(ent, Vector(0, 0, delta.z));
+  physics->moveBody(body, Vector(delta.x, 0, 0));
+  physics->moveBody(body, Vector(0, delta.y, 0));
+  r.onGround = !physics->moveBody(body, Vector(0, 0, delta.z));
 
   return r;
 }

@@ -106,7 +106,7 @@ struct Editor : Player
 
     computeVelocity(control);
 
-    slideMove(this, vel);
+    slideMove(physics, this, vel);
 
     decrement(debounceFire);
 
