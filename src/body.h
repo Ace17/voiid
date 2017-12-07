@@ -27,7 +27,7 @@ struct Body
   {
   }
 
-  Box getRect() const
+  Box getBox() const
   {
     Box r;
     r.x = pos.x;

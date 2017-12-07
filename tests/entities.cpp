@@ -79,7 +79,7 @@ struct NullPhysicsProbe : IPhysicsProbe
   // called by entities
   bool moveBody(Body* body, Vector delta)
   {
-    auto box = body->getRect();
+    auto box = body->getBox();
     box.x += delta.x;
     box.y += delta.y;
 

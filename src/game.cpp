@@ -232,7 +232,7 @@ struct Game : Scene, IGame
 
   static Actor getDebugActor(Entity* entity)
   {
-    auto rect = entity->getRect();
+    auto rect = entity->getBox();
     auto r = Actor(Vector(rect.x, rect.y, rect.z), MDL_RECT);
     r.scale = rect;
     return r;

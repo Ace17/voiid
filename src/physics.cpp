@@ -46,7 +46,7 @@ struct Physics : IPhysics
 
   bool moveBody(Body* body, Vector delta)
   {
-    auto rect = body->getRect();
+    auto rect = body->getBox();
 
     auto const trace = traceBox(rect, delta, body);
     auto const blocked = trace.fraction < 1.0f;
@@ -75,7 +75,7 @@ struct Physics : IPhysics
 
         // push potential non-solid bodies
         for(auto other : m_bodies)
-          if(other != body && overlaps(rect, other->getRect()))
+          if(other != body && overlaps(rect, other->getBox()))
             moveBody(other, delta);
       }
     }
@@ -160,8 +160,8 @@ struct Physics : IPhysics
       auto& me = *m_bodies[p.first];
       auto& other = *m_bodies[p.second];
 
-      auto rect = me.getRect();
-      auto otherRect = other.getRect();
+      auto rect = me.getBox();
+      auto otherRect = other.getBox();
 
       if(overlaps(rect, otherRect))
         collideBodies(me, other);
@@ -195,7 +195,7 @@ struct Physics : IPhysics
       if(!(body->collisionGroup & collisionGroup))
         continue;
 
-      auto rect = body->getRect();
+      auto rect = body->getBox();
 
       if(overlaps(rect, myRect))
         return body;

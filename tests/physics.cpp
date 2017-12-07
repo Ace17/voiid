@@ -43,16 +43,22 @@ static
 {
   if(rect.y + delta.y < 0)
     return ::Trace {
-             0, Vector3f(0, 1, 0)
+             0, {
+               Vector3f(0, 1, 0), 0
+             }
     };
 
   if(rect.x + delta.x < 0)
     return ::Trace {
-             0, Vector3f(1, 0, 0)
+             0, {
+               Vector3f(1, 0, 0), 0
+             }
     };
 
   return ::Trace {
-           1, Vector3f(0, 0, 0)
+           1, {
+             Vector3f(0, 0, 0), 0
+           }
   };
 }
 
