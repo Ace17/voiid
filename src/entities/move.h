@@ -5,19 +5,17 @@
 
 struct Trace
 {
-  bool tx;
-  bool ty;
-  bool tz;
+  bool onGround;
 };
 
 inline
-Trace slideMove(Entity* ent, Vector vel)
+Trace slideMove(Entity* ent, Vector delta)
 {
   Trace r;
 
-  r.tx = ent->physics->moveBody(ent, Vector(vel.x, 0, 0));
-  r.ty = ent->physics->moveBody(ent, Vector(0, vel.y, 0));
-  r.tz = ent->physics->moveBody(ent, Vector(0, 0, vel.z));
+  ent->physics->moveBody(ent, Vector(delta.x, 0, 0));
+  ent->physics->moveBody(ent, Vector(0, delta.y, 0));
+  r.onGround = !ent->physics->moveBody(ent, Vector(0, 0, delta.z));
 
   return r;
 }
