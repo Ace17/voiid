@@ -158,7 +158,6 @@ struct Game : Scene, IGame
   }
 
   int m_level = 1;
-  int m_editorMode = 0;
   bool m_shouldLoadLevel = false;
 
   EventDelegator m_levelBoundary;
@@ -267,9 +266,6 @@ Scene* createGame(View* view, vector<string> args)
 
   if(args.size() >= 1)
     r->m_level = atoi(args[0].c_str());
-
-  if(args.size() >= 2)
-    r->m_editorMode = atoi(args[1].c_str());
 
   return r.release();
 }
