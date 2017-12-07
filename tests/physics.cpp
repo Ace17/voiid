@@ -113,3 +113,15 @@ unittest("Physics: left move, blocked by a bigger body")
   assertNearlyEquals(Vector(100, 10, 0), fix.mover.pos);
 }
 
+#include "entities/move.h"
+
+unittest("Physics: slide up-left move, horizontally blocked by vertical wall at x=0")
+{
+  Fixture fix;
+  fix.mover.pos = Vector(10, 10, 0);
+
+  slideMove(fix.physics.get(), &fix.mover, Vector(-20, 20, 0));
+
+  assertNearlyEquals(Vector(10, 30, 0), fix.mover.pos);
+}
+

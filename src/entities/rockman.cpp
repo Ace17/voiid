@@ -195,9 +195,8 @@ struct Rockman : Player, Damageable
 
         ground = true;
         dashDelay = 0;
+        vel.z = 0;
       }
-
-      vel.z = 0;
     }
 
     decrement(debounceUse);

@@ -13,9 +13,19 @@ Trace2 slideMove(IPhysicsProbe* physics, Body* body, Vector delta)
 {
   Trace2 r;
 
-  physics->moveBody(body, Vector(delta.x, 0, 0));
-  physics->moveBody(body, Vector(0, delta.y, 0));
-  r.onGround = !physics->moveBody(body, Vector(0, 0, delta.z));
+  for(int i = 0; i < 3; ++i)
+  {
+    auto tr = physics->traceBox(body->getBox(), delta, body);
+
+    if(tr.fraction == 1.0)
+      break;
+
+    delta -= dotProduct(delta, tr.plane.N) * tr.plane.N;
+  }
+
+  physics->moveBody(body, delta);
+
+  r.onGround = physics->traceBox(body->getBox(), Down * 0.1, body).fraction < 1.0;
 
   return r;
 }
