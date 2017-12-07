@@ -1,5 +1,6 @@
 #include <functional>
 #include "vec.h"
+#include "trace.h"
 
 using namespace std;
 
@@ -39,15 +40,13 @@ struct Body
 
 struct IPhysicsProbe
 {
-  struct TRACE
+  struct Trace : public ::Trace
   {
-    float fraction;
     Body* blocker;
-    Vector N;
   };
   // called by entities
   virtual bool moveBody(Body* body, Vector delta) = 0;
-  virtual TRACE traceBox(Box box, Vector delta, const Body* except) const = 0;
+  virtual Trace traceBox(Box box, Vector delta, const Body* except) const = 0;
   virtual Body* getBodiesInRect(Box myRect, int collisionGroup, bool onlySolid = false, const Body* except = nullptr) const = 0;
 };
 
@@ -58,6 +57,6 @@ struct IPhysics : IPhysicsProbe
   virtual void removeBody(Body* body) = 0;
   virtual void clearBodies() = 0;
   virtual void checkForOverlaps() = 0;
-  virtual void setEdifice(function<TRACE(Box, Vector)> isSolid) = 0;
+  virtual void setEdifice(function<::Trace(Box, Vector)> isSolid) = 0;
 };
 

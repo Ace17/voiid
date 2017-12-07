@@ -1,8 +1,8 @@
 #include "room.h"
 
-Brush::TRACE Brush::trace(Vector A, Vector B, float radius) const
+Trace Brush::trace(Vector A, Vector B, float radius) const
 {
-  Brush::TRACE trace;
+  Trace trace;
   trace.fraction = 1;
 
   Plane clipPlane;

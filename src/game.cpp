@@ -238,9 +238,9 @@ struct Game : Scene, IGame
     return r;
   }
 
-  IPhysicsProbe::TRACE traceEdifice(Box box, Vector delta) const
+  Trace traceEdifice(Box box, Vector delta) const
   {
-    IPhysicsProbe::TRACE r {};
+    Trace r {};
     r.fraction = 1.0;
 
     for(auto& brush : world)
@@ -252,7 +252,7 @@ struct Game : Scene, IGame
       if(t.fraction < r.fraction)
       {
         r.fraction = t.fraction;
-        r.N = t.plane.N;
+        r.plane = t.plane;
       }
     }
 

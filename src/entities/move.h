@@ -3,15 +3,15 @@
 #include <math.h>
 #include "entity.h"
 
-struct Trace
+struct Trace2
 {
   bool onGround;
 };
 
 inline
-Trace slideMove(Entity* ent, Vector delta)
+Trace2 slideMove(Entity* ent, Vector delta)
 {
-  Trace r;
+  Trace2 r;
 
   ent->physics->moveBody(ent, Vector(delta.x, 0, 0));
   ent->physics->moveBody(ent, Vector(0, delta.y, 0));

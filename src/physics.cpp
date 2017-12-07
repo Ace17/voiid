@@ -92,10 +92,10 @@ struct Physics : IPhysics
     return !blocked;
   }
 
-  TRACE traceBox(Box rect, Vector delta, const Body* except) const
+  Trace traceBox(Box rect, Vector delta, const Body* except) const
   {
     auto traceBodies = traceBoxThroughBodies(rect, delta, except);
-    auto traceEdifice = m_traceEdifice(rect, delta);
+    auto traceEdifice = traceBoxThroughEdifice(rect, delta);
 
     if(traceBodies.fraction < traceEdifice.fraction)
       return traceBodies;
@@ -103,14 +103,23 @@ struct Physics : IPhysics
       return traceEdifice;
   }
 
-  TRACE traceBoxThroughBodies(Box box, Vector delta, const Body* except) const
+  Trace traceBoxThroughEdifice(Box box, Vector delta) const
+  {
+    auto t = m_traceEdifice(box, delta);
+    Trace r {};
+    r.fraction = t.fraction;
+    r.plane = t.plane;
+    return r;
+  }
+
+  Trace traceBoxThroughBodies(Box box, Vector delta, const Body* except) const
   {
     auto const halfSize = Vector3f(box.cx, box.cy, box.cz) * 0.5;
 
     auto const A = Vector3f(box.x, box.y, box.z) + halfSize;
     auto const B = A + delta;
 
-    TRACE r {};
+    Trace r {};
     r.fraction = 1.0;
 
     Brush b;
@@ -136,7 +145,7 @@ struct Physics : IPhysics
       if(tr.fraction < r.fraction)
       {
         r.fraction = tr.fraction;
-        r.N = tr.plane.N;
+        r.plane = tr.plane;
         r.blocker = other;
       }
     }
@@ -168,7 +177,7 @@ struct Physics : IPhysics
       me.onCollision(&other);
   }
 
-  void setEdifice(function<TRACE(Box, Vector)> trace)
+  void setEdifice(function<::Trace(Box, Vector)> trace) override
   {
     m_traceEdifice = trace;
   }
@@ -197,7 +206,7 @@ struct Physics : IPhysics
 
 private:
   vector<Body*> m_bodies;
-  function<TRACE(Box, Vector)> m_traceEdifice;
+  function<::Trace(Box, Vector)> m_traceEdifice;
 };
 
 unique_ptr<IPhysics> createPhysics()
