@@ -1,6 +1,5 @@
 #include <algorithm>
 
-#include "src/entities/wheel.h"
 #include "src/entities/bonus.h"
 #include "src/entities/explosion.h"
 

@@ -1,7 +1,5 @@
 #pragma once
 
-#include <algorithm>
-
 #include "base/util.h"
 #include "base/scene.h"
 #include "collision_groups.h"
@@ -9,6 +7,7 @@
 #include "models.h"
 #include "sounds.h"
 #include "entities/explosion.h"
+#include "toggle.h"
 
 struct SpiderBullet : Entity
 {
