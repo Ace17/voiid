@@ -16,7 +16,7 @@
 using namespace std;
 
 #define GL_GLEXT_PROTOTYPES 1
-#include "GL/gl.h"
+#include "GL/glcorearb.h"
 #include "SDL_video.h"
 #include "SDL_image.h"
 
