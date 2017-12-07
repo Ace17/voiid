@@ -83,7 +83,7 @@ struct Physics : IPhysics
     // update ground
     if(!body->pusher)
     {
-      auto const trace = traceBox(rect, Vector3f(0, 0, -0.1), body);
+      auto const trace = traceBox(rect, Down * 0.1, body);
 
       if(trace.fraction < 1.0)
         body->ground = trace.blocker;
@@ -92,7 +92,7 @@ struct Physics : IPhysics
     return !blocked;
   }
 
-  TRACE traceBox(Box rect, Vector3f delta, const Body* except) const
+  TRACE traceBox(Box rect, Vector delta, const Body* except) const
   {
     auto traceBodies = traceBoxThroughBodies(rect, delta, except);
     auto traceEdifice = m_traceEdifice(rect, delta);
@@ -103,7 +103,7 @@ struct Physics : IPhysics
       return traceEdifice;
   }
 
-  TRACE traceBoxThroughBodies(Box box, Vector3f delta, const Body* except) const
+  TRACE traceBoxThroughBodies(Box box, Vector delta, const Body* except) const
   {
     auto const halfSize = Vector3f(box.cx, box.cy, box.cz) * 0.5;
 
@@ -168,7 +168,7 @@ struct Physics : IPhysics
       me.onCollision(&other);
   }
 
-  void setEdifice(function<TRACE(Box, Vector3f)> trace)
+  void setEdifice(function<TRACE(Box, Vector)> trace)
   {
     m_traceEdifice = trace;
   }
@@ -197,7 +197,7 @@ struct Physics : IPhysics
 
 private:
   vector<Body*> m_bodies;
-  function<TRACE(Box, Vector3f)> m_traceEdifice;
+  function<TRACE(Box, Vector)> m_traceEdifice;
 };
 
 unique_ptr<IPhysics> createPhysics()

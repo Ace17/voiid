@@ -6,6 +6,8 @@ typedef GenericSize3<float> Size;
 typedef GenericBox3<float> Box;
 
 static auto const UnitSize = Size(1, 1, 1);
+static auto const Up = GenericVector3<float>(0, 0, 1);
+static auto const Down = GenericVector3<float>(0, 0, -1);
 
 using namespace std;
 
@@ -49,11 +51,11 @@ struct IPhysicsProbe
   {
     float fraction;
     Body* blocker;
-    Vector3f N;
+    Vector N;
   };
   // called by entities
   virtual bool moveBody(Body* body, Vector delta) = 0;
-  virtual TRACE traceBox(Box box, Vector3f delta, const Body* except) const = 0;
+  virtual TRACE traceBox(Box box, Vector delta, const Body* except) const = 0;
   virtual Body* getBodiesInRect(Box myRect, int collisionGroup, bool onlySolid = false, const Body* except = nullptr) const = 0;
 };
 
@@ -64,6 +66,6 @@ struct IPhysics : IPhysicsProbe
   virtual void removeBody(Body* body) = 0;
   virtual void clearBodies() = 0;
   virtual void checkForOverlaps() = 0;
-  virtual void setEdifice(function<TRACE(Box, Vector3f)> isSolid) = 0;
+  virtual void setEdifice(function<TRACE(Box, Vector)> isSolid) = 0;
 };
 

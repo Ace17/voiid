@@ -2,10 +2,10 @@
 
 struct Plane
 {
-  Vector3f N;
+  Vector N;
   float D;
 
-  float dist(Vector3f pos) const
+  float dist(Vector pos) const
   {
     return dotProduct(pos, N) - D;
   }
@@ -20,6 +20,6 @@ struct Brush
   };
 
   vector<Plane> planes;
-  TRACE trace(Vector3f A, Vector3f B, float radius) const;
+  TRACE trace(Vector A, Vector B, float radius) const;
 };
 

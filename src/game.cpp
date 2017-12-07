@@ -239,7 +239,7 @@ struct Game : Scene, IGame
     return r;
   }
 
-  IPhysicsProbe::TRACE traceEdifice(Box box, Vector3f delta) const
+  IPhysicsProbe::TRACE traceEdifice(Box box, Vector delta) const
   {
     IPhysicsProbe::TRACE r {};
     r.fraction = 1.0;

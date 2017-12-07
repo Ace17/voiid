@@ -1,6 +1,6 @@
 #include "room.h"
 
-Brush::TRACE Brush::trace(Vector3f A, Vector3f B, float radius) const
+Brush::TRACE Brush::trace(Vector A, Vector B, float radius) const
 {
   Brush::TRACE trace;
   trace.fraction = 1;
