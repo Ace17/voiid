@@ -20,7 +20,8 @@ Trace2 slideMove(IPhysicsProbe* physics, Body* body, Vector delta)
     if(tr.fraction == 1.0)
       break;
 
-    delta -= dotProduct(delta, tr.plane.N) * tr.plane.N;
+    delta -= dotProduct(delta, tr.plane.N) * (tr.fraction-1) * tr.plane.N;
+    delta += tr.plane.N * 0.011;
   }
 
   physics->moveBody(body, delta);
