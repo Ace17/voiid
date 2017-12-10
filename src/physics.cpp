@@ -44,7 +44,7 @@ struct Physics : IPhysics
     m_bodies.clear();
   }
 
-  bool moveBody(Body* body, Vector delta)
+  Trace moveBody(Body* body, Vector delta)
   {
     auto rect = body->getBox();
 
@@ -89,7 +89,7 @@ struct Physics : IPhysics
         body->ground = trace.blocker;
     }
 
-    return !blocked;
+    return trace;
   }
 
   Trace traceBox(Box rect, Vector delta, const Body* except) const

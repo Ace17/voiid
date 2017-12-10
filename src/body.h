@@ -47,7 +47,7 @@ struct IPhysicsProbe
     Body* blocker;
   };
   // called by entities
-  virtual bool moveBody(Body* body, Vector delta) = 0;
+  virtual Trace moveBody(Body* body, Vector delta) = 0;
   virtual Trace traceBox(Box box, Vector delta, const Body* except) const = 0;
   virtual Body* getBodiesInRect(Box myRect, int collisionGroup, bool onlySolid = false, const Body* except = nullptr) const = 0;
 };

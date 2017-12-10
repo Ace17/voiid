@@ -77,17 +77,22 @@ struct NullGame : IGame
 struct NullPhysicsProbe : IPhysicsProbe
 {
   // called by entities
-  bool moveBody(Body* body, Vector delta)
+  Trace moveBody(Body* body, Vector delta)
   {
+    Trace tr {};
     auto box = body->getBox();
     box.x += delta.x;
     box.y += delta.y;
 
     if(isSolid(body, box))
-      return false;
+    {
+      tr.fraction = 0;
+      return tr;
+    }
 
     body->pos += delta;
-    return true;
+    tr.fraction = 1;
+    return tr;
   }
 
   bool isSolid(const Body* /*body*/, Box box) const

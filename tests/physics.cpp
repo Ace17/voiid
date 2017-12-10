@@ -80,7 +80,7 @@ unittest("Physics: simple move")
   fix.mover.pos = Vector(10, 10, 10);
 
   auto allowed = fix.physics->moveBody(&fix.mover, Vector(10, 0, 0));
-  assert(allowed);
+  assert(allowed.fraction == 1.0);
   assertNearlyEquals(Vector(20, 10, 10), fix.mover.pos);
 }
 
@@ -90,7 +90,7 @@ unittest("Physics: left move, blocked by vertical wall at x=0")
   fix.mover.pos = Vector(10, 10, 0);
 
   auto allowed = fix.physics->moveBody(&fix.mover, Vector(-20, 0, 0));
-  assert(!allowed);
+  assert(allowed.fraction < 1.0);
 
   assertNearlyEquals(Vector(10, 10, 0), fix.mover.pos);
 }
@@ -108,7 +108,7 @@ unittest("Physics: left move, blocked by a bigger body")
   fix.physics->addBody(&blocker);
 
   auto allowed = fix.physics->moveBody(&fix.mover, Vector(100, 0, 0));
-  assert(!allowed);
+  assert(allowed.fraction < 1.0);
 
   assertNearlyEquals(Vector(100, 10, 0), fix.mover.pos);
 }
