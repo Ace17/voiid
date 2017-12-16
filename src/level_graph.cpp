@@ -41,7 +41,7 @@ Room Graph_loadRoom(int roomIdx, IGame* game)
     const int beginFace = mesh.objects[objIdx];
     const int endFace = objIdx + 1 < (int)mesh.objects.size() ? mesh.objects[objIdx + 1] : (int)mesh.faces.size();
 
-    Brush brush;
+    Convex brush;
 
     for(int faceIdx = beginFace; faceIdx < endFace; ++faceIdx)
     {

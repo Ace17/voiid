@@ -113,7 +113,7 @@ struct Game : Scene, IGame
     m_spawned.clear();
   }
 
-  vector<Brush> world;
+  vector<Convex> world;
 
   void loadLevel(int levelIdx)
   {

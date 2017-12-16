@@ -1,6 +1,6 @@
 #include "body.h"
 #include "base/util.h"
-#include "brush.h"
+#include "convex.h"
 #include <vector>
 #include <memory>
 
@@ -122,7 +122,7 @@ struct Physics : IPhysics
     Trace r {};
     r.fraction = 1.0;
 
-    Brush b;
+    Convex b;
     b.planes.resize(6);
 
     for(auto other : m_bodies)

@@ -2,7 +2,7 @@
 
 #include "base/mesh.h"
 #include "game.h"
-#include "brush.h"
+#include "convex.h"
 
 struct Room
 {
@@ -19,7 +19,7 @@ struct Room
   };
 
   vector<Thing> things;
-  vector<Brush> brushes;
+  vector<Convex> brushes;
 };
 
 Room Graph_loadRoom(int levelIdx, IGame* game);
