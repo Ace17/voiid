@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-readonly NAME="ld40"
+readonly NAME="voiid"
 
 readonly tmpDir=/tmp/deliver-$NAME-$$
 trap "rm -rf $tmpDir" EXIT
