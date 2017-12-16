@@ -180,9 +180,11 @@ struct Rockman : Player, Damageable
     time++;
     computeVelocity(control);
 
-    auto trace = slideMove(physics, this, vel);
+    slideMove(physics, this, vel);
 
-    if(!trace.onGround)
+    auto const onGround = isOnGround(physics, this);
+
+    if(!onGround)
     {
       ground = false;
     }

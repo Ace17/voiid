@@ -3,16 +3,9 @@
 #include <math.h>
 #include "body.h"
 
-struct Trace2
-{
-  bool onGround;
-};
-
 inline
-Trace2 slideMove(IPhysicsProbe* physics, Body* body, Vector delta)
+void slideMove(IPhysicsProbe* physics, Body* body, Vector delta)
 {
-  Trace2 r;
-
   for(int i = 0; i < 5; ++i)
   {
     auto tr = physics->moveBody(body, delta);
@@ -23,10 +16,12 @@ Trace2 slideMove(IPhysicsProbe* physics, Body* body, Vector delta)
     delta -= dotProduct(delta, tr.plane.N) * (tr.fraction - 1) * tr.plane.N;
     delta += tr.plane.N * 0.011;
   }
+}
 
-  r.onGround = physics->traceBox(body->getBox(), Down * 0.1, body).fraction < 1.0;
-
-  return r;
+inline
+bool isOnGround(IPhysicsProbe* physics, Body* body)
+{
+  return physics->traceBox(body->getBox(), Down * 0.1, body).fraction < 1.0;
 }
 
 inline
