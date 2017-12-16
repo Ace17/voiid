@@ -13,10 +13,14 @@ void slideMove(IPhysicsProbe* physics, Body* body, Vector delta)
     if(tr.fraction == 1.0)
       break;
 
+    // remove from 'delta' the fraction of the move that succeeded
     auto const actual = tr.fraction * delta;
     delta -= actual;
 
+    // remove from 'delta' its component along the collision normal
     delta -= dotProduct(delta, tr.plane.N) * tr.plane.N;
+
+    // slight repulsion to avoid going through the floor ...
     delta += tr.plane.N * 0.01;
   }
 }
