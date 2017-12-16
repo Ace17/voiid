@@ -14,9 +14,9 @@ Description
 -----------
 
 This is a demo of a platform-independent C++14 game project.
-It uses SDL2, SDL2_mixer, SDL2_image, and the OpenGL core profile.
+It uses SDL2, SDL2_image, and the OpenGL core profile.
 
-It's meant as an example of a platformer/metroidvania game
+It's meant as an example of a first-person exploration game
 which can be compiled to native code, or, using Emscripten, to Javascript,
 and maybe one day to WebAssembly.
 
@@ -43,22 +43,21 @@ Build
 
 Requirements:
 * libsdl2-dev
-* libsdl2-mixer-dev
 * libsdl2-image-dev
 
 It can be compiled to native code using your native compiler (gcc or clang):
 
 $ make
 
-The binaries will be generated to a 'bin' directory (This can be overriden
-using the BIN makefile variable).
+The binaries will be generated to a 'bin' directory
+(This can be overriden using the BIN makefile variable).
 
 It can also be compiled to Javascript, using Emscripten.
 In theory, it's as simple as:
 
 $ CXX=emcc make
 
-However, in practise, more options need to be injected to the makefile,
+However, in practice, more options need to be injected to the makefile,
 like setting EXT (program extension) to ".html", etc.
 There's a make wrapper that does exactly that:
 
