@@ -41,25 +41,37 @@ unique_ptr<IPhysics> createPhysics();
 static
 ::Trace traceEdifice(Box rect, Vector delta)
 {
-  if(rect.y + delta.y < 0)
-    return ::Trace {
-             0, {
-               Vector3f(0, 1, 0), 0
-             }
-    };
+  ::Trace r {};
+  r.fraction = 1.0;
 
-  if(rect.x + delta.x < 0)
-    return ::Trace {
-             0, {
-               Vector3f(1, 0, 0), 0
-             }
-    };
+  auto const x0 = 0;
+  auto const y0 = 0;
+  auto const targetX = rect.x + delta.x;
+  auto const targetY = rect.y + delta.y;
 
-  return ::Trace {
-           1, {
-             Vector3f(0, 0, 0), 0
-           }
-  };
+  if(targetX < 0)
+  {
+    auto const fraction = abs(rect.x - x0) / abs(delta.x);
+
+    if(fraction < r.fraction)
+    {
+      r.fraction = fraction;
+      r.plane.N = Vector3f(1, 0, 0);
+    }
+  }
+
+  if(targetY < 0)
+  {
+    auto const fraction = abs(rect.y - y0) / abs(delta.y);
+
+    if(fraction < r.fraction)
+    {
+      r.fraction = fraction;
+      r.plane.N = Vector3f(0, 1, 0);
+    }
+  }
+
+  return r;
 }
 
 struct Fixture
@@ -92,7 +104,7 @@ unittest("Physics: left move, blocked by vertical wall at x=0")
   auto allowed = fix.physics->moveBody(&fix.mover, Vector(-20, 0, 0));
   assert(allowed.fraction < 1.0);
 
-  assertNearlyEquals(Vector(10, 10, 0), fix.mover.pos);
+  assertNearlyEquals(Vector(0, 10, 0), fix.mover.pos);
 }
 
 unittest("Physics: left move, blocked by a bigger body")
@@ -110,7 +122,7 @@ unittest("Physics: left move, blocked by a bigger body")
   auto allowed = fix.physics->moveBody(&fix.mover, Vector(100, 0, 0));
   assert(allowed.fraction < 1.0);
 
-  assertNearlyEquals(Vector(100, 10, 0), fix.mover.pos);
+  assertNearlyEquals(Vector(199, 10, 0), fix.mover.pos);
 }
 
 #include "entities/move.h"
@@ -122,6 +134,6 @@ unittest("Physics: slide up-left move, horizontally blocked by vertical wall at 
 
   slideMove(fix.physics.get(), &fix.mover, Vector(-20, 20, 0));
 
-  assertNearlyEquals(Vector(10, 30, 0), fix.mover.pos);
+  assertNearlyEquals(Vector(0, 30, 0), fix.mover.pos);
 }
 

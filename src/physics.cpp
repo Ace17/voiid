@@ -44,40 +44,40 @@ struct Physics : IPhysics
     m_bodies.clear();
   }
 
-  Trace moveBody(Body* body, Vector delta)
+  Trace moveBody(Body* body, Vector delta) override
   {
     auto rect = body->getBox();
 
     auto const trace = traceBox(rect, delta, body);
     auto const blocked = trace.fraction < 1.0f;
 
-    rect.x += delta.x * trace.fraction;
-    rect.y += delta.y * trace.fraction;
-    rect.z += delta.z * trace.fraction;
+    delta = delta * trace.fraction;
+
+    rect.x += delta.x;
+    rect.y += delta.y;
+    rect.z += delta.z;
 
     if(blocked)
     {
       if(trace.blocker)
         collideBodies(*body, *trace.blocker);
     }
-    else
+
+    body->pos += delta;
+
+    if(body->pusher)
     {
-      body->pos += delta;
-
-      if(body->pusher)
+      // move stacked bodies
+      for(auto otherBody : m_bodies)
       {
-        // move stacked bodies
-        for(auto otherBody : m_bodies)
-        {
-          if(otherBody->ground == body)
-            moveBody(otherBody, delta);
-        }
-
-        // push potential non-solid bodies
-        for(auto other : m_bodies)
-          if(other != body && overlaps(rect, other->getBox()))
-            moveBody(other, delta);
+        if(otherBody->ground == body)
+          moveBody(otherBody, delta);
       }
+
+      // push potential non-solid bodies
+      for(auto other : m_bodies)
+        if(other != body && overlaps(rect, other->getBox()))
+          moveBody(other, delta);
     }
 
     // update ground
@@ -92,7 +92,7 @@ struct Physics : IPhysics
     return trace;
   }
 
-  Trace traceBox(Box rect, Vector delta, const Body* except) const
+  Trace traceBox(Box rect, Vector delta, const Body* except) const override
   {
     auto traceBodies = traceBoxThroughBodies(rect, delta, except);
     auto traceEdifice = traceBoxThroughEdifice(rect, delta);
