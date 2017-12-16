@@ -177,7 +177,6 @@ struct Rockman : Player, Damageable
       blinking = 2000;
     }
 
-    time++;
     computeVelocity(control);
 
     slideMove(physics, this, vel);
@@ -201,14 +200,9 @@ struct Rockman : Player, Damageable
       }
     }
 
-    decrement(debounceUse);
-    decrement(debounceFire);
     decrement(debounceLanding);
     decrement(climbDelay);
     decrement(shootDelay);
-
-    if(control.use && tryActivate(debounceUse, 250))
-      game->playSound(SND_SWITCH);
 
     if(control.restart)
       onDamage(10000);
@@ -252,14 +246,11 @@ struct Rockman : Player, Damageable
     game->textBox("game over");
   }
 
-  int debounceUse = 0;
-  int debounceFire = 0;
   int debounceLanding = 0;
   float lookAngleHorz = 0;
   float lookAngleVert = 0;
   bool ground = false;
   Toggle jumpbutton, firebutton, dashbutton;
-  int time = 0;
   int climbDelay = 0;
   int hurtDelay = 0;
   int dashDelay = 0;
