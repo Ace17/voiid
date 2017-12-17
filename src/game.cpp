@@ -6,7 +6,7 @@
  * License, or (at your option) any later version.
  */
 
-// Game logic
+// Top-level game logic
 
 #include <cmath>
 #include <cstdlib>
@@ -19,7 +19,6 @@
 #include "entities/rockman.h"
 #include "entities/editor.h"
 #include "game.h"
-#include "models.h" // MDL_TILES
 #include "room.h"
 
 #include "entities/finish.h" // TouchFinishLineEvent

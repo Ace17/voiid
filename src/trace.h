@@ -4,8 +4,8 @@
 
 struct Plane
 {
-  Vector N;
-  float D;
+  Vector N; // normal
+  float D; // distance to origin
 
   float dist(Vector pos) const
   {

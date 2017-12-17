@@ -1,3 +1,4 @@
+// List of visual models specific to the game
 #pragma once
 
 enum

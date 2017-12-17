@@ -6,6 +6,8 @@
  * License, or (at your option) any later version.
  */
 
+// Entity for 'end-of-level'
+
 #pragma once
 
 #include "base/util.h"

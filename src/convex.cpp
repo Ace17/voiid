@@ -1,5 +1,20 @@
-#include "room.h"
+/*
+ * Copyright (C) 2017 - Sebastien Alaiwan <sebastien.alaiwan@gmail.com>
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ */
 
+// Sphere/Convex continuous collision detection.
+
+#include "base/util.h" // clamp
+#include "convex.h"
+
+// Sweeps a sphere from A to B.
+// Returns the fraction of the move to the first intersection with the convex,
+// or 1.0 if there are no intersections.
+// Also returns the intersecting plane, if any.
 Trace Convex::trace(Vector A, Vector B, float radius) const
 {
   Trace trace;
@@ -16,7 +31,7 @@ Trace Convex::trace(Vector A, Vector B, float radius) const
     auto const distA = plane.dist(A) + radius;
     auto const distB = plane.dist(B) - radius;
 
-    // trace is completely outside the brush
+    // trace is completely outside the convex
     if(distA > 0 && distB > 0)
       return trace;
 
@@ -24,7 +39,7 @@ Trace Convex::trace(Vector A, Vector B, float radius) const
     if(distA <= 0 && distB <= 0)
       continue;
 
-    // trace is entering the brush
+    // trace is entering the convex
     if(distA > 0 && distB <= 0)
     {
       float fraction = (distA - epsilon) / (distA - distB);
@@ -37,7 +52,7 @@ Trace Convex::trace(Vector A, Vector B, float radius) const
       }
     }
 
-    // trace is leaving the brush
+    // trace is leaving the convex
     if(distA <= 0 && distB > 0)
     {
       float fraction = (distA + epsilon) / (distA - distB);

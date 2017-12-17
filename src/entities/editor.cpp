@@ -6,6 +6,8 @@
  * License, or (at your option) any later version.
  */
 
+// "Editor-mode" player
+
 #include <algorithm>
 
 #include "base/scene.h"

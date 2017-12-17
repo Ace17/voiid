@@ -1,3 +1,13 @@
+/*
+ * Copyright (C) 2017 - Sebastien Alaiwan <sebastien.alaiwan@gmail.com>
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ */
+
+// Pluggable entity factory, registration side.
+
 #include "entity_factory.h"
 #include <map>
 #include <functional>
@@ -23,9 +33,11 @@ unique_ptr<Entity> createEntity(string formula)
   return (*i_func).second(args);
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// This part is game-specific
+
 #include "entities/switch.h"
 #include "entities/spider.h"
-#include "entities/detector.h"
 #include "entities/bonus.h"
 #include "entities/player.h"
 #include "entities/spikes.h"
