@@ -7,6 +7,7 @@ readonly tmpDir=/tmp/deliver-$NAME-$$
 trap "rm -rf $tmpDir" EXIT
 mkdir -p $tmpDir
 
+make clean
 ./check
 
 #------------------------------------------------------------------------------
