@@ -61,7 +61,6 @@ struct Physics : IPhysics
     auto rect = body->getBox();
 
     auto const trace = traceBox(rect, delta, body);
-    auto const blocked = trace.fraction < 1.0f;
 
     delta = delta * trace.fraction;
 
@@ -69,11 +68,8 @@ struct Physics : IPhysics
     rect.y += delta.y;
     rect.z += delta.z;
 
-    if(blocked)
-    {
-      if(trace.blocker)
-        collideBodies(*body, *trace.blocker);
-    }
+    if(trace.blocker)
+      collideBodies(*body, *trace.blocker);
 
     body->pos += delta;
 
