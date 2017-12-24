@@ -386,7 +386,7 @@ typedef glm::detail::tmat4x4<float, glm::highp> Matrix4f;
 
 float const* ptr(Matrix4f const& mat)
 {
-  return &mat[0].x;
+  return &mat[0][0];
 }
 
 Matrix4f translate(Vector3f v)
