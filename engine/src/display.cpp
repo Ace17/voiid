@@ -414,9 +414,9 @@ Matrix4f scale(Vector3f v)
 
 Matrix4f lookAt(Vector3f eye, Vector3f center, Vector3f up)
 {
-  Vector3f f(normalize(center - eye));
-  Vector3f s(normalize(crossProduct(f, up)));
-  Vector3f u(crossProduct(s, f));
+  auto f = normalize(center - eye);
+  auto s = normalize(crossProduct(f, up));
+  auto u = crossProduct(s, f);
 
   Matrix4f r(1);
   r[0][0] = s.x;
