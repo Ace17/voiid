@@ -43,6 +43,7 @@ LDFLAGS+=$(DBGFLAGS)
 #------------------------------------------------------------------------------
 
 SRCS_GAME:=\
+	src/entities/all.cpp\
 	src/entities/bonus.cpp\
 	src/entities/editor.cpp\
 	src/entities/explosion.cpp\
