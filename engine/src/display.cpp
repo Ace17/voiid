@@ -380,9 +380,89 @@ void Display_enableGrab(bool enable)
   SDL_ShowCursor(enable ? 0 : 1);
 }
 
-#define GLM_FORCE_RADIANS
-#include "glm/gtx/transform.hpp"
-#include "glm/gtc/type_ptr.hpp"
+#include "glm/mat4x4.hpp"
+
+typedef glm::detail::tmat4x4<float, glm::highp> Matrix4f;
+
+float const* ptr(Matrix4f const& mat)
+{
+  return &mat[0].x;
+}
+
+Matrix4f translate(Vector3f v)
+{
+  Matrix4f r(1);
+  r[0][0] = 1;
+  r[1][0] = 0;
+  r[2][0] = 0;
+  r[0][1] = 0;
+  r[1][1] = 1;
+  r[2][1] = 0;
+  r[0][2] = 0;
+  r[1][2] = 0;
+  r[2][2] = 1;
+  r[3][0] = v.x;
+  r[3][1] = v.y;
+  r[3][2] = v.z;
+  return r;
+}
+
+Matrix4f scale(Vector3f v)
+{
+  Matrix4f r(1);
+  r[0][0] = v.x;
+  r[1][0] = 0;
+  r[2][0] = 0;
+  r[0][1] = 0;
+  r[1][1] = v.y;
+  r[2][1] = 0;
+  r[0][2] = 0;
+  r[1][2] = 0;
+  r[2][2] = v.z;
+  r[3][0] = 0;
+  r[3][1] = 0;
+  r[3][2] = 0;
+  return r;
+}
+
+Matrix4f lookAt(Vector3f eye, Vector3f center, Vector3f up)
+{
+  Vector3f f(normalize(center - eye));
+  Vector3f s(normalize(crossProduct(f, up)));
+  Vector3f u(crossProduct(s, f));
+
+  Matrix4f r(1);
+  r[0][0] = s.x;
+  r[1][0] = s.y;
+  r[2][0] = s.z;
+  r[0][1] = u.x;
+  r[1][1] = u.y;
+  r[2][1] = u.z;
+  r[0][2] = -f.x;
+  r[1][2] = -f.y;
+  r[2][2] = -f.z;
+  r[3][0] = -dotProduct(s, eye);
+  r[3][1] = -dotProduct(u, eye);
+  r[3][2] = dotProduct(f, eye);
+  return r;
+}
+
+Matrix4f perspective(float fovy, float aspect, float zNear, float zFar)
+{
+  assert(aspect != 0.0);
+  assert(zFar != zNear);
+
+  auto const rad = fovy;
+  auto const tanHalfFovy = tan(rad / 2.0);
+
+  Matrix4f r(0);
+  r[0][0] = 1.0 / (aspect * tanHalfFovy);
+  r[1][1] = 1.0 / (tanHalfFovy);
+  r[2][2] = -(zFar + zNear) / (zFar - zNear);
+  r[2][3] = -1.0;
+  r[3][2] = -(2.0 * zFar * zNear) / (zFar - zNear);
+  return r;
+}
 
 static
 void drawModel(Rect3f where, Camera const& camera, Model& model, bool blinking, int actionIdx, float ratio)
@@ -412,22 +492,20 @@ void drawModel(Rect3f where, Camera const& camera, Model& model, bool blinking, 
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-  auto Vec3 = [] (Vector3f v) { return glm::vec3(v.x, v.y, v.z); };
-
   auto const target = camera.pos + camera.dir;
-  auto const view = glm::lookAt(Vec3(camera.pos), Vec3(target), glm::vec3(0, 0, 1));
-  auto const pos = glm::translate(glm::vec3(where.x, where.y, where.z));
-  auto const scale = glm::scale(glm::vec3(where.cx, where.cy, where.cz));
+  auto const view = ::lookAt(camera.pos, target, Vector3f(0, 0, 1));
+  auto const pos = ::translate(Vector3f(where.x, where.y, where.z));
+  auto const scale = ::scale(Vector3f(where.cx, where.cy, where.cz));
 
   static const float fovy = (float)((60.0f / 180) * PI);
   static const float aspect = 1.0f;
   static const float near_ = 0.1f;
   static const float far_ = 100.0f;
-  static const auto perspective = glm::perspective(fovy, aspect, near_, far_);
+  static const auto perspective = ::perspective(fovy, aspect, near_, far_);
 
   auto mat = perspective * view * pos * scale;
 
-  SAFE_GL(glUniformMatrix4fv(g_MVP, 1, GL_FALSE, glm::value_ptr(mat)));
+  SAFE_GL(glUniformMatrix4fv(g_MVP, 1, GL_FALSE, ::ptr(mat)));
 
   SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, model.buffer));
 
