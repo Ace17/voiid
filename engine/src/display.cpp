@@ -391,19 +391,14 @@ float const* ptr(Matrix4f const& mat)
 
 Matrix4f translate(Vector3f v)
 {
-  Matrix4f r(1);
+  Matrix4f r(0);
   r[0][0] = 1;
-  r[1][0] = 0;
-  r[2][0] = 0;
-  r[0][1] = 0;
   r[1][1] = 1;
-  r[2][1] = 0;
-  r[0][2] = 0;
-  r[1][2] = 0;
   r[2][2] = 1;
   r[3][0] = v.x;
   r[3][1] = v.y;
   r[3][2] = v.z;
+  r[3][3] = 1;
   return r;
 }
 
