@@ -409,19 +409,11 @@ Matrix4f translate(Vector3f v)
 
 Matrix4f scale(Vector3f v)
 {
-  Matrix4f r(1);
+  Matrix4f r(0);
   r[0][0] = v.x;
-  r[1][0] = 0;
-  r[2][0] = 0;
-  r[0][1] = 0;
   r[1][1] = v.y;
-  r[2][1] = 0;
-  r[0][2] = 0;
-  r[1][2] = 0;
   r[2][2] = v.z;
-  r[3][0] = 0;
-  r[3][1] = 0;
-  r[3][2] = 0;
+  r[3][3] = 1;
   return r;
 }
 
