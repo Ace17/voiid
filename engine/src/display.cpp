@@ -380,11 +380,62 @@ void Display_enableGrab(bool enable)
   SDL_ShowCursor(enable ? 0 : 1);
 }
 
-#include "glm/mat4x4.hpp"
+struct Matrix4f
+{
+  Matrix4f(float init)
+  {
+    for(int row = 0; row < 4; ++row)
+      for(int col = 0; col < 4; ++col)
+        (*this)[col][row] = init;
+  }
 
-typedef glm::detail::tmat4x4<float, glm::highp> Matrix4f;
+  struct col
+  {
+    float elements[4];
 
-float const* ptr(Matrix4f const& mat)
+    float const & operator [] (int i) const
+    {
+      return elements[i];
+    }
+
+    float & operator [] (int i)
+    {
+      return elements[i];
+    }
+  };
+
+  const col & operator [] (int i) const
+  {
+    return data[i];
+  }
+
+  col & operator [] (int i)
+  {
+    return data[i];
+  }
+
+  col data[4];
+};
+
+Matrix4f operator * (Matrix4f const& A, Matrix4f const& B)
+{
+  Matrix4f r(0);
+
+  for(int row = 0; row < 4; ++row)
+    for(int col = 0; col < 4; ++col)
+    {
+      double sum = 0;
+
+      for(int k = 0; k < 4; ++k)
+        sum += A[k][row] * B[col][k];
+
+      r[col][row] = sum;
+    }
+
+  return r;
+}
+
+float const* ptr(Matrix4f& mat)
 {
   return &mat[0][0];
 }
@@ -418,7 +469,7 @@ Matrix4f lookAt(Vector3f eye, Vector3f center, Vector3f up)
   auto s = normalize(crossProduct(f, up));
   auto u = crossProduct(s, f);
 
-  Matrix4f r(1);
+  Matrix4f r(0);
   r[0][0] = s.x;
   r[1][0] = s.y;
   r[2][0] = s.z;
@@ -431,6 +482,7 @@ Matrix4f lookAt(Vector3f eye, Vector3f center, Vector3f up)
   r[3][0] = -dotProduct(s, eye);
   r[3][1] = -dotProduct(u, eye);
   r[3][2] = dotProduct(f, eye);
+  r[3][3] = 1;
   return r;
 }
 
