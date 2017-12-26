@@ -24,6 +24,7 @@ using namespace std;
 #include "base/scene.h"
 #include "base/geom.h"
 #include "model.h"
+#include "matrix4.h"
 
 static GLint g_MVP;
 static GLint g_colorId;
@@ -380,129 +381,6 @@ void Display_enableGrab(bool enable)
   SDL_ShowCursor(enable ? 0 : 1);
 }
 
-struct Matrix4f
-{
-  Matrix4f(float init)
-  {
-    for(int row = 0; row < 4; ++row)
-      for(int col = 0; col < 4; ++col)
-        (*this)[col][row] = init;
-  }
-
-  struct col
-  {
-    float elements[4];
-
-    float const & operator [] (int i) const
-    {
-      return elements[i];
-    }
-
-    float & operator [] (int i)
-    {
-      return elements[i];
-    }
-  };
-
-  const col & operator [] (int i) const
-  {
-    return data[i];
-  }
-
-  col & operator [] (int i)
-  {
-    return data[i];
-  }
-
-  col data[4];
-};
-
-Matrix4f operator * (Matrix4f const& A, Matrix4f const& B)
-{
-  Matrix4f r(0);
-
-  for(int row = 0; row < 4; ++row)
-    for(int col = 0; col < 4; ++col)
-    {
-      double sum = 0;
-
-      for(int k = 0; k < 4; ++k)
-        sum += A[k][row] * B[col][k];
-
-      r[col][row] = sum;
-    }
-
-  return r;
-}
-
-float const* ptr(Matrix4f& mat)
-{
-  return &mat[0][0];
-}
-
-Matrix4f translate(Vector3f v)
-{
-  Matrix4f r(0);
-  r[0][0] = 1;
-  r[1][1] = 1;
-  r[2][2] = 1;
-  r[3][0] = v.x;
-  r[3][1] = v.y;
-  r[3][2] = v.z;
-  r[3][3] = 1;
-  return r;
-}
-
-Matrix4f scale(Vector3f v)
-{
-  Matrix4f r(0);
-  r[0][0] = v.x;
-  r[1][1] = v.y;
-  r[2][2] = v.z;
-  r[3][3] = 1;
-  return r;
-}
-
-Matrix4f lookAt(Vector3f eye, Vector3f center, Vector3f up)
-{
-  auto f = normalize(center - eye);
-  auto s = normalize(crossProduct(f, up));
-  auto u = crossProduct(s, f);
-
-  Matrix4f r(0);
-  r[0][0] = s.x;
-  r[1][0] = s.y;
-  r[2][0] = s.z;
-  r[0][1] = u.x;
-  r[1][1] = u.y;
-  r[2][1] = u.z;
-  r[0][2] = -f.x;
-  r[1][2] = -f.y;
-  r[2][2] = -f.z;
-  r[3][0] = -dotProduct(s, eye);
-  r[3][1] = -dotProduct(u, eye);
-  r[3][2] = dotProduct(f, eye);
-  r[3][3] = 1;
-  return r;
-}
-
-Matrix4f perspective(float fovy, float aspect, float zNear, float zFar)
-{
-  assert(aspect != 0.0);
-  assert(zFar != zNear);
-
-  auto const rad = fovy;
-  auto const tanHalfFovy = tan(rad / 2.0);
-
-  Matrix4f r(0);
-  r[0][0] = 1.0 / (aspect * tanHalfFovy);
-  r[1][1] = 1.0 / (tanHalfFovy);
-  r[2][2] = -(zFar + zNear) / (zFar - zNear);
-  r[2][3] = -1.0;
-  r[3][2] = -(2.0 * zFar * zNear) / (zFar - zNear);
-  return r;
-}
-
 static
 void drawModel(Rect3f where, Camera const& camera, Model& model, bool blinking, int actionIdx, float ratio)
 {
@@ -544,7 +422,7 @@ void drawModel(Rect3f where, Camera const& camera, Model& model, bool blinking, 
 
   auto mat = perspective * view * pos * scale;
 
-  SAFE_GL(glUniformMatrix4fv(g_MVP, 1, GL_FALSE, ::ptr(mat)));
+  SAFE_GL(glUniformMatrix4fv(g_MVP, 1, GL_FALSE, &mat[0][0]));
 
   SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, model.buffer));
 
