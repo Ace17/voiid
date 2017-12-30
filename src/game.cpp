@@ -129,8 +129,8 @@ struct Game : Scene, IGame
     m_spawned.clear();
     m_listeners.clear();
 
-    auto level = Graph_loadRoom(levelIdx, this);
-    m_view->playMusic(level.theme);
+    auto level = loadRoom(levelIdx, this);
+    m_view->playMusic(levelIdx);
 
     if(!m_player)
       m_player = makeRockman().release();

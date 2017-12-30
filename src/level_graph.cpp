@@ -19,7 +19,7 @@ static Vector3f toVector3f(Mesh::Vertex v)
   return Vector3f(v.x, v.y, v.z);
 }
 
-Room Graph_loadRoom(int roomIdx, IGame* game)
+Room loadRoom(int roomIdx, IGame* game)
 {
   Room r;
 
@@ -67,7 +67,6 @@ Room Graph_loadRoom(int roomIdx, IGame* game)
   }
 
   r.start = Vector3i(0, 0, 5);
-  r.theme = roomIdx;
 
   return r;
 }
