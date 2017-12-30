@@ -19,6 +19,11 @@ static Vector3f toVector3f(Mesh::Vertex v)
   return Vector3f(v.x, v.y, v.z);
 }
 
+static bool startsWith(string s, string prefix)
+{
+  return s.substr(0, prefix.size()) == prefix;
+}
+
 Room loadRoom(int roomIdx, IGame* game)
 {
   Room r;
@@ -38,7 +43,7 @@ Room loadRoom(int roomIdx, IGame* game)
   {
     auto name = mesh.objectNames[objIdx];
 
-    if(name.substr(0, 2) == "f.")
+    if(startsWith(name, "f."))
     {
       auto ent = createEntity(name.substr(2));
       ent->pos = toVector3f(mesh.vertices[mesh.faces[mesh.objects[objIdx]].i1]);
