@@ -20,7 +20,6 @@ struct Room
   Size3i size;
   int theme = 0;
   Vector3i start;
-  std::string name;
 
   struct Thing
   {

@@ -131,7 +131,6 @@ struct Game : Scene, IGame
 
     auto level = Graph_loadRoom(levelIdx, this);
     m_view->playMusic(level.theme);
-    printf("Now in: %s\n", level.name.c_str());
 
     if(!m_player)
       m_player = makeRockman().release();

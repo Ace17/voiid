@@ -23,8 +23,6 @@ Room Graph_loadRoom(int roomIdx, IGame* game)
 {
   Room r;
 
-  r.name = "test room";
-
   char filename[256];
   snprintf(filename, sizeof filename, "res/rooms/%02d/mesh.3ds", roomIdx);
 
