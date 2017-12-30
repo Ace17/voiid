@@ -10,7 +10,6 @@
 
 #include "room.h"
 #include "base/mesh.h"
-#include <stdlib.h>
 #include <fstream>
 
 static Vector3f toVector3f(Mesh::Vertex v)
