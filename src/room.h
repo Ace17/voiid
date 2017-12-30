@@ -10,8 +10,10 @@
 
 #pragma once
 
+#include <vector>
+using namespace std;
+
 #include "base/mesh.h"
-#include "game.h"
 #include "convex.h"
 
 struct Room
@@ -23,12 +25,12 @@ struct Room
   struct Thing
   {
     Vector pos;
-    std::string name;
+    string formula;
   };
 
   vector<Thing> things;
   vector<Convex> brushes;
 };
 
-Room loadRoom(int levelIdx, IGame* game);
+Room loadRoom(int levelIdx);
 

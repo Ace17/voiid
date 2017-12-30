@@ -9,7 +9,6 @@
 // Loader for rooms (levels)
 
 #include "room.h"
-#include "entity_factory.h"
 #include "base/mesh.h"
 #include <stdlib.h>
 #include <fstream>
@@ -24,7 +23,7 @@ static bool startsWith(string s, string prefix)
   return s.substr(0, prefix.size()) == prefix;
 }
 
-Room loadRoom(int roomIdx, IGame* game)
+Room loadRoom(int roomIdx)
 {
   Room r;
 
@@ -45,9 +44,9 @@ Room loadRoom(int roomIdx, IGame* game)
 
     if(startsWith(name, "f."))
     {
-      auto ent = createEntity(name.substr(2));
-      ent->pos = toVector3f(mesh.vertices[mesh.faces[mesh.objects[objIdx]].i1]);
-      game->spawn(ent.release());
+      auto const pos = toVector3f(mesh.vertices[mesh.faces[mesh.objects[objIdx]].i1]);
+      auto const formula = name.substr(2);
+      r.things.push_back({ pos, formula });
       continue;
     }
 

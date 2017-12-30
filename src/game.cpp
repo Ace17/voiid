@@ -18,6 +18,7 @@
 #include "entities/player.h"
 #include "entities/rockman.h"
 #include "entities/editor.h"
+#include "entity_factory.h"
 #include "game.h"
 #include "room.h"
 
@@ -129,7 +130,7 @@ struct Game : Scene, IGame
     m_spawned.clear();
     m_listeners.clear();
 
-    auto level = loadRoom(levelIdx, this);
+    auto level = loadRoom(levelIdx);
     m_view->playMusic(levelIdx);
 
     if(!m_player)
@@ -137,12 +138,19 @@ struct Game : Scene, IGame
 
     m_player->pos = Vector(level.start.x, level.start.y, level.start.z);
 
+    for(auto& thing : level.things)
+    {
+      auto ent = createEntity(thing.formula);
+      ent->pos = thing.pos;
+      spawn(ent.release());
+    }
+
     world = level.brushes;
 
     spawn(m_player);
 
     {
-      auto f = bind(&Game::onTouchLevelBoundary, this, std::placeholders::_1);
+      auto f = bind(&Game::onTouchLevelBoundary, this, placeholders::_1);
       m_levelBoundary = makeDelegator<TouchFinishLineEvent>(f);
       subscribeForEvents(&m_levelBoundary);
     }
@@ -214,7 +222,7 @@ struct Game : Scene, IGame
 
   void removeDeadEntities(uvector<Entity>& entities)
   {
-    auto oldEntities = std::move(entities);
+    auto oldEntities = move(entities);
 
     for(auto& entity : oldEntities)
     {
