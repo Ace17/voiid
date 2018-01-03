@@ -43,7 +43,7 @@ public:
     SDL_Init(0);
 
     m_display.reset(createDisplay());
-    m_display->init(1024, 1024);
+    m_display->init(Size2i(1024, 1024));
     m_audio.reset(createAudio());
 
     for(auto res : getResources())

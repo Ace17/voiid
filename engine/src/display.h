@@ -14,7 +14,7 @@ struct Display
 {
   virtual ~Display() = default;
 
-  virtual void init(int width, int height) = 0;
+  virtual void init(Size2i screenSize) = 0;
   virtual void setCaption(const char* caption) = 0;
   virtual void loadModel(int id, const char* imagePath) = 0;
   virtual void beginDraw() = 0;
