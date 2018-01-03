@@ -2,53 +2,45 @@
 #include "sounds.h"
 #include "models.h"
 
-static const Resource sounds[] =
+static const Resource resources[] =
 {
-  { SND_PAUSE, "res/sounds/pause.ogg" },
-  { SND_FIRE, "res/sounds/fire.ogg" },
-  { SND_JUMP, "res/sounds/jump.ogg" },
-  { SND_LAND, "res/sounds/land.ogg" },
-  { SND_SWITCH, "res/sounds/switch.ogg" },
-  { SND_DOOR, "res/sounds/door.ogg" },
-  { SND_HURT, "res/sounds/hurt.ogg" },
-  { SND_DIE, "res/sounds/die.ogg" },
-  { SND_BONUS, "res/sounds/bonus.ogg" },
-  { SND_DAMAGE, "res/sounds/damage.ogg" },
-  { SND_EXPLODE, "res/sounds/explode.ogg" },
-  { SND_DISAPPEAR, "res/sounds/disappear.ogg" },
+  { ResourceType::Sound, SND_PAUSE, "res/sounds/pause.ogg" },
+  { ResourceType::Sound, SND_FIRE, "res/sounds/fire.ogg" },
+  { ResourceType::Sound, SND_JUMP, "res/sounds/jump.ogg" },
+  { ResourceType::Sound, SND_LAND, "res/sounds/land.ogg" },
+  { ResourceType::Sound, SND_SWITCH, "res/sounds/switch.ogg" },
+  { ResourceType::Sound, SND_DOOR, "res/sounds/door.ogg" },
+  { ResourceType::Sound, SND_HURT, "res/sounds/hurt.ogg" },
+  { ResourceType::Sound, SND_DIE, "res/sounds/die.ogg" },
+  { ResourceType::Sound, SND_BONUS, "res/sounds/bonus.ogg" },
+  { ResourceType::Sound, SND_DAMAGE, "res/sounds/damage.ogg" },
+  { ResourceType::Sound, SND_EXPLODE, "res/sounds/explode.ogg" },
+  { ResourceType::Sound, SND_DISAPPEAR, "res/sounds/disappear.ogg" },
+
+  { ResourceType::Model, MDL_DOOR, "res/sprites/door.json" },
+  { ResourceType::Model, MDL_RECT, "res/sprites/rect.json" },
+  { ResourceType::Model, MDL_AMULET, "res/sprites/amulet.json" },
+  { ResourceType::Model, MDL_INVRECT, "res/sprites/invrect.json" },
+  { ResourceType::Model, MDL_SWITCH, "res/sprites/switch.json" },
+  { ResourceType::Model, MDL_WHEEL, "res/sprites/wheel.json" },
+  { ResourceType::Model, MDL_LIFEBAR, "res/sprites/lifebar.json" },
+  { ResourceType::Model, MDL_TELEPORTER, "res/sprites/teleporter.json" },
+  { ResourceType::Model, MDL_BONUS, "res/sprites/bonus.json" },
+  { ResourceType::Model, MDL_BULLET, "res/sprites/bullet.json" },
+  { ResourceType::Model, MDL_EXPLOSION, "res/sprites/explosion.json" },
+  { ResourceType::Model, MDL_SPIKES, "res/sprites/spikes.json" },
+  { ResourceType::Model, MDL_SIGN, "res/sprites/sign.json" },
+  { ResourceType::Model, MDL_ROOMS + 0, "res/rooms/00/mesh.json" },
+  { ResourceType::Model, MDL_ROOMS + 1, "res/rooms/01/mesh.json" },
+  { ResourceType::Model, MDL_ROOMS + 2, "res/rooms/02/mesh.json" },
+  { ResourceType::Model, MDL_ROOMS + 3, "res/rooms/03/mesh.json" },
+  { ResourceType::Model, MDL_ROOMS + 4, "res/rooms/04/mesh.json" },
+  { ResourceType::Model, MDL_ROOMS + 5, "res/rooms/05/mesh.json" },
+  { ResourceType::Model, MDL_ROOMS + 6, "res/rooms/ending/mesh.json" },
 };
 
-static const Resource models[] =
+Span<const Resource> getResources()
 {
-  { MDL_DOOR, "res/sprites/door.json" },
-  { MDL_RECT, "res/sprites/rect.json" },
-  { MDL_AMULET, "res/sprites/amulet.json" },
-  { MDL_INVRECT, "res/sprites/invrect.json" },
-  { MDL_SWITCH, "res/sprites/switch.json" },
-  { MDL_WHEEL, "res/sprites/wheel.json" },
-  { MDL_LIFEBAR, "res/sprites/lifebar.json" },
-  { MDL_TELEPORTER, "res/sprites/teleporter.json" },
-  { MDL_BONUS, "res/sprites/bonus.json" },
-  { MDL_BULLET, "res/sprites/bullet.json" },
-  { MDL_EXPLOSION, "res/sprites/explosion.json" },
-  { MDL_SPIKES, "res/sprites/spikes.json" },
-  { MDL_SIGN, "res/sprites/sign.json" },
-  { MDL_ROOMS + 0, "res/rooms/00/mesh.json" },
-  { MDL_ROOMS + 1, "res/rooms/01/mesh.json" },
-  { MDL_ROOMS + 2, "res/rooms/02/mesh.json" },
-  { MDL_ROOMS + 3, "res/rooms/03/mesh.json" },
-  { MDL_ROOMS + 4, "res/rooms/04/mesh.json" },
-  { MDL_ROOMS + 5, "res/rooms/05/mesh.json" },
-  { MDL_ROOMS + 6, "res/rooms/ending/mesh.json" },
-};
-
-Span<const Resource> getSounds()
-{
-  return makeSpan(sounds);
-}
-
-Span<const Resource> getModels()
-{
-  return makeSpan(models);
+  return makeSpan(resources);
 }
 
