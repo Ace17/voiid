@@ -10,13 +10,12 @@
 // No game-specific code should be here,
 // and no platform-specific code should be here (SDL is OK).
 
-#include <stdexcept>
-#include <iostream>
-#include <cassert>
 #include <vector>
 #include <string>
 #include <memory>
+
 #include "SDL.h"
+
 #include "base/geom.h"
 #include "base/resource.h"
 #include "base/scene.h"
