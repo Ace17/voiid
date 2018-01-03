@@ -8,6 +8,8 @@
  * License, or (at your option) any later version.
  */
 
+#include "display.h"
+
 #include <cassert>
 #include <sstream>
 #include <vector>
@@ -248,242 +250,250 @@ Model loadAnimation(string path)
   }
 }
 
-void Display_loadModel(int id, const char* path)
+struct SdlDisplay : Display
 {
-  if((int)g_Models.size() <= id)
-    g_Models.resize(id + 1);
+  void loadModel(int id, const char* path)
+  {
+    if((int)g_Models.size() <= id)
+      g_Models.resize(id + 1);
 
-  g_Models[id] = loadAnimation(path);
-  sendToOpengl(g_Models[id]);
-}
+    g_Models[id] = loadAnimation(path);
+    sendToOpengl(g_Models[id]);
+  }
 
-static
-void printOpenGlVersion()
-{
-  auto sVersion = (char const*)glGetString(GL_VERSION);
-  auto sLangVersion = (char const*)glGetString(GL_SHADING_LANGUAGE_VERSION);
+  static
+  void printOpenGlVersion()
+  {
+    auto sVersion = (char const*)glGetString(GL_VERSION);
+    auto sLangVersion = (char const*)glGetString(GL_SHADING_LANGUAGE_VERSION);
 
-  auto notNull = [] (char const* s) -> string
+    auto notNull = [] (char const* s) -> string
+                   {
+                     return s ? s : "<null>";
+                   };
+
+    cout << "OpenGL version: " << notNull(sVersion) << endl;
+    cout << "OpenGL shading version: " << notNull(sLangVersion) << endl;
+  }
+
+  SDL_Window* mainWindow;
+  SDL_GLContext mainContext;
+
+  void init(int width, int height)
+  {
+    if(SDL_InitSubSystem(SDL_INIT_VIDEO))
+      throw runtime_error("Can't init SDL");
+
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+
+    mainWindow = SDL_CreateWindow(
+      "My Game",
+      SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+      width, height,
+      SDL_WINDOW_OPENGL
+      );
+
+    if(!mainWindow)
+      throw runtime_error("Can't set video mode");
+
+    // Create our opengl context and attach it to our window
+    mainContext = SDL_GL_CreateContext(mainWindow);
+
+    printOpenGlVersion();
+
+    // This makes our buffer swap syncronized with the monitor's vertical refresh
+    SDL_GL_SetSwapInterval(1);
+
+    GLuint VertexArrayID;
+    SAFE_GL(glGenVertexArrays(1, &VertexArrayID));
+    SAFE_GL(glBindVertexArray(VertexArrayID));
+
+    g_ProgramId = loadShaders();
+
+    glEnable(GL_BLEND);
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    g_fontModel = loadTiledAnimation("res/font.png", 256, 16, 16);
+    sendToOpengl(g_fontModel);
+
+    g_MVP = glGetUniformLocation(g_ProgramId, "MVP");
+    assert(g_MVP >= 0);
+
+    g_colorId = glGetUniformLocation(g_ProgramId, "v_color");
+    assert(g_colorId >= 0);
+
+    g_ambientLoc = glGetUniformLocation(g_ProgramId, "ambientLight");
+    assert(g_ambientLoc >= 0);
+
+    g_positionLoc = glGetAttribLocation(g_ProgramId, "a_position");
+    assert(g_positionLoc >= 0);
+
+    g_texCoordLoc = glGetAttribLocation(g_ProgramId, "a_texCoord");
+    assert(g_texCoordLoc >= 0);
+
+    g_normalLoc = glGetAttribLocation(g_ProgramId, "a_normal");
+    assert(g_normalLoc >= 0);
+  }
+
+  struct Camera
+  {
+    Vector3f pos;
+    Vector3f dir;
+    bool valid = false;
+  };
+
+  Camera g_camera;
+
+  float baseAmbientLight = 0;
+
+  void setCamera(Vector3f pos, Vector3f dir)
+  {
+    auto cam = (Camera { pos, dir });
+
+    if(!g_camera.valid)
+    {
+      g_camera = cam;
+      g_camera.valid = true;
+    }
+
+    auto blend = [] (Vector3f a, Vector3f b)
                  {
-                   return s ? s : "<null>";
+                   auto const alpha = 0.3f;
+                   return a * (1 - alpha) + b * alpha;
                  };
 
-  cout << "OpenGL version: " << notNull(sVersion) << endl;
-  cout << "OpenGL shading version: " << notNull(sLangVersion) << endl;
-}
+    g_camera.pos = blend(g_camera.pos, cam.pos);
+    g_camera.dir = cam.dir;
+  }
 
-static SDL_Window* mainWindow;
-static SDL_GLContext mainContext;
+  void setCaption(const char* caption)
+  {
+    SDL_SetWindowTitle(mainWindow, caption);
+  }
 
-void Display_init(int width, int height)
-{
-  if(SDL_InitSubSystem(SDL_INIT_VIDEO))
-    throw runtime_error("Can't init SDL");
+  void setAmbientLight(float ambientLight_)
+  {
+    baseAmbientLight = ambientLight_;
+  }
 
-  SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+  void enableGrab(bool enable)
+  {
+    SDL_SetRelativeMouseMode(enable ? SDL_TRUE : SDL_FALSE);
+    SDL_SetWindowGrab(mainWindow, enable ? SDL_TRUE : SDL_FALSE);
+    SDL_ShowCursor(enable ? 0 : 1);
+  }
 
-  mainWindow = SDL_CreateWindow(
-    "My Game",
-    SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-    width, height,
-    SDL_WINDOW_OPENGL
-    );
+  static
+  void drawModel(Rect3f where, Camera const& camera, Model& model, bool blinking, int actionIdx, float ratio)
+  {
+    SAFE_GL(glUniform4f(g_colorId, 0, 0, 0, 0));
 
-  if(!mainWindow)
-    throw runtime_error("Can't set video mode");
+    if(blinking)
+    {
+      static int blinkCounter;
+      blinkCounter++;
 
-  // Create our opengl context and attach it to our window
-  mainContext = SDL_GL_CreateContext(mainWindow);
+      if((blinkCounter / 4) % 2)
+        SAFE_GL(glUniform4f(g_colorId, 0.8, 0.4, 0.4, 0));
+    }
 
-  printOpenGlVersion();
+    if(actionIdx < 0 || actionIdx >= (int)model.actions.size())
+      throw runtime_error("invalid action index");
 
-  // This makes our buffer swap syncronized with the monitor's vertical refresh
-  SDL_GL_SetSwapInterval(1);
+    auto const& action = model.actions[actionIdx];
 
-  GLuint VertexArrayID;
-  SAFE_GL(glGenVertexArrays(1, &VertexArrayID));
-  SAFE_GL(glBindVertexArray(VertexArrayID));
+    if(action.textures.empty())
+      throw runtime_error("action has no textures");
 
-  g_ProgramId = loadShaders();
+    auto const N = (int)action.textures.size();
+    auto const idx = ::clamp<int>(ratio * N, 0, N - 1);
+    glBindTexture(GL_TEXTURE_2D, action.textures[idx]);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-  glEnable(GL_BLEND);
-  glEnable(GL_DEPTH_TEST);
-  glEnable(GL_CULL_FACE);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    auto const target = camera.pos + camera.dir;
+    auto const view = ::lookAt(camera.pos, target, Vector3f(0, 0, 1));
+    auto const pos = ::translate(Vector3f(where.x, where.y, where.z));
+    auto const scale = ::scale(Vector3f(where.cx, where.cy, where.cz));
 
-  g_fontModel = loadTiledAnimation("res/font.png", 256, 16, 16);
-  sendToOpengl(g_fontModel);
+    static const float fovy = (float)((60.0f / 180) * PI);
+    static const float aspect = 1.0f;
+    static const float near_ = 0.1f;
+    static const float far_ = 100.0f;
+    static const auto perspective = ::perspective(fovy, aspect, near_, far_);
 
-  g_MVP = glGetUniformLocation(g_ProgramId, "MVP");
-  assert(g_MVP >= 0);
+    auto mat = perspective * view * pos * scale;
 
-  g_colorId = glGetUniformLocation(g_ProgramId, "v_color");
-  assert(g_colorId >= 0);
+    SAFE_GL(glUniformMatrix4fv(g_MVP, 1, GL_FALSE, &mat[0][0]));
 
-  g_ambientLoc = glGetUniformLocation(g_ProgramId, "ambientLight");
-  assert(g_ambientLoc >= 0);
+    SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, model.buffer));
 
-  g_positionLoc = glGetAttribLocation(g_ProgramId, "a_position");
-  assert(g_positionLoc >= 0);
+    {
+      // connect the xyz to the "a_position" attribute of the vertex shader
+      SAFE_GL(glEnableVertexAttribArray(g_positionLoc));
+      SAFE_GL(glVertexAttribPointer(g_positionLoc, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const GLvoid*)(0 * sizeof(GLfloat))));
 
-  g_texCoordLoc = glGetAttribLocation(g_ProgramId, "a_texCoord");
-  assert(g_texCoordLoc >= 0);
+      // connect the N to the "a_normal" attribute of the vertex shader
+      SAFE_GL(glEnableVertexAttribArray(g_normalLoc));
+      SAFE_GL(glVertexAttribPointer(g_normalLoc, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const GLvoid*)(5 * sizeof(GLfloat))));
 
-  g_normalLoc = glGetAttribLocation(g_ProgramId, "a_normal");
-  assert(g_normalLoc >= 0);
-}
+      // connect the uv coords to the "v_texCoord" attribute of the vertex shader
+      SAFE_GL(glEnableVertexAttribArray(g_texCoordLoc));
+      SAFE_GL(glVertexAttribPointer(g_texCoordLoc, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat))));
+    }
+    SAFE_GL(glDrawArrays(GL_TRIANGLES, 0, model.vertices.size()));
+  }
 
-struct Camera
-{
-  Vector3f pos;
-  Vector3f dir;
-  bool valid = false;
+  void drawActor(Rect3f where, int modelId, bool blinking, int actionIdx, float ratio)
+  {
+    auto& model = g_Models.at(modelId);
+    drawModel(where, g_camera, model, blinking, actionIdx, ratio);
+  }
+
+  void drawText(Vector2f pos, char const* text)
+  {
+    Rect3f rect;
+    rect.cx = 0.5;
+    rect.cy = 0;
+    rect.cz = 0.5;
+    rect.x = pos.x - strlen(text) * rect.cx / 2;
+    rect.y = 0;
+    rect.z = pos.y;
+
+    auto cam = (Camera { Vector3f(0, -10, 0), Vector3f(0, 1, 0) });
+
+    glDisable(GL_DEPTH_TEST);
+
+    while(*text)
+    {
+      drawModel(rect, cam, g_fontModel, false, *text, 0);
+      rect.x += rect.cx;
+      ++text;
+    }
+  }
+
+  void beginDraw()
+  {
+    SAFE_GL(glUseProgram(g_ProgramId));
+
+    glEnable(GL_DEPTH_TEST);
+    SAFE_GL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+    SAFE_GL(glClearColor(0, 0, 0, 1));
+    SAFE_GL(glClear(GL_COLOR_BUFFER_BIT));
+
+    SAFE_GL(glUniform3f(g_ambientLoc, baseAmbientLight, baseAmbientLight, baseAmbientLight));
+  }
+
+  void endDraw()
+  {
+    SDL_GL_SwapWindow(mainWindow);
+  }
 };
 
-static Camera g_camera;
-
-static float baseAmbientLight = 0;
-
-void Display_setCamera(Vector3f pos, Vector3f dir)
+Display* createDisplay()
 {
-  auto cam = (Camera { pos, dir });
-
-  if(!g_camera.valid)
-  {
-    g_camera = cam;
-    g_camera.valid = true;
-  }
-
-  auto blend = [] (Vector3f a, Vector3f b)
-               {
-                 auto const alpha = 0.3f;
-                 return a * (1 - alpha) + b * alpha;
-               };
-
-  g_camera.pos = blend(g_camera.pos, cam.pos);
-  g_camera.dir = cam.dir;
-}
-
-void Display_setCaption(const char* caption)
-{
-  SDL_SetWindowTitle(mainWindow, caption);
-}
-
-void Display_setAmbientLight(float ambientLight_)
-{
-  baseAmbientLight = ambientLight_;
-}
-
-void Display_enableGrab(bool enable)
-{
-  SDL_SetRelativeMouseMode(enable ? SDL_TRUE : SDL_FALSE);
-  SDL_SetWindowGrab(mainWindow, enable ? SDL_TRUE : SDL_FALSE);
-  SDL_ShowCursor(enable ? 0 : 1);
-}
-
-static
-void drawModel(Rect3f where, Camera const& camera, Model& model, bool blinking, int actionIdx, float ratio)
-{
-  SAFE_GL(glUniform4f(g_colorId, 0, 0, 0, 0));
-
-  if(blinking)
-  {
-    static int blinkCounter;
-    blinkCounter++;
-
-    if((blinkCounter / 4) % 2)
-      SAFE_GL(glUniform4f(g_colorId, 0.8, 0.4, 0.4, 0));
-  }
-
-  if(actionIdx < 0 || actionIdx >= (int)model.actions.size())
-    throw runtime_error("invalid action index");
-
-  auto const& action = model.actions[actionIdx];
-
-  if(action.textures.empty())
-    throw runtime_error("action has no textures");
-
-  auto const N = (int)action.textures.size();
-  auto const idx = ::clamp<int>(ratio * N, 0, N - 1);
-  glBindTexture(GL_TEXTURE_2D, action.textures[idx]);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-  auto const target = camera.pos + camera.dir;
-  auto const view = ::lookAt(camera.pos, target, Vector3f(0, 0, 1));
-  auto const pos = ::translate(Vector3f(where.x, where.y, where.z));
-  auto const scale = ::scale(Vector3f(where.cx, where.cy, where.cz));
-
-  static const float fovy = (float)((60.0f / 180) * PI);
-  static const float aspect = 1.0f;
-  static const float near_ = 0.1f;
-  static const float far_ = 100.0f;
-  static const auto perspective = ::perspective(fovy, aspect, near_, far_);
-
-  auto mat = perspective * view * pos * scale;
-
-  SAFE_GL(glUniformMatrix4fv(g_MVP, 1, GL_FALSE, &mat[0][0]));
-
-  SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, model.buffer));
-
-  {
-    // connect the xyz to the "a_position" attribute of the vertex shader
-    SAFE_GL(glEnableVertexAttribArray(g_positionLoc));
-    SAFE_GL(glVertexAttribPointer(g_positionLoc, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const GLvoid*)(0 * sizeof(GLfloat))));
-
-    // connect the N to the "a_normal" attribute of the vertex shader
-    SAFE_GL(glEnableVertexAttribArray(g_normalLoc));
-    SAFE_GL(glVertexAttribPointer(g_normalLoc, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const GLvoid*)(5 * sizeof(GLfloat))));
-
-    // connect the uv coords to the "v_texCoord" attribute of the vertex shader
-    SAFE_GL(glEnableVertexAttribArray(g_texCoordLoc));
-    SAFE_GL(glVertexAttribPointer(g_texCoordLoc, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat))));
-  }
-  SAFE_GL(glDrawArrays(GL_TRIANGLES, 0, model.vertices.size()));
-}
-
-void Display_drawActor(Rect3f where, int modelId, bool blinking, int actionIdx, float ratio)
-{
-  auto& model = g_Models.at(modelId);
-  drawModel(where, g_camera, model, blinking, actionIdx, ratio);
-}
-
-void Display_drawText(Vector2f pos, char const* text)
-{
-  Rect3f rect;
-  rect.cx = 0.5;
-  rect.cy = 0;
-  rect.cz = 0.5;
-  rect.x = pos.x - strlen(text) * rect.cx / 2;
-  rect.y = 0;
-  rect.z = pos.y;
-
-  auto cam = (Camera { Vector3f(0, -10, 0), Vector3f(0, 1, 0) });
-
-  glDisable(GL_DEPTH_TEST);
-
-  while(*text)
-  {
-    drawModel(rect, cam, g_fontModel, false, *text, 0);
-    rect.x += rect.cx;
-    ++text;
-  }
-}
-
-void Display_beginDraw()
-{
-  SAFE_GL(glUseProgram(g_ProgramId));
-
-  glEnable(GL_DEPTH_TEST);
-  SAFE_GL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
-  SAFE_GL(glClearColor(0, 0, 0, 1));
-  SAFE_GL(glClear(GL_COLOR_BUFFER_BIT));
-
-  SAFE_GL(glUniform3f(g_ambientLoc, baseAmbientLight, baseAmbientLight, baseAmbientLight));
-}
-
-void Display_endDraw()
-{
-  SDL_GL_SwapWindow(mainWindow);
+  return new SdlDisplay;
 }
 

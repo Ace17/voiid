@@ -22,22 +22,13 @@
 #include "base/scene.h"
 #include "ratecounter.h"
 #include "sound.h"
+#include "display.h"
 
 using namespace std;
 
 auto const TIMESTEP = 1;
 
-void Display_init(int width, int height);
-void Display_setCaption(const char* caption);
-void Display_loadModel(int id, const char* imagePath);
-void Display_beginDraw();
-void Display_endDraw();
-void Display_drawActor(Rect3f where, int modelId, bool blinking, int actionIdx, float frame);
-void Display_drawText(Vector2f pos, char const* text);
-void Display_setCamera(Vector3f pos, Vector3f dir);
-void Display_setAmbientLight(float ambientLight);
-void Display_enableGrab(bool enable);
-
+Display* createDisplay();
 Audio* createAudio();
 
 Scene* createGame(View* view, vector<string> argv);
@@ -52,7 +43,8 @@ public:
   {
     SDL_Init(0);
 
-    Display_init(1024, 1024);
+    m_display.reset(createDisplay());
+    m_display->init(1024, 1024);
     m_audio.reset(createAudio());
 
     for(auto res : getResources())
@@ -63,12 +55,12 @@ public:
         m_audio->loadSound(res.id, res.path);
         break;
       case ResourceType::Model:
-        Display_loadModel(res.id, res.path);
+        m_display->loadModel(res.id, res.path);
         break;
       }
     }
 
-    Display_enableGrab(m_doGrab);
+    m_display->enableGrab(m_doGrab);
 
     m_lastTime = SDL_GetTicks();
   }
@@ -150,9 +142,9 @@ private:
 
   void draw()
   {
-    Display_setAmbientLight(m_scene->ambientLight);
+    m_display->setAmbientLight(m_scene->ambientLight);
 
-    Display_beginDraw();
+    m_display->beginDraw();
 
     auto actors = m_scene->getActors();
 
@@ -161,7 +153,7 @@ private:
       if(actor.focus)
       {
         auto const size = Vector3f(actor.scale.cx, actor.scale.cy, actor.scale.cz);
-        Display_setCamera(actor.pos + size * 0.5, actor.orientation);
+        m_display->setCamera(actor.pos + size * 0.5, actor.orientation);
         break;
       }
     }
@@ -171,30 +163,30 @@ private:
       auto where = Rect3f(
         actor.pos.x, actor.pos.y, actor.pos.z,
         actor.scale.cx, actor.scale.cy, actor.scale.cz);
-      Display_drawActor(where, (int)actor.model, actor.effect == Effect::Blinking, actor.action, actor.ratio);
+      m_display->drawActor(where, (int)actor.model, actor.effect == Effect::Blinking, actor.action, actor.ratio);
     }
 
     if(m_paused)
-      Display_drawText(Vector2f(0, 0), "PAUSE");
+      m_display->drawText(Vector2f(0, 0), "PAUSE");
     else if(m_slowMotion)
-      Display_drawText(Vector2f(0, 0), "SLOW-MOTION MODE");
+      m_display->drawText(Vector2f(0, 0), "SLOW-MOTION MODE");
     else if(m_control.debug)
-      Display_drawText(Vector2f(0, 0), "DEBUG MODE");
+      m_display->drawText(Vector2f(0, 0), "DEBUG MODE");
 
     if(m_textboxDelay > 0)
     {
-      Display_drawText(Vector2f(0, 2), m_textbox.c_str());
+      m_display->drawText(Vector2f(0, 2), m_textbox.c_str());
       m_textboxDelay--;
     }
 
-    Display_endDraw();
+    m_display->endDraw();
   }
 
   void fpsChanged(int fps)
   {
     char title[128];
     sprintf(title, "Maaze (%d FPS)", fps);
-    Display_setCaption(title);
+    m_display->setCaption(title);
   }
 
   void onQuit()
@@ -232,7 +224,7 @@ private:
     if(evt->key.keysym.scancode == SDL_SCANCODE_RCTRL)
     {
       m_doGrab = !m_doGrab;
-      Display_enableGrab(m_doGrab);
+      m_display->enableGrab(m_doGrab);
     }
 
     keys[evt->key.keysym.scancode] = 1;
@@ -273,6 +265,7 @@ private:
   bool m_paused = false;
   bool m_doGrab = true;
   unique_ptr<Audio> m_audio;
+  unique_ptr<Display> m_display;
 
   string m_textbox;
   int m_textboxDelay;
