@@ -8,7 +8,7 @@
 
 // Pluggable entity factory, registration side: game-specific part
 
-#include <map>
+#include "entity_factory.h"
 
 #include "switch.h"
 #include "spider.h"
@@ -20,9 +20,6 @@
 #include "conveyor.h"
 #include "sign.h"
 #include "finish.h"
-
-typedef vector<string> const EntityArgs;
-typedef function<unique_ptr<Entity>(EntityArgs & args)> CreationFunc;
 
 map<string, CreationFunc> getRegistry()
 {
@@ -100,28 +97,25 @@ map<string, CreationFunc> getRegistry()
       return make_unique<CrumbleBlock>();
     };
 
-  r["door(0)"] =
-    [] (EntityArgs &)
+  r["door"] =
+    [] (EntityArgs& args)
     {
-      return makeDoor(0);
+      auto arg = atoi(args[0].c_str());
+      return makeDoor(arg);
     };
 
-  r["switch(0)"] =
-    [] (EntityArgs &)
+  r["switch"] =
+    [] (EntityArgs& args)
     {
-      return makeSwitch(0);
+      auto arg = atoi(args[0].c_str());
+      return makeSwitch(arg);
     };
 
-  r["mp(0)"] =
-    [] (EntityArgs &)
+  r["mp"] =
+    [] (EntityArgs& args)
     {
-      return make_unique<MovingPlatform>(0);
-    };
-
-  r["mp(1)"] =
-    [] (EntityArgs &)
-    {
-      return make_unique<MovingPlatform>(1);
+      auto arg = atoi(args[0].c_str());
+      return make_unique<MovingPlatform>(arg);
     };
 
   r["finish"] =
