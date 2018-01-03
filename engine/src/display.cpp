@@ -46,7 +46,7 @@ static Model g_fontModel;
   do { a; ensureGl(# a, __LINE__); } while(0)
 #endif
 
-inline
+static
 void ensureGl(char const* expr, int line)
 {
   auto const errorCode = glGetError();
@@ -138,6 +138,7 @@ SDL_Surface* loadPicture(string path)
   return surface;
 }
 
+// exported to Model
 int loadTexture(string path, Rect2i rect)
 {
   auto surface = loadPicture(path);
