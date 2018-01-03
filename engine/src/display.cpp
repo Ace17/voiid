@@ -172,6 +172,8 @@ int loadTexture(string path, Rect2i rect)
 
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
   SDL_FreeSurface(surface);
 
@@ -283,8 +285,6 @@ void drawModel(Rect3f where, Camera const& camera, Model& model, bool blinking, 
   auto const N = (int)action.textures.size();
   auto const idx = ::clamp<int>(ratio * N, 0, N - 1);
   glBindTexture(GL_TEXTURE_2D, action.textures[idx]);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
   auto const target = camera.pos + camera.dir;
   auto const view = ::lookAt(camera.pos, target, Vector3f(0, 0, 1));
@@ -373,6 +373,18 @@ struct SdlDisplay : Display
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     g_fontModel = loadTiledAnimation("res/font.png", 256, 16, 16);
+
+    // don't GL_REPEAT fonts
+    for(auto& action : g_fontModel.actions)
+    {
+      for(auto& texture : action.textures)
+      {
+        glBindTexture(GL_TEXTURE_2D, texture);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+      }
+    }
+
     sendToOpengl(g_fontModel);
 
     g_MVP = glGetUniformLocation(g_ProgramId, "MVP");
