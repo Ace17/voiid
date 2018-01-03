@@ -149,8 +149,6 @@ int loadTexture(string path, Rect2i rect)
   if(rect.x < 0 || rect.y < 0 || rect.x + rect.width > surface->w || rect.y + rect.height > surface->h)
     throw runtime_error("Invalid boundaries for '" + path + "'");
 
-  GLuint texture;
-
   auto const bpp = surface->format->BytesPerPixel;
 
   vector<uint8_t> img(rect.width* rect.height* bpp);
@@ -164,6 +162,8 @@ int loadTexture(string path, Rect2i rect)
     src += surface->pitch;
     dst += bpp * rect.width;
   }
+
+  GLuint texture;
 
   glGenTextures(1, &texture);
   glBindTexture(GL_TEXTURE_2D, texture);
