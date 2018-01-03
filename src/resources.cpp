@@ -20,7 +20,6 @@ static const Resource sounds[] =
 
 static const Resource models[] =
 {
-  { MDL_TILES, "res/tiles.mdl" },
   { MDL_DOOR, "res/sprites/door.json" },
   { MDL_RECT, "res/sprites/rect.json" },
   { MDL_AMULET, "res/sprites/amulet.json" },
