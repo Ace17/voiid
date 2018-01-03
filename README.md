@@ -37,7 +37,7 @@ engine/src:     I/O code (game-agnostic)
 engine/include: representation of the outside world, as seen by the game logic.
 src:            game logic (only depends on 'engine/include')
 tests:          game logic tests
-res:            game resources (sounds, sprites, tiles)
+res:            pre-rendered game resources (sounds, sprites, tiles)
 ```
 
 
@@ -48,6 +48,8 @@ Requirements:
 ```
 * libsdl2-dev
 * libsdl2-image-dev
+* libogg-dev
+* libvorbis-dev
 ```
 
 It can be compiled to native code using your native compiler (gcc or clang):
