@@ -161,8 +161,8 @@ private:
     for(auto& actor : actors)
     {
       auto where = Rect3f(
-        actor.pos.x, actor.pos.y, actor.pos.z,
-        actor.scale.cx, actor.scale.cy, actor.scale.cz);
+          actor.pos.x, actor.pos.y, actor.pos.z,
+          actor.scale.cx, actor.scale.cy, actor.scale.cz);
       m_display->drawActor(where, (int)actor.model, actor.effect == Effect::Blinking, actor.action, actor.ratio);
     }
 

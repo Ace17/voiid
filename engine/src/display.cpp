@@ -326,9 +326,9 @@ void printOpenGlVersion()
   auto sLangVersion = (char const*)glGetString(GL_SHADING_LANGUAGE_VERSION);
 
   auto notNull = [] (char const* s) -> string
-                 {
-                   return s ? s : "<null>";
-                 };
+    {
+      return s ? s : "<null>";
+    };
 
   cout << "OpenGL version: " << notNull(sVersion) << endl;
   cout << "OpenGL shading version: " << notNull(sLangVersion) << endl;
@@ -344,11 +344,11 @@ struct SdlDisplay : Display
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
     mainWindow = SDL_CreateWindow(
-      "My Game",
-      SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-      width, height,
-      SDL_WINDOW_OPENGL
-      );
+        "My Game",
+        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+        width, height,
+        SDL_WINDOW_OPENGL
+        );
 
     if(!mainWindow)
       throw runtime_error("Can't set video mode");
@@ -414,10 +414,10 @@ struct SdlDisplay : Display
     }
 
     auto blend = [] (Vector3f a, Vector3f b)
-                 {
-                   auto const alpha = 0.3f;
-                   return a * (1 - alpha) + b * alpha;
-                 };
+      {
+        auto const alpha = 0.3f;
+        return a * (1 - alpha) + b * alpha;
+      };
 
     g_camera.pos = blend(g_camera.pos, cam.pos);
     g_camera.dir = cam.dir;
