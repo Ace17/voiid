@@ -200,6 +200,13 @@ GLuint loadShaders()
 
 Model boxModel();
 
+struct Camera
+{
+  Vector3f pos;
+  Vector3f dir;
+  bool valid = false;
+};
+
 static
 void sendToOpengl(Model& model)
 {
@@ -248,6 +255,82 @@ Model loadAnimation(string path)
     m.actions.push_back(action);
     return m;
   }
+}
+
+static
+void drawModel(Rect3f where, Camera const& camera, Model& model, bool blinking, int actionIdx, float ratio)
+{
+  SAFE_GL(glUniform4f(g_colorId, 0, 0, 0, 0));
+
+  if(blinking)
+  {
+    static int blinkCounter;
+    blinkCounter++;
+
+    if((blinkCounter / 4) % 2)
+      SAFE_GL(glUniform4f(g_colorId, 0.8, 0.4, 0.4, 0));
+  }
+
+  if(actionIdx < 0 || actionIdx >= (int)model.actions.size())
+    throw runtime_error("invalid action index");
+
+  auto const& action = model.actions[actionIdx];
+
+  if(action.textures.empty())
+    throw runtime_error("action has no textures");
+
+  auto const N = (int)action.textures.size();
+  auto const idx = ::clamp<int>(ratio * N, 0, N - 1);
+  glBindTexture(GL_TEXTURE_2D, action.textures[idx]);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+  auto const target = camera.pos + camera.dir;
+  auto const view = ::lookAt(camera.pos, target, Vector3f(0, 0, 1));
+  auto const pos = ::translate(Vector3f(where.x, where.y, where.z));
+  auto const scale = ::scale(Vector3f(where.cx, where.cy, where.cz));
+
+  static const float fovy = (float)((60.0f / 180) * PI);
+  static const float aspect = 1.0f;
+  static const float near_ = 0.1f;
+  static const float far_ = 100.0f;
+  static const auto perspective = ::perspective(fovy, aspect, near_, far_);
+
+  auto mat = perspective * view * pos * scale;
+
+  SAFE_GL(glUniformMatrix4fv(g_MVP, 1, GL_FALSE, &mat[0][0]));
+
+  SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, model.buffer));
+
+  {
+    // connect the xyz to the "a_position" attribute of the vertex shader
+    SAFE_GL(glEnableVertexAttribArray(g_positionLoc));
+    SAFE_GL(glVertexAttribPointer(g_positionLoc, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const GLvoid*)(0 * sizeof(GLfloat))));
+
+    // connect the N to the "a_normal" attribute of the vertex shader
+    SAFE_GL(glEnableVertexAttribArray(g_normalLoc));
+    SAFE_GL(glVertexAttribPointer(g_normalLoc, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const GLvoid*)(5 * sizeof(GLfloat))));
+
+    // connect the uv coords to the "v_texCoord" attribute of the vertex shader
+    SAFE_GL(glEnableVertexAttribArray(g_texCoordLoc));
+    SAFE_GL(glVertexAttribPointer(g_texCoordLoc, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat))));
+  }
+  SAFE_GL(glDrawArrays(GL_TRIANGLES, 0, model.vertices.size()));
+}
+
+static
+void printOpenGlVersion()
+{
+  auto sVersion = (char const*)glGetString(GL_VERSION);
+  auto sLangVersion = (char const*)glGetString(GL_SHADING_LANGUAGE_VERSION);
+
+  auto notNull = [] (char const* s) -> string
+                 {
+                   return s ? s : "<null>";
+                 };
+
+  cout << "OpenGL version: " << notNull(sVersion) << endl;
+  cout << "OpenGL shading version: " << notNull(sLangVersion) << endl;
 }
 
 struct SdlDisplay : Display
@@ -402,89 +485,6 @@ struct SdlDisplay : Display
   }
 
   // end-of public API
-
-  struct Camera
-  {
-    Vector3f pos;
-    Vector3f dir;
-    bool valid = false;
-  };
-
-  static
-  void drawModel(Rect3f where, Camera const& camera, Model& model, bool blinking, int actionIdx, float ratio)
-  {
-    SAFE_GL(glUniform4f(g_colorId, 0, 0, 0, 0));
-
-    if(blinking)
-    {
-      static int blinkCounter;
-      blinkCounter++;
-
-      if((blinkCounter / 4) % 2)
-        SAFE_GL(glUniform4f(g_colorId, 0.8, 0.4, 0.4, 0));
-    }
-
-    if(actionIdx < 0 || actionIdx >= (int)model.actions.size())
-      throw runtime_error("invalid action index");
-
-    auto const& action = model.actions[actionIdx];
-
-    if(action.textures.empty())
-      throw runtime_error("action has no textures");
-
-    auto const N = (int)action.textures.size();
-    auto const idx = ::clamp<int>(ratio * N, 0, N - 1);
-    glBindTexture(GL_TEXTURE_2D, action.textures[idx]);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-    auto const target = camera.pos + camera.dir;
-    auto const view = ::lookAt(camera.pos, target, Vector3f(0, 0, 1));
-    auto const pos = ::translate(Vector3f(where.x, where.y, where.z));
-    auto const scale = ::scale(Vector3f(where.cx, where.cy, where.cz));
-
-    static const float fovy = (float)((60.0f / 180) * PI);
-    static const float aspect = 1.0f;
-    static const float near_ = 0.1f;
-    static const float far_ = 100.0f;
-    static const auto perspective = ::perspective(fovy, aspect, near_, far_);
-
-    auto mat = perspective * view * pos * scale;
-
-    SAFE_GL(glUniformMatrix4fv(g_MVP, 1, GL_FALSE, &mat[0][0]));
-
-    SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, model.buffer));
-
-    {
-      // connect the xyz to the "a_position" attribute of the vertex shader
-      SAFE_GL(glEnableVertexAttribArray(g_positionLoc));
-      SAFE_GL(glVertexAttribPointer(g_positionLoc, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const GLvoid*)(0 * sizeof(GLfloat))));
-
-      // connect the N to the "a_normal" attribute of the vertex shader
-      SAFE_GL(glEnableVertexAttribArray(g_normalLoc));
-      SAFE_GL(glVertexAttribPointer(g_normalLoc, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const GLvoid*)(5 * sizeof(GLfloat))));
-
-      // connect the uv coords to the "v_texCoord" attribute of the vertex shader
-      SAFE_GL(glEnableVertexAttribArray(g_texCoordLoc));
-      SAFE_GL(glVertexAttribPointer(g_texCoordLoc, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat))));
-    }
-    SAFE_GL(glDrawArrays(GL_TRIANGLES, 0, model.vertices.size()));
-  }
-
-  static
-  void printOpenGlVersion()
-  {
-    auto sVersion = (char const*)glGetString(GL_VERSION);
-    auto sLangVersion = (char const*)glGetString(GL_SHADING_LANGUAGE_VERSION);
-
-    auto notNull = [] (char const* s) -> string
-                   {
-                     return s ? s : "<null>";
-                   };
-
-    cout << "OpenGL version: " << notNull(sVersion) << endl;
-    cout << "OpenGL shading version: " << notNull(sLangVersion) << endl;
-  }
 
   SDL_Window* mainWindow;
   SDL_GLContext mainContext;
