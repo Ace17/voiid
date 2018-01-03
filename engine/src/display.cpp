@@ -252,34 +252,7 @@ Model loadAnimation(string path)
 
 struct SdlDisplay : Display
 {
-  void loadModel(int id, const char* path)
-  {
-    if((int)g_Models.size() <= id)
-      g_Models.resize(id + 1);
-
-    g_Models[id] = loadAnimation(path);
-    sendToOpengl(g_Models[id]);
-  }
-
-  static
-  void printOpenGlVersion()
-  {
-    auto sVersion = (char const*)glGetString(GL_VERSION);
-    auto sLangVersion = (char const*)glGetString(GL_SHADING_LANGUAGE_VERSION);
-
-    auto notNull = [] (char const* s) -> string
-                   {
-                     return s ? s : "<null>";
-                   };
-
-    cout << "OpenGL version: " << notNull(sVersion) << endl;
-    cout << "OpenGL shading version: " << notNull(sLangVersion) << endl;
-  }
-
-  SDL_Window* mainWindow;
-  SDL_GLContext mainContext;
-
-  void init(int width, int height)
+  void init(int width, int height) override
   {
     if(SDL_InitSubSystem(SDL_INIT_VIDEO))
       throw runtime_error("Can't init SDL");
@@ -337,18 +310,16 @@ struct SdlDisplay : Display
     assert(g_normalLoc >= 0);
   }
 
-  struct Camera
+  void loadModel(int id, const char* path) override
   {
-    Vector3f pos;
-    Vector3f dir;
-    bool valid = false;
-  };
+    if((int)g_Models.size() <= id)
+      g_Models.resize(id + 1);
 
-  Camera g_camera;
+    g_Models[id] = loadAnimation(path);
+    sendToOpengl(g_Models[id]);
+  }
 
-  float baseAmbientLight = 0;
-
-  void setCamera(Vector3f pos, Vector3f dir)
+  void setCamera(Vector3f pos, Vector3f dir) override
   {
     auto cam = (Camera { pos, dir });
 
@@ -368,22 +339,76 @@ struct SdlDisplay : Display
     g_camera.dir = cam.dir;
   }
 
-  void setCaption(const char* caption)
+  void setCaption(const char* caption) override
   {
     SDL_SetWindowTitle(mainWindow, caption);
   }
 
-  void setAmbientLight(float ambientLight_)
+  void setAmbientLight(float ambientLight_) override
   {
     baseAmbientLight = ambientLight_;
   }
 
-  void enableGrab(bool enable)
+  void enableGrab(bool enable) override
   {
     SDL_SetRelativeMouseMode(enable ? SDL_TRUE : SDL_FALSE);
     SDL_SetWindowGrab(mainWindow, enable ? SDL_TRUE : SDL_FALSE);
     SDL_ShowCursor(enable ? 0 : 1);
   }
+
+  void drawActor(Rect3f where, int modelId, bool blinking, int actionIdx, float ratio) override
+  {
+    auto& model = g_Models.at(modelId);
+    drawModel(where, g_camera, model, blinking, actionIdx, ratio);
+  }
+
+  void drawText(Vector2f pos, char const* text) override
+  {
+    Rect3f rect;
+    rect.cx = 0.5;
+    rect.cy = 0;
+    rect.cz = 0.5;
+    rect.x = pos.x - strlen(text) * rect.cx / 2;
+    rect.y = 0;
+    rect.z = pos.y;
+
+    auto cam = (Camera { Vector3f(0, -10, 0), Vector3f(0, 1, 0) });
+
+    glDisable(GL_DEPTH_TEST);
+
+    while(*text)
+    {
+      drawModel(rect, cam, g_fontModel, false, *text, 0);
+      rect.x += rect.cx;
+      ++text;
+    }
+  }
+
+  void beginDraw() override
+  {
+    SAFE_GL(glUseProgram(g_ProgramId));
+
+    glEnable(GL_DEPTH_TEST);
+    SAFE_GL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+    SAFE_GL(glClearColor(0, 0, 0, 1));
+    SAFE_GL(glClear(GL_COLOR_BUFFER_BIT));
+
+    SAFE_GL(glUniform3f(g_ambientLoc, baseAmbientLight, baseAmbientLight, baseAmbientLight));
+  }
+
+  void endDraw() override
+  {
+    SDL_GL_SwapWindow(mainWindow);
+  }
+
+  // end-of public API
+
+  struct Camera
+  {
+    Vector3f pos;
+    Vector3f dir;
+    bool valid = false;
+  };
 
   static
   void drawModel(Rect3f where, Camera const& camera, Model& model, bool blinking, int actionIdx, float ratio)
@@ -446,50 +471,27 @@ struct SdlDisplay : Display
     SAFE_GL(glDrawArrays(GL_TRIANGLES, 0, model.vertices.size()));
   }
 
-  void drawActor(Rect3f where, int modelId, bool blinking, int actionIdx, float ratio)
+  static
+  void printOpenGlVersion()
   {
-    auto& model = g_Models.at(modelId);
-    drawModel(where, g_camera, model, blinking, actionIdx, ratio);
+    auto sVersion = (char const*)glGetString(GL_VERSION);
+    auto sLangVersion = (char const*)glGetString(GL_SHADING_LANGUAGE_VERSION);
+
+    auto notNull = [] (char const* s) -> string
+                   {
+                     return s ? s : "<null>";
+                   };
+
+    cout << "OpenGL version: " << notNull(sVersion) << endl;
+    cout << "OpenGL shading version: " << notNull(sLangVersion) << endl;
   }
 
-  void drawText(Vector2f pos, char const* text)
-  {
-    Rect3f rect;
-    rect.cx = 0.5;
-    rect.cy = 0;
-    rect.cz = 0.5;
-    rect.x = pos.x - strlen(text) * rect.cx / 2;
-    rect.y = 0;
-    rect.z = pos.y;
+  SDL_Window* mainWindow;
+  SDL_GLContext mainContext;
 
-    auto cam = (Camera { Vector3f(0, -10, 0), Vector3f(0, 1, 0) });
+  Camera g_camera;
 
-    glDisable(GL_DEPTH_TEST);
-
-    while(*text)
-    {
-      drawModel(rect, cam, g_fontModel, false, *text, 0);
-      rect.x += rect.cx;
-      ++text;
-    }
-  }
-
-  void beginDraw()
-  {
-    SAFE_GL(glUseProgram(g_ProgramId));
-
-    glEnable(GL_DEPTH_TEST);
-    SAFE_GL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
-    SAFE_GL(glClearColor(0, 0, 0, 1));
-    SAFE_GL(glClear(GL_COLOR_BUFFER_BIT));
-
-    SAFE_GL(glUniform3f(g_ambientLoc, baseAmbientLight, baseAmbientLight, baseAmbientLight));
-  }
-
-  void endDraw()
-  {
-    SDL_GL_SwapWindow(mainWindow);
-  }
+  float baseAmbientLight = 0;
 };
 
 Display* createDisplay()
