@@ -184,7 +184,7 @@ private:
   void fpsChanged(int fps)
   {
     char title[128];
-    sprintf(title, "Maaze (%d FPS)", fps);
+    sprintf(title, "Voiid (%d FPS)", fps);
     m_display->setCaption(title);
   }
 
