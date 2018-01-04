@@ -103,6 +103,9 @@ struct OggSound : Sound
 {
   OggSound(string filename)
   {
+    if(!ifstream(filename).is_open())
+      throw runtime_error("OggSound: file doesn't exist: '" + filename + "'");
+
     m_filename = filename;
   }
 
@@ -169,7 +172,6 @@ private:
   bool m_isDead = true;
   bool m_loop = false;
   Sound* m_sound;
-  Sound* m_baseSound;
   unique_ptr<ISoundPlayer> m_player;
 };
 
@@ -226,9 +228,6 @@ struct SdlAudio : Audio
 
     auto snd = loadSoundFile(path);
 
-    if(!snd)
-      throw runtime_error("Can't load sound: '" + path + "' : " + SDL_GetError());
-
     sounds.resize(max(id + 1, (int)sounds.size()));
 
     sounds[id] = move(snd);
@@ -263,9 +262,6 @@ struct SdlAudio : Audio
     }
 
     music = loadSoundFile(path);
-
-    if(!music)
-      throw runtime_error(string("Can't load music: ") + path);
 
     SDL_LockAudio();
     voices[0].play(music.get(), true);
