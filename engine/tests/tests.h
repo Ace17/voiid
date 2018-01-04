@@ -1,15 +1,12 @@
-/**
- * @brief Unit test framework
- * @author Sebastien Alaiwan
- */
-
 /*
- * Copyright (C) 2015 - Sebastien Alaiwan
+ * Copyright (C) 2018 - Sebastien Alaiwan
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
  */
+
+// Unit test framework: API
 
 #pragma once
 
@@ -43,6 +40,17 @@ struct Registrator
 #define assertEquals(u, v) \
   assertEqualsFunc(u, v, __FILE__, __LINE__)
 
+static inline
+std::ostream & operator << (std::ostream& o, const std::pair<int, int>& p)
+{
+  o << "(";
+  o << p.first;
+  o << ", ";
+  o << p.second;
+  o << ")";
+  return o;
+}
+
 template<typename T>
 std::ostream & operator << (std::ostream& o, const std::vector<T>& v)
 {
@@ -59,17 +67,6 @@ std::ostream & operator << (std::ostream& o, const std::vector<T>& v)
   }
 
   o << "]";
-  return o;
-}
-
-static inline
-std::ostream & operator << (std::ostream& o, const std::pair<int, int>& p)
-{
-  o << "(";
-  o << p.first;
-  o << ", ";
-  o << p.second;
-  o << ")";
   return o;
 }
 
