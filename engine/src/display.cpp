@@ -8,6 +8,8 @@
  * License, or (at your option) any later version.
  */
 
+// OpenGL stuff
+
 #include "display.h"
 
 #include <cassert>
@@ -66,6 +68,9 @@ static
 int compileShader(string code, int type)
 {
   auto shaderId = glCreateShader(type);
+
+  if(!shaderId)
+    throw runtime_error("Can't create shader");
 
   cout << "Compiling " << (type == GL_VERTEX_SHADER ? "vertex" : "fragment") << " shader ... ";
   auto srcPtr = code.c_str();
@@ -355,6 +360,9 @@ struct SdlDisplay : Display
 
     // Create our opengl context and attach it to our window
     mainContext = SDL_GL_CreateContext(mainWindow);
+
+    if(!mainContext)
+      throw runtime_error("Can't create OpenGL context");
 
     printOpenGlVersion();
 
