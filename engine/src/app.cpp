@@ -267,7 +267,7 @@ private:
   unique_ptr<Display> m_display;
 
   string m_textbox;
-  int m_textboxDelay;
+  int m_textboxDelay = 0;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
