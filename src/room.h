@@ -18,8 +18,6 @@ using namespace std;
 
 struct Room
 {
-  Vector3i pos;
-  Size3i size;
   Vector3i start;
 
   struct Thing
