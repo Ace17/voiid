@@ -116,6 +116,11 @@ Vector3f computeNormal(Mesh::Vertex V1, Mesh::Vertex V2, Mesh::Vertex V3)
   return normalize(N);
 }
 
+static bool startsWith(string s, string prefix)
+{
+  return s.substr(0, prefix.size()) == prefix;
+}
+
 Model modelFrom3ds(string path3ds)
 {
   auto const mesh = tds::load(path3ds);
@@ -141,17 +146,28 @@ Model modelFrom3ds(string path3ds)
       r.vertices.push_back(vt);
     };
 
-  for(auto& face : mesh->faces)
+  for(int i = 0; i < (int)mesh->objects.size(); i++)
   {
-    auto const V1 = mesh->vertices[face.i1];
-    auto const V2 = mesh->vertices[face.i2];
-    auto const V3 = mesh->vertices[face.i3];
+    const int start = mesh->objects[i];
+    const int end = i + 1 < (int)mesh->objects.size() ? mesh->objects[i + 1] : (int)mesh->faces.size();
 
-    auto const N = computeNormal(V1, V2, V3);
+    if(startsWith(mesh->objectNames[i], "f."))
+      continue;
 
-    addVertex(V1, N);
-    addVertex(V2, N);
-    addVertex(V3, N);
+    for(int j = start; j < end; ++j)
+    {
+      auto& face = mesh->faces[j];
+
+      auto const V1 = mesh->vertices[face.i1];
+      auto const V2 = mesh->vertices[face.i2];
+      auto const V3 = mesh->vertices[face.i3];
+
+      auto const N = computeNormal(V1, V2, V3);
+
+      addVertex(V1, N);
+      addVertex(V2, N);
+      addVertex(V3, N);
+    }
   }
 
   return r;
