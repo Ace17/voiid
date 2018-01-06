@@ -27,12 +27,6 @@ auto const MAX_HORZ_SPEED = 0.02f;
 auto const MAX_FALL_SPEED = 0.02f;
 auto const HURT_DELAY = 500;
 
-enum ORIENTATION
-{
-  LEFT,
-  RIGHT,
-};
-
 static auto const NORMAL_SIZE = Size(2, 2, 2);
 
 struct Rockman : Player, Damageable
@@ -94,8 +88,6 @@ struct Rockman : Player, Damageable
 
     vel.z -= GRAVITY;
 
-    sliding = false;
-
     if(jumpbutton.toggle(c.jump))
     {
       if(ground)
@@ -128,20 +120,17 @@ struct Rockman : Player, Damageable
 
     Vector wantedVel = Vector(0, 0, 0);
 
-    if(!climbDelay)
-    {
-      if(c.backward)
-        wantedVel -= forward * WALK_SPEED;
+    if(c.backward)
+      wantedVel -= forward * WALK_SPEED;
 
-      if(c.forward)
-        wantedVel += forward * WALK_SPEED;
+    if(c.forward)
+      wantedVel += forward * WALK_SPEED;
 
-      if(c.left)
-        wantedVel += left * WALK_SPEED;
+    if(c.left)
+      wantedVel += left * WALK_SPEED;
 
-      if(c.right)
-        wantedVel -= left * WALK_SPEED;
-    }
+    if(c.right)
+      wantedVel -= left * WALK_SPEED;
 
     vel.x = vel.x * 0.95 + wantedVel.x * 0.05;
     vel.y = vel.y * 0.95 + wantedVel.y * 0.05;
@@ -160,9 +149,6 @@ struct Rockman : Player, Damageable
   {
     decrement(blinking);
     decrement(hurtDelay);
-
-    if(ground)
-      decrement(dashDelay);
 
     if(hurtDelay || life <= 0)
       control = Control {};
@@ -195,14 +181,11 @@ struct Rockman : Player, Damageable
           game->playSound(SND_LAND);
 
         ground = true;
-        dashDelay = 0;
         vel.z = 0;
       }
     }
 
     decrement(debounceLanding);
-    decrement(climbDelay);
-    decrement(shootDelay);
 
     if(control.restart)
       onDamage(10000);
@@ -241,7 +224,6 @@ struct Rockman : Player, Damageable
   void die()
   {
     game->playSound(SND_DIE);
-    ball = false;
     respawnDelay = 2000;
     game->textBox("game over");
   }
@@ -250,15 +232,10 @@ struct Rockman : Player, Damageable
   float lookAngleHorz = 0;
   float lookAngleVert = 0;
   bool ground = false;
-  Toggle jumpbutton, firebutton, dashbutton;
-  int climbDelay = 0;
+  Toggle jumpbutton, firebutton;
   int hurtDelay = 0;
-  int dashDelay = 0;
-  int shootDelay = 0;
   int life = 31;
   bool doubleJumped = false;
-  bool ball = false;
-  bool sliding = false;
   Control control {};
 
   int respawnDelay = 0;
