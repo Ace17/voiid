@@ -51,7 +51,7 @@ struct FinishLine : Entity
     if(touchDelay)
       return;
 
-    game->playSound(SND_SWITCH);
+    game->playSound(SND_TELEPORT);
     touchDelay = 1000;
   }
 
