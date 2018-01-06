@@ -111,7 +111,7 @@ map<string, CreationFunc> getRegistry()
       return makeSwitch(arg);
     };
 
-  r["mp"] =
+  r["moving_platform"] =
     [] (EntityArgs& args)
     {
       auto arg = atoi(args[0].c_str());
@@ -124,23 +124,21 @@ map<string, CreationFunc> getRegistry()
       return make_unique<FinishLine>();
     };
 
-  r["conveyor(0)"] =
-    [] (EntityArgs &)
+  r["conveyor"] =
+    [] (EntityArgs& args)
     {
       return make_unique<Conveyor>();
     };
 
-  r["sign(0)"] =
-    [] (EntityArgs &)
+  r["sign"] =
+    [] (EntityArgs& args)
     {
-      return make_unique<Sign>(0);
+      auto arg = atoi(args[0].c_str());
+      return make_unique<Sign>(arg);
     };
 
-  r["sign(1)"] =
-    [] (EntityArgs &)
-    {
-      return make_unique<Sign>(1);
-    };
+  // legacy levels
+  r["mp"] = r["moving_platform"];
 
   return r;
 }
