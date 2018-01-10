@@ -125,7 +125,7 @@ map<string, CreationFunc> getRegistry()
     };
 
   r["conveyor"] =
-    [] (EntityArgs& args)
+    [] (EntityArgs &)
     {
       return make_unique<Conveyor>();
     };
