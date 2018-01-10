@@ -341,7 +341,7 @@ void printOpenGlVersion()
 
 struct SdlDisplay : Display
 {
-  void init(Size2i screenSize) override
+  void init(Size2i resolution) override
   {
     if(SDL_InitSubSystem(SDL_INIT_VIDEO))
       throw runtime_error("Can't init SDL");
@@ -351,7 +351,7 @@ struct SdlDisplay : Display
     mainWindow = SDL_CreateWindow(
         "My Game",
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-        screenSize.width, screenSize.height,
+        resolution.width, resolution.height,
         SDL_WINDOW_OPENGL
         );
 
