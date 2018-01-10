@@ -1,8 +1,3 @@
-/**
- * @brief Basic geometric types
- * @author Sebastien Alaiwan
- */
-
 /*
  * Copyright (C) 2017 - Sebastien Alaiwan <sebastien.alaiwan@gmail.com>
  * This program is free software: you can redistribute it and/or modify
@@ -10,6 +5,8 @@
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
  */
+
+// Basic geometric types
 
 #pragma once
 
@@ -249,17 +246,15 @@ typedef GenericVector3<int> Vector3i;
 typedef GenericVector3<float> Vector3f;
 
 ///////////////////////////////////////////////////////////////////////////////
-// Rect
+// Box
 ///////////////////////////////////////////////////////////////////////////////
 
 template<typename T>
-struct GenericRect : GenericVector<T>, GenericSize<T>
+struct GenericBox : GenericVector<T>, GenericSize<T>
 {
-  GenericRect()
-  {
-  }
+  GenericBox() = default;
 
-  GenericRect(T x, T y, T w, T h) :
+  GenericBox(T x, T y, T w, T h) :
     GenericVector<T>(x, y),
     GenericSize<T>(w, h)
   {
@@ -280,21 +275,21 @@ struct GenericBox3 : GenericVector3<T>, GenericSize3<T>
   }
 };
 
-typedef GenericRect<int> Rect2i;
-typedef GenericRect<float> Rect2f;
+typedef GenericBox<int> Rect2i;
+typedef GenericBox<float> Rect2f;
 
 typedef GenericBox3<float> Rect3f;
 
 template<typename T>
-bool segmentsOverlap(T s1x1, T s1x2, T s2x1, T s2x2)
+bool segmentsOverlap(T a_left, T a_right, T b_left, T b_right)
 {
-  if(s1x1 > s2x1)
+  if(a_left > b_left)
   {
-    std::swap(s1x1, s2x1);
-    std::swap(s1x2, s2x2);
+    std::swap(a_left, b_left);
+    std::swap(a_right, b_right);
   }
 
-  return s2x1 >= s1x1 && s2x1 <= s1x2;
+  return b_left >= a_left && b_left < a_right;
 }
 
 template<typename T>
