@@ -1,6 +1,7 @@
 /bin
 /tags
 /res/rooms/*
+/res/sprites/*.3ds
 /res/sounds/*.ogg
 /res/music/*.ogg
 .session.vim
