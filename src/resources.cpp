@@ -39,6 +39,7 @@ static const Resource resources[] =
   { ResourceType::Model, MDL_EXPLOSION, "res/sprites/explosion.json" },
   { ResourceType::Model, MDL_SPIKES, "res/sprites/spikes.json" },
   { ResourceType::Model, MDL_SIGN, "res/sprites/sign.json" },
+
   { ResourceType::Model, MDL_ROOMS + 0, "res/rooms/00/mesh.json" },
   { ResourceType::Model, MDL_ROOMS + 1, "res/rooms/01/mesh.json" },
   { ResourceType::Model, MDL_ROOMS + 2, "res/rooms/02/mesh.json" },
