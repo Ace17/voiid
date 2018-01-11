@@ -112,8 +112,15 @@ private:
     {
       switch(event.type)
       {
+      case SDL_MOUSEBUTTONDOWN:
+        m_doGrab = true;
+        m_display->enableGrab(m_doGrab);
+        break;
       case SDL_MOUSEMOTION:
-        onMouseMotion(&event);
+
+        if(m_doGrab)
+          onMouseMotion(&event);
+
         break;
       case SDL_QUIT:
         onQuit();
