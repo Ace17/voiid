@@ -69,6 +69,7 @@ SRCS:=\
 	engine/src/base64.cpp\
 	engine/src/decompress.cpp\
 	engine/src/display.cpp\
+	engine/src/file.cpp\
 	engine/src/json.cpp\
 	engine/src/3ds.cpp\
 	engine/src/main.cpp\

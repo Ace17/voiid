@@ -12,6 +12,7 @@
 #include "base/geom.h"
 #include "base/util.h"
 #include "json.h"
+#include "file.h"
 #include "3ds.h"
 
 extern int loadTexture(string path, Rect2i rect = Rect2i(0, 0, 0, 0));
@@ -179,7 +180,7 @@ Model loadModel(string jsonPath)
 
   auto const path3ds = setExtension(jsonPath, "3ds");
 
-  if(ifstream(path3ds).is_open())
+  if(exists(path3ds))
     r = modelFrom3ds(path3ds);
   else
     r = boxModel();

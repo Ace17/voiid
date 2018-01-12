@@ -436,6 +436,7 @@ struct SdlDisplay : Display
     // avoid big camera jumps
     {
       auto delta = g_camera.pos - pos;
+
       if(dotProduct(delta, delta) > 10)
         g_camera = cam;
     }
