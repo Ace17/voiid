@@ -8,10 +8,7 @@
 
 // Top-level game logic
 
-#include <cmath>
-#include <cstdlib>
 #include <algorithm>
-#include <array>
 #include <set>
 #include "base/scene.h"
 #include "base/util.h"
