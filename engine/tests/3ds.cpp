@@ -62,7 +62,7 @@ unittest("3ds: simple mesh")
   };
 
   auto mesh = tds::load(makeSpan(input));
-  assertEquals(12u, mesh->vertices.size());
-  assertEquals(20u, mesh->faces.size());
+  assertEquals(12u, mesh.vertices.size());
+  assertEquals(20u, mesh.faces.size());
 }
 

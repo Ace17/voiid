@@ -146,21 +146,21 @@ Model modelFrom3ds(string path3ds)
       r.vertices.push_back(vt);
     };
 
-  for(int i = 0; i < (int)mesh->objects.size(); i++)
+  for(int i = 0; i < (int)mesh.objects.size(); i++)
   {
-    const int start = mesh->objects[i];
-    const int end = i + 1 < (int)mesh->objects.size() ? mesh->objects[i + 1] : (int)mesh->faces.size();
+    const int start = mesh.objects[i];
+    const int end = i + 1 < (int)mesh.objects.size() ? mesh.objects[i + 1] : (int)mesh.faces.size();
 
-    if(startsWith(mesh->objectNames[i], "f."))
+    if(startsWith(mesh.objectNames[i], "f."))
       continue;
 
     for(int j = start; j < end; ++j)
     {
-      auto& face = mesh->faces[j];
+      auto& face = mesh.faces[j];
 
-      auto const V1 = mesh->vertices[face.i1];
-      auto const V2 = mesh->vertices[face.i2];
-      auto const V3 = mesh->vertices[face.i3];
+      auto const V1 = mesh.vertices[face.i1];
+      auto const V2 = mesh.vertices[face.i2];
+      auto const V3 = mesh.vertices[face.i3];
 
       auto const N = computeNormal(V1, V2, V3);
 

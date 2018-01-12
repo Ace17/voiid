@@ -425,18 +425,18 @@ private:
 };
 
 static
-unique_ptr<Mesh> load(istream& fp)
+Mesh load(istream& fp)
 {
   auto bs = ByteStream(fp);
 
-  auto mesh = make_unique<Mesh>();
-  MeshLoader loader(*mesh);
+  Mesh mesh;
+  MeshLoader loader(mesh);
   Parser parser(&loader, &bs);
   parser.parseChunk();
   return mesh;
 }
 
-unique_ptr<Mesh> load(Span<uint8_t const> buffer)
+Mesh load(Span<uint8_t const> buffer)
 {
   auto const s = string(buffer.data, buffer.data + buffer.len);
   stringstream mem(s);
@@ -444,7 +444,7 @@ unique_ptr<Mesh> load(Span<uint8_t const> buffer)
   return load(mem);
 }
 
-unique_ptr<Mesh> load(string filename)
+Mesh load(string filename)
 {
   auto fp = ifstream(filename, std::ios::binary);
 
@@ -455,7 +455,7 @@ unique_ptr<Mesh> load(string filename)
 }
 }
 
-unique_ptr<Mesh> loadMesh(char const* path)
+Mesh loadMesh(char const* path)
 {
   return tds::load(path);
 }

@@ -35,7 +35,7 @@ Room loadRoom(int roomIdx)
     roomIdx = 0;
   }
 
-  auto mesh = *loadMesh(filename);
+  auto mesh = loadMesh(filename);
 
   for(int objIdx = 0; objIdx < (int)mesh.objects.size(); ++objIdx)
   {

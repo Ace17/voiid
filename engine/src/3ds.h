@@ -1,7 +1,6 @@
 #pragma once
 
 #include <vector>
-#include <memory>
 #include <string>
 
 #include "base/span.h"
@@ -9,7 +8,7 @@
 
 namespace tds
 {
-std::unique_ptr<Mesh> load(std::string filename);
-std::unique_ptr<Mesh> load(Span<uint8_t const> buffer);
+Mesh load(std::string filename);
+Mesh load(Span<uint8_t const> buffer);
 }
 

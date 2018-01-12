@@ -22,5 +22,5 @@ struct Mesh
   std::vector<std::string> objectNames;
 };
 
-std::unique_ptr<Mesh> loadMesh(char const* path);
+Mesh loadMesh(char const* path);
 
