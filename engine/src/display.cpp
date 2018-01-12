@@ -433,6 +433,13 @@ struct SdlDisplay : Display
       g_camera.valid = true;
     }
 
+    // avoid big camera jumps
+    {
+      auto delta = g_camera.pos - pos;
+      if(dotProduct(delta, delta) > 10)
+        g_camera = cam;
+    }
+
     auto blend = [] (Vector3f a, Vector3f b)
       {
         auto const alpha = 0.3f;
