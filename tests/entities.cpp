@@ -111,7 +111,7 @@ struct NullPhysicsProbe : IPhysicsProbe
     return r;
   }
 
-  Body* getBodiesInRect(Box, int, bool, const Body*) const
+  Body* getBodiesInBox(Box, int, bool, const Body*) const
   {
     return nullptr;
   }

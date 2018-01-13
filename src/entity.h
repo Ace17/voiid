@@ -6,7 +6,7 @@
  * License, or (at your option) any later version.
  */
 
-// base game object
+// Entity: base game object
 
 #pragma once
 
@@ -17,7 +17,7 @@
 
 struct Damageable
 {
-  virtual void onDamage(int /*amount*/) = 0;
+  virtual void onDamage(int amount) = 0;
 };
 
 struct Entity : Body

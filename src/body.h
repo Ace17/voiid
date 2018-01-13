@@ -34,9 +34,7 @@ struct Body
   // only called if (this->collidesWith & other->collisionGroup)
   function<void(Body*)> onCollision = &nop;
 
-  static void nop(Body*)
-  {
-  }
+  static void nop(Body*) {}
 
   Box getBox() const
   {
@@ -60,7 +58,7 @@ struct IPhysicsProbe
   // called by entities
   virtual Trace moveBody(Body* body, Vector delta) = 0;
   virtual Trace traceBox(Box box, Vector delta, const Body* except) const = 0;
-  virtual Body* getBodiesInRect(Box myRect, int collisionGroup, bool onlySolid = false, const Body* except = nullptr) const = 0;
+  virtual Body* getBodiesInBox(Box myRect, int collisionGroup, bool onlySolid = false, const Body* except = nullptr) const = 0;
 };
 
 struct IPhysics : IPhysicsProbe

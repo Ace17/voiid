@@ -169,9 +169,9 @@ struct Physics : IPhysics
       auto& other = *m_bodies[p.second];
 
       auto rect = me.getBox();
-      auto otherRect = other.getBox();
+      auto otherBox = other.getBox();
 
-      if(overlaps(rect, otherRect))
+      if(overlaps(rect, otherBox))
         collideBodies(me, other);
     }
   }
@@ -190,7 +190,7 @@ struct Physics : IPhysics
     m_traceEdifice = trace;
   }
 
-  Body* getBodiesInRect(Box myRect, int collisionGroup, bool onlySolid, const Body* except) const
+  Body* getBodiesInBox(Box myBox, int collisionGroup, bool onlySolid, const Body* except) const
   {
     for(auto& body : m_bodies)
     {
@@ -205,7 +205,7 @@ struct Physics : IPhysics
 
       auto rect = body->getBox();
 
-      if(overlaps(rect, myRect))
+      if(overlaps(rect, myBox))
         return body;
     }
 
