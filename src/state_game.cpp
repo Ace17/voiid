@@ -113,8 +113,6 @@ struct GameState : Scene, IGame
     m_spawned.clear();
   }
 
-  vector<Convex> world;
-
   void loadLevel(int levelIdx)
   {
     if(m_player)
@@ -215,6 +213,7 @@ struct GameState : Scene, IGame
 
   list<IEventSink*> m_listeners;
 
+  vector<Convex> world;
   bool m_debug;
   bool m_debugFirstTime = true;
 
