@@ -9,15 +9,17 @@
 // Top-level game logic
 
 #include <algorithm>
-#include <set>
+#include <list>
 #include "base/scene.h"
 #include "base/util.h"
+
 #include "entities/player.h"
 #include "entities/rockman.h"
 #include "entities/editor.h"
 #include "entity_factory.h"
 #include "game.h"
 #include "room.h"
+#include "variable.h"
 #include "state_machine.h"
 
 #include "entities/finish.h" // TouchFinishLineEvent
@@ -27,14 +29,14 @@ using namespace std;
 // from physics.cpp
 unique_ptr<IPhysics> createPhysics();
 
-struct Game : Scene, IGame
+struct GameState : Scene, IGame
 {
-  Game(View* view) :
+  GameState(View* view) :
     m_view(view)
   {
     m_shouldLoadLevel = true;
     m_physics = createPhysics();
-    m_physics->setEdifice(bind(&Game::traceEdifice, this, placeholders::_1, placeholders::_2));
+    m_physics->setEdifice(bind(&GameState::traceEdifice, this, placeholders::_1, placeholders::_2));
   }
 
   ////////////////////////////////////////////////////////////////
@@ -148,9 +150,9 @@ struct Game : Scene, IGame
     spawn(m_player);
 
     {
-      auto f = bind(&Game::onTouchLevelBoundary, this, placeholders::_1);
+      auto f = bind(&GameState::onTouchLevelBoundary, this, placeholders::_1);
       m_levelBoundary = makeDelegator<TouchFinishLineEvent>(f);
-      subscribeForEvents(&m_levelBoundary);
+      m_levelBoundarySubscription = subscribeForEvents(&m_levelBoundary);
     }
   }
 
@@ -165,6 +167,7 @@ struct Game : Scene, IGame
   bool m_shouldLoadLevel = false;
 
   EventDelegator m_levelBoundary;
+  unique_ptr<Handle> m_levelBoundarySubscription;
 
   ////////////////////////////////////////////////////////////////
   // IGame: game, as seen by the entities
@@ -185,14 +188,13 @@ struct Game : Scene, IGame
       listener->notify(event.get());
   }
 
-  void subscribeForEvents(IEventSink* sink) override
+  unique_ptr<Handle> subscribeForEvents(IEventSink* sink) override
   {
-    m_listeners.insert(sink);
-  }
+    auto it = m_listeners.insert(m_listeners.begin(), sink);
 
-  void unsubscribeForEvents(IEventSink* sink) override
-  {
-    m_listeners.erase(sink);
+    auto unsubscribe = [ = ] () { m_listeners.erase(it); };
+
+    return make_unique<HandleWithDeleter>(unsubscribe);
   }
 
   Vector getPlayerPosition() override
@@ -211,7 +213,7 @@ struct Game : Scene, IGame
   View* const m_view;
   unique_ptr<IPhysics> m_physics;
 
-  set<IEventSink*> m_listeners;
+  list<IEventSink*> m_listeners;
 
   bool m_debug;
   bool m_debugFirstTime = true;
@@ -267,10 +269,8 @@ struct Game : Scene, IGame
 unique_ptr<Scene> createGameState(StateMachine* fsm, View* view, int level)
 {
   (void)fsm;
-  auto r = make_unique<Game>(view);
-
+  auto r = make_unique<GameState>(view);
   r->m_level = level;
-
   return r;
 }
 
