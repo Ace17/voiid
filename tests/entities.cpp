@@ -1,7 +1,7 @@
 #include <algorithm>
 
-#include "src/entities/bonus.h"
-#include "src/entities/explosion.h"
+#include "entities/bonus.h"
+#include "entities/explosion.h"
 
 #include "engine/tests/tests.h"
 
@@ -19,7 +19,7 @@ unittest("Entity: explosion")
   assertEquals(100, int(explosion->getActor().ratio * 100));
 }
 
-#include "src/entities/player.h"
+#include "entities/player.h"
 
 struct NullPlayer : Player
 {
@@ -44,34 +44,19 @@ struct NullPlayer : Player
 
 struct NullGame : IGame
 {
-  virtual void playSound(SOUND)
-  {
-  }
+  virtual void playSound(SOUND) {}
 
-  virtual void spawn(Entity*)
-  {
-  }
+  virtual void spawn(Entity*) {}
 
-  virtual void postEvent(unique_ptr<Event> )
-  {
-  }
+  virtual void postEvent(unique_ptr<Event> ) {}
 
-  virtual void subscribeForEvents(IEventSink*)
-  {
-  }
+  virtual void subscribeForEvents(IEventSink*) {}
 
-  virtual void unsubscribeForEvents(IEventSink*)
-  {
-  }
+  virtual void unsubscribeForEvents(IEventSink*) {}
 
-  virtual Vector3f getPlayerPosition()
-  {
-    return Vector3f(0, 0, 0);
-  }
+  virtual Vector3f getPlayerPosition() { return Vector3f(0, 0, 0); }
 
-  virtual void textBox(char const*)
-  {
-  }
+  virtual void textBox(char const*) {}
 };
 
 struct NullPhysicsProbe : IPhysicsProbe
