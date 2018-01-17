@@ -7,6 +7,7 @@ readonly scriptDir="$(dirname $0)"
 readonly input=$1
 readonly output=$2
 
+export PYTHONPATH+=$scriptDir
 blender "$input" --background \
   --python $scriptDir/convert_to_3ds.py \
   --python-exit-code \
