@@ -159,13 +159,15 @@ int loadTexture(string path, Rect2i rect)
   vector<uint8_t> img(rect.width* rect.height* bpp);
 
   auto src = (Uint8*)surface->pixels + rect.x * bpp + rect.y * surface->pitch;
-  auto dst = (Uint8*)img.data();
+  auto dst = (Uint8*)img.data() + bpp * rect.width * rect.height;
 
+  // from glTexImage2D doc:
+  // "The first element corresponds to the lower left corner of the texture image"
   for(int y = 0; y < rect.height; ++y)
   {
+    dst -= bpp * rect.width;
     memcpy(dst, src, bpp * rect.width);
     src += surface->pitch;
-    dst += bpp * rect.width;
   }
 
   GLuint texture;
