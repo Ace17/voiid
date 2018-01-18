@@ -1,8 +1,8 @@
 {
   "type" : "sheet",
   "sheet" : "mesh.png",
-  "width" : 128,
-  "height" : 128,
+  "width" : 2048,
+  "height" : 2048,
   "actions": [
     {
       "name": "default",

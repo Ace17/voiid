@@ -9,6 +9,7 @@ res/%.ogg: res-src/%.ogg
 
 ROOMS_SRC+=$(wildcard res-src/rooms/*/mesh.blend)
 TARGETS+=$(ROOMS_SRC:res-src/%.blend=res/%.3ds)
+TARGETS+=$(ROOMS_SRC:res-src/%.blend=res/%.3ds.render)
 
 JSON_SRCS+=$(wildcard res-src/rooms/*/mesh.json)
 TARGETS+=$(JSON_SRCS:res-src/%.json=res/%.json)
@@ -21,8 +22,13 @@ TARGETS+=$(SPRITES_SRC:res-src/%.blend=res/%.3ds)
 
 res/%.3ds: res-src/%.blend
 	@mkdir -p $(dir $@)
-	@echo "Convert to 3ds $<"
+	@echo "Convert to 3ds (physics) $<"
 	@./scripts/convert_to_3ds "$<" "$@"
+
+res/%.3ds.render: res-src/%.blend
+	@mkdir -p $(dir $@)
+	@echo "Convert to 3ds (render) $<"
+	@./scripts/convert_to_3ds_for_rendering "$<" "$@" "res/$*.png"
 
 res/%: res-src/%
 	@mkdir -p $(dir $@)

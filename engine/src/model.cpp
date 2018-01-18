@@ -178,9 +178,12 @@ Model loadModel(string jsonPath)
 {
   Model r;
 
+  auto const path3dsRender = setExtension(jsonPath, "3ds.render");
   auto const path3ds = setExtension(jsonPath, "3ds");
 
-  if(exists(path3ds))
+  if(exists(path3dsRender))
+    r = modelFrom3ds(path3dsRender);
+  else if(exists(path3ds))
     r = modelFrom3ds(path3ds);
   else
     r = boxModel();
