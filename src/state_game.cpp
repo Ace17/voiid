@@ -115,6 +115,8 @@ struct GameState : Scene, IGame
 
   void loadLevel(int levelIdx)
   {
+    m_levelBoundarySubscription.reset();
+
     if(m_player)
     {
       for(auto& entity : m_entities)
@@ -126,7 +128,7 @@ struct GameState : Scene, IGame
 
     m_entities.clear();
     m_spawned.clear();
-    m_listeners.clear();
+    assert(m_listeners.empty());
 
     auto level = loadRoom(levelIdx);
     m_view->playMusic(levelIdx);
