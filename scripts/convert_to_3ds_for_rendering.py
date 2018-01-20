@@ -41,14 +41,14 @@ def run():
   bpy.ops.object.transform_apply(location=True, scale=True, rotation=True)
 
   # ambient occlusion enable
-  bpy.data.worlds["World"].ambient_color[0] = 0.1
-  bpy.data.worlds["World"].ambient_color[1] = 0.1
-  bpy.data.worlds["World"].ambient_color[2] = 0.1
-  bpy.data.worlds["World"].light_settings.use_ambient_occlusion=True
-  bpy.data.worlds["World"].light_settings.ao_factor=1.0
-  bpy.data.worlds["World"].light_settings.use_environment_light=True
-  bpy.data.worlds["World"].light_settings.environment_energy=0.1
-  bpy.data.worlds["World"].light_settings.samples = 5
+  # bpy.data.worlds["World"].ambient_color[0] = 0.1
+  # bpy.data.worlds["World"].ambient_color[1] = 0.1
+  # bpy.data.worlds["World"].ambient_color[2] = 0.1
+  # bpy.data.worlds["World"].light_settings.use_ambient_occlusion=True
+  # bpy.data.worlds["World"].light_settings.ao_factor=1.0
+  # bpy.data.worlds["World"].light_settings.use_environment_light=True
+  # bpy.data.worlds["World"].light_settings.environment_energy=0.1
+  # bpy.data.worlds["World"].light_settings.samples = 5
 
   #----------------------------------------------------------------------------
   # baking
