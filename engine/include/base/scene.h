@@ -65,6 +65,8 @@ struct Control
 // outside world, seen by the game
 struct View
 {
+  virtual ~View() = default;
+
   virtual void textBox(char const* msg) = 0;
   virtual void playMusic(int id) = 0;
   virtual void playSound(int id) = 0;

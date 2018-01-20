@@ -22,6 +22,7 @@ using namespace std;
 class App;
 App* App_create(vector<string> args);
 bool App_tick(App*);
+void App_destroy(App* app);
 
 #ifdef __EMSCRIPTEN__
 extern "C"
@@ -62,6 +63,7 @@ int main(int argc, char* argv[])
     auto app = App_create(args);
 
     runMainLoop(app);
+    App_destroy(app);
     return 0;
   }
   catch(exception const& e)
