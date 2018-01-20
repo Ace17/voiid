@@ -18,6 +18,11 @@ def run():
   bpy.ops.object.select_by_type(type='MESH')
   bpy.ops.object.convert(target='MESH')
 
+  # remove non-displayed objects (triggers)
+  for obj in bpy.data.objects:
+    if obj.name.startswith("f."):
+      bpy.data.objects.remove(obj)
+
   #----------------------------------------------------------------------------
   # join everything into one single object
   #----------------------------------------------------------------------------
