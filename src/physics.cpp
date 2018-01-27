@@ -18,23 +18,16 @@
 
 using namespace std;
 
-template<typename T, typename Lambda>
-void unstableRemove(vector<T>& container, Lambda predicate)
+template<typename T>
+void unstableRemove(vector<T>& container, T const& val)
 {
-  for(int i = 0; i < (int)container.size(); ++i)
-  {
-    if(predicate(container[i]))
-    {
-      auto const j = (int)container.size() - 1;
+  auto it = find(begin(container), end(container), val);
 
-      swap(container[i], container[j]);
+  if(it == container.end())
+    return;
 
-      if(i != j)
-        --i;
-
-      container.pop_back();
-    }
-  }
+  swap(*it, container.back());
+  container.pop_back();
 }
 
 struct Physics : IPhysics
@@ -46,9 +39,7 @@ struct Physics : IPhysics
 
   void removeBody(Body* body)
   {
-    auto isItTheOne =
-      [ = ] (Body* candidate) { return candidate == body; };
-    unstableRemove(m_bodies, isItTheOne);
+    unstableRemove(m_bodies, body);
   }
 
   void clearBodies()
