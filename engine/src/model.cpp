@@ -176,6 +176,7 @@ Model modelFrom3ds(string path3ds)
 
 Model loadModel(string jsonPath)
 {
+  auto data = read(jsonPath);
   Model r;
 
   auto const path3dsRender = setExtension(jsonPath, "3ds.render");
@@ -188,7 +189,7 @@ Model loadModel(string jsonPath)
   else
     r = boxModel();
 
-  auto obj = json::load(jsonPath);
+  auto obj = json::parse(data.c_str());
   auto dir = dirName(jsonPath);
 
   auto type = obj->getMember<json::String>("type")->value;

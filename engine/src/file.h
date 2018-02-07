@@ -11,5 +11,6 @@
 #include <string>
 using namespace std;
 
+string read(string path);
 bool exists(string path);
 
