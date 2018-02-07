@@ -66,8 +66,7 @@ struct NullPhysicsProbe : IPhysicsProbe
   {
     Trace tr {};
     auto box = body->getBox();
-    box.x += delta.x;
-    box.y += delta.y;
+    box.pos += delta;
 
     if(isSolid(body, box))
     {
@@ -82,7 +81,7 @@ struct NullPhysicsProbe : IPhysicsProbe
 
   bool isSolid(const Body* /*body*/, Box box) const
   {
-    return box.y < 0;
+    return box.pos.y < 0;
   }
 
   virtual Trace traceBox(Box box, Vector3f delta, const Body* except) const override

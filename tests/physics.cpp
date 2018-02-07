@@ -46,12 +46,12 @@ static
 
   auto const x0 = 0;
   auto const y0 = 0;
-  auto const targetX = rect.x + delta.x;
-  auto const targetY = rect.y + delta.y;
+  auto const targetX = rect.pos.x + delta.x;
+  auto const targetY = rect.pos.y + delta.y;
 
   if(targetX < 0)
   {
-    auto const fraction = abs(rect.x - x0) / abs(delta.x);
+    auto const fraction = abs(rect.pos.x - x0) / abs(delta.x);
 
     if(fraction < r.fraction)
     {
@@ -62,7 +62,7 @@ static
 
   if(targetY < 0)
   {
-    auto const fraction = abs(rect.y - y0) / abs(delta.y);
+    auto const fraction = abs(rect.pos.y - y0) / abs(delta.y);
 
     if(fraction < r.fraction)
     {

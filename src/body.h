@@ -39,12 +39,8 @@ struct Body
   Box getBox() const
   {
     Box r;
-    r.x = pos.x;
-    r.y = pos.y;
-    r.z = pos.z;
-    r.cx = size.cx;
-    r.cy = size.cy;
-    r.cz = size.cz;
+    r.pos = pos;
+    r.size = size;
     return r;
   }
 };

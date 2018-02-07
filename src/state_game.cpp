@@ -78,12 +78,12 @@ struct GameState : Scene, IGame
     auto cameraPos = m_player->pos;
 
     Box cameraRect;
-    cameraRect.cx = 32;
-    cameraRect.cy = 32;
-    cameraRect.cz = 16;
-    cameraRect.x = cameraPos.x - cameraRect.cx / 2;
-    cameraRect.y = cameraPos.y - cameraRect.cy / 2;
-    cameraRect.z = cameraPos.z - cameraRect.cz / 2;
+    cameraRect.size.cx = 32;
+    cameraRect.size.cy = 32;
+    cameraRect.size.cz = 16;
+    cameraRect.pos.x = cameraPos.x - cameraRect.size.cx / 2;
+    cameraRect.pos.y = cameraPos.y - cameraRect.size.cy / 2;
+    cameraRect.pos.z = cameraPos.z - cameraRect.size.cz / 2;
 
     for(auto& entity : m_entities)
     {
@@ -240,8 +240,8 @@ struct GameState : Scene, IGame
   static Actor getDebugActor(Entity* entity)
   {
     auto rect = entity->getBox();
-    auto r = Actor(Vector(rect.x, rect.y, rect.z), MDL_RECT);
-    r.scale = rect;
+    auto r = Actor(rect.pos, MDL_RECT);
+    r.scale = rect.size;
     return r;
   }
 
@@ -252,8 +252,8 @@ struct GameState : Scene, IGame
 
     for(auto& brush : world)
     {
-      auto const halfSize = Vector3f(box.cx, box.cy, box.cz) * 0.5;
-      auto const pos = Vector3f(box.x, box.y, box.z) + halfSize;
+      auto const halfSize = Vector3f(box.size.cx, box.size.cy, box.size.cz) * 0.5;
+      auto const pos = box.pos + halfSize;
       auto t = brush.trace(pos, pos + delta, halfSize.x);
 
       if(t.fraction < r.fraction)

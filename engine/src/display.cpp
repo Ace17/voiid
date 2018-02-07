@@ -146,25 +146,25 @@ int loadTexture(string path, Rect2i rect)
 {
   auto surface = loadPicture(path);
 
-  if(rect.width == 0 && rect.height == 0)
+  if(rect.size.width == 0 && rect.size.height == 0)
     rect = Rect2i(0, 0, surface->w, surface->h);
 
-  if(rect.x < 0 || rect.y < 0 || rect.x + rect.width > surface->w || rect.y + rect.height > surface->h)
+  if(rect.pos.x < 0 || rect.pos.y < 0 || rect.pos.x + rect.size.width > surface->w || rect.pos.y + rect.size.height > surface->h)
     throw runtime_error("Invalid boundaries for '" + path + "'");
 
   auto const bpp = surface->format->BytesPerPixel;
 
-  vector<uint8_t> img(rect.width* rect.height* bpp);
+  vector<uint8_t> img(rect.size.width* rect.size.height* bpp);
 
-  auto src = (Uint8*)surface->pixels + rect.x * bpp + rect.y * surface->pitch;
-  auto dst = (Uint8*)img.data() + bpp * rect.width * rect.height;
+  auto src = (Uint8*)surface->pixels + rect.pos.x * bpp + rect.pos.y * surface->pitch;
+  auto dst = (Uint8*)img.data() + bpp * rect.size.width * rect.size.height;
 
   // from glTexImage2D doc:
   // "The first element corresponds to the lower left corner of the texture image"
-  for(int y = 0; y < rect.height; ++y)
+  for(int y = 0; y < rect.size.height; ++y)
   {
-    dst -= bpp * rect.width;
-    memcpy(dst, src, bpp * rect.width);
+    dst -= bpp * rect.size.width;
+    memcpy(dst, src, bpp * rect.size.width);
     src += surface->pitch;
   }
 
@@ -173,7 +173,7 @@ int loadTexture(string path, Rect2i rect)
   glGenTextures(1, &texture);
   glBindTexture(GL_TEXTURE_2D, texture);
 
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, rect.width, rect.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, img.data());
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, rect.size.width, rect.size.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, img.data());
 
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -293,8 +293,8 @@ void drawModel(Rect3f where, Camera const& camera, Model& model, bool blinking, 
 
   auto const target = camera.pos + camera.dir;
   auto const view = ::lookAt(camera.pos, target, Vector3f(0, 0, 1));
-  auto const pos = ::translate(Vector3f(where.x, where.y, where.z));
-  auto const scale = ::scale(Vector3f(where.cx, where.cy, where.cz));
+  auto const pos = ::translate(where.pos);
+  auto const scale = ::scale(Vector3f(where.size.cx, where.size.cy, where.size.cz));
 
   static const float fovy = (float)((60.0f / 180) * PI);
   static const float aspect = 1.0f;
@@ -477,12 +477,12 @@ struct SdlDisplay : Display
   void drawText(Vector2f pos, char const* text) override
   {
     Rect3f rect;
-    rect.cx = 0.5;
-    rect.cy = 0;
-    rect.cz = 0.5;
-    rect.x = pos.x - strlen(text) * rect.cx / 2;
-    rect.y = 0;
-    rect.z = pos.y;
+    rect.size.cx = 0.5;
+    rect.size.cy = 0;
+    rect.size.cz = 0.5;
+    rect.pos.x = pos.x - strlen(text) * rect.size.cx / 2;
+    rect.pos.y = 0;
+    rect.pos.z = pos.y;
 
     auto cam = (Camera { Vector3f(0, -10, 0), Vector3f(0, 1, 0) });
 
@@ -491,7 +491,7 @@ struct SdlDisplay : Display
     while(*text)
     {
       drawModel(rect, cam, g_fontModel, false, *text, 0);
-      rect.x += rect.cx;
+      rect.pos.x += rect.size.cx;
       ++text;
     }
   }

@@ -55,9 +55,7 @@ struct Physics : IPhysics
 
     delta = delta * trace.fraction;
 
-    rect.x += delta.x;
-    rect.y += delta.y;
-    rect.z += delta.z;
+    rect.pos += delta;
 
     if(trace.blocker)
       collideBodies(*body, *trace.blocker);
@@ -113,9 +111,9 @@ struct Physics : IPhysics
 
   Trace traceBoxThroughBodies(Box box, Vector delta, const Body* except) const
   {
-    auto const halfSize = Vector3f(box.cx, box.cy, box.cz) * 0.5;
+    auto const halfSize = Vector3f(box.size.cx, box.size.cy, box.size.cz) * 0.5;
 
-    auto const A = Vector3f(box.x, box.y, box.z) + halfSize;
+    auto const A = box.pos + halfSize;
     auto const B = A + delta;
 
     Trace r {};
