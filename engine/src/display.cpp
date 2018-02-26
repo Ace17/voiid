@@ -28,17 +28,6 @@ using namespace std;
 #include "model.h"
 #include "matrix4.h"
 
-static GLint g_MVP;
-static GLint g_colorId;
-static GLint g_ambientLoc;
-static GLint g_positionLoc;
-static GLint g_texCoordLoc;
-static GLint g_normalLoc;
-
-static GLuint g_ProgramId;
-static vector<Model> g_Models;
-static Model g_fontModel;
-
 #ifdef NDEBUG
 #define SAFE_GL(a) a
 #else
@@ -266,65 +255,6 @@ Model loadAnimation(string path)
 }
 
 static
-void drawModel(Rect3f where, Camera const& camera, Model& model, bool blinking, int actionIdx, float ratio)
-{
-  SAFE_GL(glUniform4f(g_colorId, 0, 0, 0, 0));
-
-  if(blinking)
-  {
-    static int blinkCounter;
-    blinkCounter++;
-
-    if((blinkCounter / 4) % 2)
-      SAFE_GL(glUniform4f(g_colorId, 0.8, 0.4, 0.4, 0));
-  }
-
-  if(actionIdx < 0 || actionIdx >= (int)model.actions.size())
-    throw runtime_error("invalid action index");
-
-  auto const& action = model.actions[actionIdx];
-
-  if(action.textures.empty())
-    throw runtime_error("action has no textures");
-
-  auto const N = (int)action.textures.size();
-  auto const idx = ::clamp<int>(ratio * N, 0, N - 1);
-  glBindTexture(GL_TEXTURE_2D, action.textures[idx]);
-
-  auto const target = camera.pos + camera.dir;
-  auto const view = ::lookAt(camera.pos, target, Vector3f(0, 0, 1));
-  auto const pos = ::translate(where.pos);
-  auto const scale = ::scale(Vector3f(where.size.cx, where.size.cy, where.size.cz));
-
-  static const float fovy = (float)((60.0f / 180) * PI);
-  static const float aspect = 1.0f;
-  static const float near_ = 0.1f;
-  static const float far_ = 100.0f;
-  static const auto perspective = ::perspective(fovy, aspect, near_, far_);
-
-  auto mat = perspective * view * pos * scale;
-
-  SAFE_GL(glUniformMatrix4fv(g_MVP, 1, GL_FALSE, &mat[0][0]));
-
-  SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, model.buffer));
-
-  {
-    // connect the xyz to the "a_position" attribute of the vertex shader
-    SAFE_GL(glEnableVertexAttribArray(g_positionLoc));
-    SAFE_GL(glVertexAttribPointer(g_positionLoc, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const GLvoid*)(0 * sizeof(GLfloat))));
-
-    // connect the N to the "a_normal" attribute of the vertex shader
-    SAFE_GL(glEnableVertexAttribArray(g_normalLoc));
-    SAFE_GL(glVertexAttribPointer(g_normalLoc, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const GLvoid*)(5 * sizeof(GLfloat))));
-
-    // connect the uv coords to the "v_texCoord" attribute of the vertex shader
-    SAFE_GL(glEnableVertexAttribArray(g_texCoordLoc));
-    SAFE_GL(glVertexAttribPointer(g_texCoordLoc, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat))));
-  }
-  SAFE_GL(glDrawArrays(GL_TRIANGLES, 0, model.vertices.size()));
-}
-
-static
 void printOpenGlVersion()
 {
   auto sVersion = (char const*)glGetString(GL_VERSION);
@@ -461,6 +391,64 @@ struct SdlDisplay : Display
     baseAmbientLight = ambientLight_;
   }
 
+  void drawModel(Rect3f where, Camera const& camera, Model& model, bool blinking, int actionIdx, float ratio)
+  {
+    SAFE_GL(glUniform4f(g_colorId, 0, 0, 0, 0));
+
+    if(blinking)
+    {
+      static int blinkCounter;
+      blinkCounter++;
+
+      if((blinkCounter / 4) % 2)
+        SAFE_GL(glUniform4f(g_colorId, 0.8, 0.4, 0.4, 0));
+    }
+
+    if(actionIdx < 0 || actionIdx >= (int)model.actions.size())
+      throw runtime_error("invalid action index");
+
+    auto const& action = model.actions[actionIdx];
+
+    if(action.textures.empty())
+      throw runtime_error("action has no textures");
+
+    auto const N = (int)action.textures.size();
+    auto const idx = ::clamp<int>(ratio * N, 0, N - 1);
+    glBindTexture(GL_TEXTURE_2D, action.textures[idx]);
+
+    auto const target = camera.pos + camera.dir;
+    auto const view = ::lookAt(camera.pos, target, Vector3f(0, 0, 1));
+    auto const pos = ::translate(where.pos);
+    auto const scale = ::scale(Vector3f(where.size.cx, where.size.cy, where.size.cz));
+
+    static const float fovy = (float)((60.0f / 180) * PI);
+    static const float aspect = 1.0f;
+    static const float near_ = 0.1f;
+    static const float far_ = 100.0f;
+    static const auto perspective = ::perspective(fovy, aspect, near_, far_);
+
+    auto mat = perspective * view * pos * scale;
+
+    SAFE_GL(glUniformMatrix4fv(g_MVP, 1, GL_FALSE, &mat[0][0]));
+
+    SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, model.buffer));
+
+    {
+      // connect the xyz to the "a_position" attribute of the vertex shader
+      SAFE_GL(glEnableVertexAttribArray(g_positionLoc));
+      SAFE_GL(glVertexAttribPointer(g_positionLoc, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const GLvoid*)(0 * sizeof(GLfloat))));
+
+      // connect the N to the "a_normal" attribute of the vertex shader
+      SAFE_GL(glEnableVertexAttribArray(g_normalLoc));
+      SAFE_GL(glVertexAttribPointer(g_normalLoc, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const GLvoid*)(5 * sizeof(GLfloat))));
+
+      // connect the uv coords to the "v_texCoord" attribute of the vertex shader
+      SAFE_GL(glEnableVertexAttribArray(g_texCoordLoc));
+      SAFE_GL(glVertexAttribPointer(g_texCoordLoc, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat))));
+    }
+    SAFE_GL(glDrawArrays(GL_TRIANGLES, 0, model.vertices.size()));
+  }
+
   void enableGrab(bool enable) override
   {
     SDL_SetRelativeMouseMode(enable ? SDL_TRUE : SDL_FALSE);
@@ -519,6 +507,17 @@ struct SdlDisplay : Display
   SDL_GLContext mainContext;
 
   Camera g_camera;
+
+  GLint g_MVP;
+  GLint g_colorId;
+  GLint g_ambientLoc;
+  GLint g_positionLoc;
+  GLint g_texCoordLoc;
+  GLint g_normalLoc;
+
+  GLuint g_ProgramId;
+  vector<Model> g_Models;
+  Model g_fontModel;
 
   float baseAmbientLight = 0;
 };
