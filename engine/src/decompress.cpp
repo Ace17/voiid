@@ -8,7 +8,6 @@
 
 #include "decompress.h"
 
-#define MINIZ_HEADER_FILE_ONLY 1
 #include "../extra/miniz.c"
 
 #include <cstring>
@@ -22,10 +21,10 @@ vector<uint8_t> decompress(Span<const uint8_t> buffer)
   vector<uint8_t> r;
 
   int ret;
-  z_stream s {};
+  mz_stream s {};
   s.next_in = buffer.data;
   s.avail_in = buffer.len;
-  ret = inflateInit(&s);
+  ret = mz_inflateInit(&s);
 
   if(ret < 0)
     throw runtime_error(string("inflateInit failed: ") + mz_error(ret));
@@ -35,7 +34,7 @@ vector<uint8_t> decompress(Span<const uint8_t> buffer)
     uint8_t out[32];
     s.avail_out = sizeof out;
     s.next_out = out;
-    ret = inflate(&s, MZ_SYNC_FLUSH);
+    ret = mz_inflate(&s, MZ_SYNC_FLUSH);
 
     if(ret < 0)
       throw runtime_error(string("inflate failed: ") + mz_error(ret));
@@ -52,7 +51,7 @@ vector<uint8_t> decompress(Span<const uint8_t> buffer)
   if(s.avail_in != 0)
     throw runtime_error("incompletely read input");
 
-  ret = inflateEnd(&s);
+  ret = mz_inflateEnd(&s);
 
   if(ret < 0)
     throw runtime_error("inflateEnd failed");
