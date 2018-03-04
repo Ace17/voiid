@@ -67,13 +67,14 @@ SRCS:=\
 	engine/src/app.cpp\
 	engine/src/base64.cpp\
 	engine/src/decompress.cpp\
-	engine/src/display.cpp\
 	engine/src/file.cpp\
 	engine/src/json.cpp\
 	engine/src/3ds.cpp\
 	engine/src/main.cpp\
 	engine/src/model.cpp\
+	engine/src/display_ogl.cpp\
 	engine/src/audio_sdl.cpp\
+	engine/src/sound_ogg.cpp\
 
 $(BIN)/rel/game$(EXT): $(SRCS:%.cpp=$(BIN)/%_cpp.o)
 	@mkdir -p $(dir $@)
