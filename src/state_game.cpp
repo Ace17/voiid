@@ -35,6 +35,11 @@ struct GameState : Scene, IGame
     m_view(view)
   {
     m_shouldLoadLevel = true;
+    resetPhysics();
+  }
+
+  void resetPhysics()
+  {
     m_physics = createPhysics();
     m_physics->setEdifice(bind(&GameState::traceEdifice, this, placeholders::_1, placeholders::_2));
   }
@@ -124,7 +129,7 @@ struct GameState : Scene, IGame
           entity.release();
     }
 
-    m_physics->clearBodies();
+    resetPhysics();
 
     m_entities.clear();
     m_spawned.clear();

@@ -42,11 +42,6 @@ struct Physics : IPhysics
     unstableRemove(m_bodies, body);
   }
 
-  void clearBodies()
-  {
-    m_bodies.clear();
-  }
-
   Trace moveBody(Body* body, Vector delta) override
   {
     auto rect = body->getBox();
