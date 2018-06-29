@@ -23,8 +23,6 @@ ifeq (ERROR,$(PKG_LDFLAGS))
   $(error At least one library was not found in the build environment)
 endif
 
-CXXFLAGS+=-Iengine/extra
-
 DBGFLAGS?=-g
 
 CXXFLAGS+=-Wall -Wextra
