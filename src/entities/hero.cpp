@@ -27,7 +27,7 @@ auto const MAX_HORZ_SPEED = 0.02f;
 auto const MAX_FALL_SPEED = 0.02f;
 auto const HURT_DELAY = 500;
 
-static auto const NORMAL_SIZE = Size(2, 2, 2);
+static auto const NORMAL_SIZE = Size(1, 1, 2);
 
 struct Hero : Player, Damageable
 {
