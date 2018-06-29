@@ -43,7 +43,6 @@ struct Entity : Body
   virtual void onCollide(Entity* /*other*/) {}
 
   bool dead = false;
-  Vector vel;
   int blinking = 0;
   IGame* game = nullptr;
   IPhysicsProbe* physics = nullptr;

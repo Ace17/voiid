@@ -239,6 +239,7 @@ struct Rockman : Player, Damageable
 
   int respawnDelay = 0;
   Vector respawnPoint;
+  Vector vel;
 
   int upgrades = 0;
 };

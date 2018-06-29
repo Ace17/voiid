@@ -130,6 +130,7 @@ struct Editor : Player
     collisionGroup = CG_PLAYER;
   }
 
+  Vector vel;
   int debounceFire = 0;
   float lookAngleHorz = 0;
   float lookAngleVert = 0;

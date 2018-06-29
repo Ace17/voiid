@@ -46,6 +46,7 @@ struct SpiderBullet : Entity
   }
 
   int life = 1000;
+  Vector vel;
 };
 
 struct Spider : Entity, Damageable
@@ -76,8 +77,6 @@ struct Spider : Entity, Damageable
   virtual void tick() override
   {
     ++time;
-
-    vel.x = vel.y = 0;
 
     decrement(blinking);
 
