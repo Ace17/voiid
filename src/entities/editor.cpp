@@ -20,7 +20,6 @@
 #include "models.h"
 #include "sounds.h"
 #include "toggle.h"
-#include "rockman.h"
 
 auto const WALK_SPEED = 0.0075f;
 auto const MAX_SPEED = 0.02f;

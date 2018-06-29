@@ -14,7 +14,7 @@
 #include "base/util.h"
 
 #include "entities/player.h"
-#include "entities/rockman.h"
+#include "entities/hero.h"
 #include "entities/editor.h"
 #include "entity_factory.h"
 #include "game.h"
@@ -139,7 +139,7 @@ struct GameState : Scene, IGame
     m_view->playMusic(levelIdx);
 
     if(!m_player)
-      m_player = makeRockman().release();
+      m_player = makeHero().release();
 
     m_player->pos = Vector(level.start.x, level.start.y, level.start.z) - m_player->size * 0.5;
 

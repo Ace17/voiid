@@ -47,7 +47,7 @@ SRCS_GAME:=\
 	src/entities/bonus.cpp\
 	src/entities/editor.cpp\
 	src/entities/explosion.cpp\
-	src/entities/rockman.cpp\
+	src/entities/hero.cpp\
 	src/entities/switch.cpp\
 	src/entity_factory.cpp\
 	src/game.cpp\

@@ -18,7 +18,7 @@
 #include "models.h"
 #include "sounds.h"
 #include "toggle.h"
-#include "rockman.h"
+#include "hero.h"
 
 auto const GRAVITY = 0.00005;
 auto const JUMP_SPEED = 0.012;
@@ -29,9 +29,9 @@ auto const HURT_DELAY = 500;
 
 static auto const NORMAL_SIZE = Size(2, 2, 2);
 
-struct Rockman : Player, Damageable
+struct Hero : Player, Damageable
 {
-  Rockman()
+  Hero()
   {
     size = NORMAL_SIZE;
   }
@@ -244,8 +244,8 @@ struct Rockman : Player, Damageable
   int upgrades = 0;
 };
 
-std::unique_ptr<Player> makeRockman()
+std::unique_ptr<Player> makeHero()
 {
-  return make_unique<Rockman>();
+  return make_unique<Hero>();
 }
 
