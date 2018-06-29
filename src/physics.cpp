@@ -15,6 +15,7 @@
 #include "convex.h"
 #include <vector>
 #include <memory>
+#include <algorithm> // find
 
 using namespace std;
 

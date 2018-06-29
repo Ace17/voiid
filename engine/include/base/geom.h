@@ -11,7 +11,6 @@
 #pragma once
 
 #include <cmath>
-#include <algorithm>
 #include <cassert>
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -92,13 +91,8 @@ struct GenericVector
 {
   typedef GenericVector<T> MyType;
 
-  GenericVector() : x(0), y(0)
-  {
-  }
-
-  GenericVector(T x_, T y_) : x(x_), y(y_)
-  {
-  }
+  GenericVector() : x(0), y(0) {}
+  GenericVector(T x_, T y_) : x(x_), y(y_) {}
 
   MyType operator += (MyType const& other)
   {
@@ -253,10 +247,7 @@ template<typename T>
 struct GenericBox
 {
   GenericBox() = default;
-
-  GenericBox(T x, T y, T w, T h) : pos(x, y), size(w, h)
-  {
-  }
+  GenericBox(T x, T y, T w, T h) : pos(x, y), size(w, h) {}
 
   GenericVector<T> pos;
   GenericSize<T> size;
@@ -285,10 +276,17 @@ typedef GenericBox3<float> Rect3f;
 template<typename T>
 bool segmentsOverlap(T a_left, T a_right, T b_left, T b_right)
 {
+  auto swap = [] (T& a, T& b)
+    {
+      auto t = a;
+      a = b;
+      b = t;
+    };
+
   if(a_left > b_left)
   {
-    std::swap(a_left, b_left);
-    std::swap(a_right, b_right);
+    swap(a_left, b_left);
+    swap(a_right, b_right);
   }
 
   return b_left >= a_left && b_left < a_right;
