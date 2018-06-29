@@ -76,7 +76,7 @@ SRCS:=\
 	engine/src/audio_sdl.cpp\
 	engine/src/sound_ogg.cpp\
 
-$(BIN)/rel/game$(EXT): $(SRCS:%.cpp=$(BIN)/%_cpp.o)
+$(BIN)/rel/game$(EXT): $(SRCS:%.cpp=$(BIN)/%.cpp.o)
 	@mkdir -p $(dir $@)
 	$(CXX) $^ -o '$@' $(LDFLAGS)
 
@@ -104,7 +104,7 @@ SRCS_TESTS:=\
 	tests/entities.cpp\
 	tests/physics.cpp\
 
-$(BIN)/tests$(EXT): $(SRCS_TESTS:%.cpp=$(BIN)/%_cpp.o)
+$(BIN)/tests$(EXT): $(SRCS_TESTS:%.cpp=$(BIN)/%.cpp.o)
 	@mkdir -p $(dir $@)
 	$(CXX) $^ -o '$@' $(LDFLAGS)
 
