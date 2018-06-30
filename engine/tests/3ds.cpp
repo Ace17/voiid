@@ -59,7 +59,7 @@ unittest("3ds: simple mesh")
     0x00, 0x00, 0x00, 0x00, 0x00
   };
 
-  auto mesh = tds::load(makeSpan(input));
+  auto mesh = tds::load(input);
   assertEquals(12u, mesh.vertices.size());
   assertEquals(20u, mesh.faces.size());
 }

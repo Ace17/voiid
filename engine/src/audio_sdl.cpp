@@ -201,9 +201,9 @@ struct SdlAudio : Audio
     for(auto& val : mixBuffer)
       val = 0;
 
-    Span<float> buff {
+    Span<float> buff(
       mixBuffer.data(), sampleCount / ratio
-    };
+      );
 
     for(auto& voice : voices)
       if(!voice.isDead())
