@@ -1,19 +1,17 @@
-/*
- * Copyright (C) 2017 - Sebastien Alaiwan <sebastien.alaiwan@gmail.com>
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as
- * published by the Free Software Foundation, either version 3 of the
- * License, or (at your option) any later version.
- */
+// Copyright (C) 2018 - Sebastien Alaiwan <sebastien.alaiwan@gmail.com>
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
 
 // OpenGL stuff
 
 #include "display.h"
 
 #include <cassert>
+#include <cstdio>
 #include <sstream>
 #include <vector>
-#include <iostream>
 #include <stdexcept>
 using namespace std;
 
@@ -59,7 +57,7 @@ int compileShader(string code, int type)
   if(!shaderId)
     throw runtime_error("Can't create shader");
 
-  cout << "Compiling " << (type == GL_VERTEX_SHADER ? "vertex" : "fragment") << " shader ... ";
+  printf("[display] compiling %s shader ... ", (type == GL_VERTEX_SHADER ? "vertex" : "fragment"));
   auto srcPtr = code.c_str();
   SAFE_GL(glShaderSource(shaderId, 1, &srcPtr, nullptr));
   SAFE_GL(glCompileShader(shaderId));
@@ -74,12 +72,12 @@ int compileShader(string code, int type)
     glGetShaderiv(shaderId, GL_INFO_LOG_LENGTH, &logLength);
     vector<char> msg(logLength);
     glGetShaderInfoLog(shaderId, logLength, nullptr, msg.data());
-    cerr << msg.data();
+    fprintf(stderr, "%s\n", msg.data());
 
     throw runtime_error("Can't compile shader");
   }
 
-  cout << "OK" << endl;
+  printf("OK\n");
 
   return shaderId;
 }
@@ -88,7 +86,7 @@ static
 int linkShaders(vector<int> ids)
 {
   // Link the program
-  cout << "Linking shaders ... ";
+  printf("[display] Linking shaders ... ");
   auto ProgramID = glCreateProgram();
 
   for(auto id : ids)
@@ -106,12 +104,12 @@ int linkShaders(vector<int> ids)
     glGetProgramiv(ProgramID, GL_INFO_LOG_LENGTH, &logLength);
     vector<char> msg(logLength);
     glGetProgramInfoLog(ProgramID, logLength, nullptr, msg.data());
-    cout << msg.data();
+    fprintf(stderr, "%s\n", msg.data());
 
     throw runtime_error("Can't link shader");
   }
 
-  cout << "OK" << endl;
+  printf("OK\n");
 
   return ProgramID;
 }
@@ -260,13 +258,13 @@ void printOpenGlVersion()
   auto sVersion = (char const*)glGetString(GL_VERSION);
   auto sLangVersion = (char const*)glGetString(GL_SHADING_LANGUAGE_VERSION);
 
-  auto notNull = [] (char const* s) -> string
+  auto notNull = [] (char const* s) -> const char*
     {
       return s ? s : "<null>";
     };
 
-  cout << "OpenGL version: " << notNull(sVersion) << endl;
-  cout << "OpenGL shading version: " << notNull(sLangVersion) << endl;
+  printf("[display] OpenGL version: %s\n", notNull(sVersion));
+  printf("[display] OpenGL shading version: %s\n", notNull(sLangVersion));
 }
 
 struct SdlDisplay : Display

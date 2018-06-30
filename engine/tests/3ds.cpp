@@ -1,7 +1,5 @@
 #include "engine/src/3ds.h"
 #include "tests.h"
-#include <iostream>
-using namespace std;
 
 unittest("3ds: simple mesh")
 {

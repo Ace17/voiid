@@ -1,15 +1,13 @@
-/*
- * Copyright (C) 2017 - Sebastien Alaiwan <sebastien.alaiwan@gmail.com>
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as
- * published by the Free Software Foundation, either version 3 of the
- * License, or (at your option) any later version.
- */
+// Copyright (C) 2018 - Sebastien Alaiwan <sebastien.alaiwan@gmail.com>
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
 
 // Entry point.
 // This is the only file where emscripten-specific stuff can appear.
 
-#include <iostream>
+#include <cstdio>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -68,7 +66,7 @@ int main(int argc, char* argv[])
   }
   catch(exception const& e)
   {
-    cerr << "Fatal: " << e.what() << endl;
+    fprintf(stderr, "Fatal: %s\n", e.what());
     return 1;
   }
 }
