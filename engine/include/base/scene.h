@@ -16,7 +16,6 @@
 
 using namespace std;
 
-typedef int SOUND;
 typedef int MODEL;
 
 enum class Effect
@@ -60,16 +59,6 @@ struct Control
   bool restart; // restart level in case one gets stuck
 
   bool debug;
-};
-
-// outside world, seen by the game
-struct View
-{
-  virtual ~View() = default;
-
-  virtual void textBox(char const* msg) = 0;
-  virtual void playMusic(int id) = 0;
-  virtual void playSound(int id) = 0;
 };
 
 // game, seen by the outside world

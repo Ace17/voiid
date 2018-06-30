@@ -14,6 +14,7 @@
 #include <functional>
 #include "base/geom.h"
 #include "base/scene.h"
+#include "base/view.h"
 
 typedef Matrix3<int> Matrix;
 typedef Vector3f Vector;
