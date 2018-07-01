@@ -8,7 +8,41 @@
 
 #pragma once
 
+#include <memory>
 #include "sound.h"
+
+using namespace std;
+
+auto const CHUNK_PERIOD = 32; // sample count between audio param updates
+
+struct LoopingSource : IAudioSource
+{
+  LoopingSource(Sound* sound_) : sound(sound_) {}
+
+  virtual int read(Span<float> dst)
+  {
+    auto output = dst;
+
+    while(output.len > 0)
+    {
+      if(!src)
+        src = sound->createSource();
+
+      auto const N = src->read(output);
+      output.len -= N;
+      output.data += N;
+
+      if(N == 0)
+        src.reset();
+    }
+
+    return dst.len;
+  }
+
+private:
+  Sound* sound;
+  unique_ptr<IAudioSource> src;
+};
 
 struct Voice
 {
@@ -17,49 +51,85 @@ struct Voice
     return m_isDead;
   }
 
-  void play(Sound* sound, bool loop = false)
+  void play(Sound* sound, float fadeInInertia = 0, bool loop = false)
   {
-    m_sound = sound;
-    m_player = sound->createPlayer();
     m_isDead = false;
-    m_loop = loop;
+
+    if(loop)
+      m_source = make_unique<LoopingSource>(sound);
+    else
+      m_source = sound->createSource();
+
+    m_volume = 0;
+    m_targetVolume = 1;
+    m_volumeIncrement = (m_targetVolume - m_volume) / (200 * fadeInInertia);
   }
 
   void mix(Span<float> output)
   {
+    startChunk();
+
     while(output.len > 0)
     {
-      auto const n = m_player->mix(output);
-      output.data += n;
-      output.len -= n;
-
-      if(output.len == 0)
+      if(!m_source)
         break;
 
-      m_sound = nextSound();
+      float chunkData[CHUNK_PERIOD] = { 0 };
+      auto chunk = Span<float>(chunkData);
+      chunk.len = output.len;
 
-      if(!m_sound)
-      {
-        m_isDead = true;
-        break;
-      }
+      auto const N = m_source->read(chunk);
 
-      m_player = m_sound->createPlayer();
+      for(int i = 0; i < chunk.len; ++i)
+        output.data[i] += chunk.data[i] * m_volume;
+
+      output.len -= N;
+      output.data += N;
+
+      // finished playing?
+      if(N == 0)
+        m_source.reset();
     }
+
+    if(!m_source)
+      m_isDead = true;
   }
+
+  void startChunk()
+  {
+    m_volume += m_volumeIncrement;
+
+    if(m_volumeIncrement > 0)
+    {
+      if(m_volume > m_targetVolume)
+        m_volume = m_targetVolume;
+    }
+    else
+    {
+      if(m_volume < m_targetVolume)
+        m_volume = m_targetVolume;
+    }
+
+    if(m_fadingOut && m_volume == 0)
+      m_isDead = true;
+  }
+
+  void fadeOut()
+  {
+    auto const fadeOutInertia = 10;
+    m_fadingOut = true;
+    m_targetVolume = 0.0;
+    m_volumeIncrement = (m_targetVolume - m_volume) / (200 * fadeOutInertia);
+  }
+
+  static const int FADE_CHUNKS = 1000;
 
 private:
-  Sound* nextSound()
-  {
-    if(m_loop)
-      return m_sound;
-
-    return nullptr;
-  }
-
+  float m_volume = 0.0;
+  float m_volumeIncrement = 0.0;
+  float m_targetVolume = 1.0;
+  bool m_fadingOut = false;
   bool m_isDead = true;
-  bool m_loop = false;
-  Sound* m_sound;
-  unique_ptr<ISoundPlayer> m_player;
+  unique_ptr<IAudioSource> m_source;
 };
 

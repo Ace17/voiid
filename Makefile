@@ -91,6 +91,7 @@ SRCS_TESTS:=\
 	engine/src/decompress.cpp\
 	engine/src/json.cpp\
 	engine/src/3ds.cpp\
+	engine/tests/audio.cpp\
 	engine/tests/base64.cpp\
 	engine/tests/decompress.cpp\
 	engine/tests/json.cpp\

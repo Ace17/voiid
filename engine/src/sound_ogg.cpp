@@ -1,21 +1,21 @@
-/*
- * Copyright (C) 2018 - Sebastien Alaiwan <sebastien.alaiwan@gmail.com>
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as
- * published by the Free Software Foundation, either version 3 of the
- * License, or (at your option) any later version.
- */
+// Copyright (C) 2018 - Sebastien Alaiwan <sebastien.alaiwan@gmail.com>
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+
+// OGG sound file format loading.
+// Uses libogg/libvorbis.
 
 #include "sound.h"
-#include <cassert>
 #include <string.h> // memcpy
 #include <ogg/ogg.h>
 #include <vorbis/vorbisfile.h>
-#include "file.h"
+#include "file.h" // read
 
 using namespace std;
 
-struct OggSoundPlayer : ISoundPlayer
+struct OggSoundPlayer : IAudioSource
 {
   OggSoundPlayer(Span<uint8_t> data) : m_data(data)
   {
@@ -46,7 +46,7 @@ struct OggSoundPlayer : ISoundPlayer
     ov_clear(&m_ogg);
   }
 
-  int mix(Span<float> output)
+  int read(Span<float> output)
   {
     int r = 0;
 
@@ -68,7 +68,7 @@ struct OggSoundPlayer : ISoundPlayer
       sampleCount -= gotSamples;
 
       for(int i = 0; i < gotSamples; ++i)
-        *output.data++ += (m_buff[i] / 32768.0);
+        *output.data++ = (m_buff[i] / 32768.0);
     }
 
     return r;
@@ -125,9 +125,10 @@ struct OggSound : Sound
     m_data = read(filename);
   }
 
-  unique_ptr<ISoundPlayer> createPlayer()
+  unique_ptr<IAudioSource> createSource()
   {
-    return make_unique<OggSoundPlayer>(Span<uint8_t> { (uint8_t*)m_data.data(), (int)m_data.size() });
+    auto data = Span<uint8_t> { (uint8_t*)m_data.data(), (int)m_data.size() };
+    return make_unique<OggSoundPlayer>(data);
   }
 
   string m_data;

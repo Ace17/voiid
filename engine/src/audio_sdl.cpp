@@ -1,10 +1,8 @@
-/*
- * Copyright (C) 2017 - Sebastien Alaiwan <sebastien.alaiwan@gmail.com>
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as
- * published by the Free Software Foundation, either version 3 of the
- * License, or (at your option) any later version.
- */
+// Copyright (C) 2018 - Sebastien Alaiwan <sebastien.alaiwan@gmail.com>
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
 
 // SDL audio output
 
@@ -55,7 +53,7 @@ struct SdlAudio : Audio
     {
       int freq = audiospec.freq;
       int channels = audiospec.channels;
-      printf("Audio: %d Hz %d channels\n", freq, channels);
+      printf("[audio] %d Hz %d channels\n", freq, channels);
     }
 
     voices.resize(MAX_VOICES);
@@ -63,6 +61,7 @@ struct SdlAudio : Audio
     mixBuffer.resize(audiospec.samples * audiospec.channels);
 
     SDL_PauseAudioDevice(audioDevice, 0);
+    printf("[audio] init OK\n");
   }
 
   ~SdlAudio()
@@ -71,13 +70,14 @@ struct SdlAudio : Audio
 
     SDL_CloseAudioDevice(audioDevice);
     SDL_QuitSubSystem(SDL_INIT_AUDIO);
+    printf("[audio] shutdown OK\n");
   }
 
   void loadSound(int id, string path) override
   {
     if(!exists(path))
     {
-      printf("sound '%s' was not found, fallback on default sound\n", path.c_str());
+      printf("[audio] sound '%s' was not found, fallback on default sound\n", path.c_str());
       path = "res/sounds/default.ogg";
     }
 
@@ -102,9 +102,6 @@ struct SdlAudio : Audio
 
   void playMusic(int id) override
   {
-    if(id == currMusic)
-      return;
-
     char path[256];
     sprintf(path, "res/music/music-%02d.ogg", id);
 
@@ -112,13 +109,19 @@ struct SdlAudio : Audio
     {
       printf("music '%s' was not found, fallback on default music\n", path);
       strcpy(path, "res/music/default.ogg");
+      id = 0;
     }
 
-    music = loadSoundFile(path);
+    if(id == currMusic)
+      return;
+
+    currMusic = id;
+
+    auto nextMusic = loadSoundFile(path);
 
     SDL_LockAudioDevice(audioDevice);
-    voices[0].play(music.get(), true);
-    currMusic = id;
+    voices[0].fadeOut();
+    m_nextMusic = move(nextMusic);
     SDL_UnlockAudioDevice(audioDevice);
   }
 
@@ -129,35 +132,53 @@ struct SdlAudio : Audio
     pThis->mixAudio((float*)stream, iNumBytes / sizeof(float));
   }
 
+  int currMusic = -1;
+  vector<unique_ptr<Sound>> sounds;
   SDL_AudioDeviceID audioDevice;
+
+  // accessed by the audio thread
   SDL_AudioSpec audiospec;
   vector<Voice> voices;
-  vector<unique_ptr<Sound>> sounds;
-  unique_ptr<Sound> music;
+  unique_ptr<Sound> m_music;
+  unique_ptr<Sound> m_nextMusic;
   vector<float> mixBuffer;
-  int currMusic = -1;
 
   void mixAudio(float* stream, int sampleCount)
   {
-    int ratio = 1;
+    if(m_nextMusic && voices[0].isDead())
+    {
+      m_music = move(m_nextMusic);
+      voices[0].play(m_music.get(), 4, true);
+    }
+
+    int shift = 0;
 
     // HACK: poor man's resampling
     if(audiospec.freq > 22050)
-      ratio = 2;
+      shift = 1;
 
     for(auto& val : mixBuffer)
       val = 0;
 
     Span<float> buff(
-      mixBuffer.data(), sampleCount / ratio
+      mixBuffer.data(), sampleCount >> shift
       );
 
-    for(auto& voice : voices)
-      if(!voice.isDead())
-        voice.mix(buff);
+    while(buff.len > 0)
+    {
+      auto chunk = buff;
+      chunk.len = min(CHUNK_PERIOD, chunk.len);
+
+      for(auto& voice : voices)
+        if(!voice.isDead())
+          voice.mix(chunk);
+
+      buff.data += chunk.len;
+      buff.len -= chunk.len;
+    }
 
     for(int i = 0; i < sampleCount; ++i)
-      stream[i] = mixBuffer[i / ratio];
+      stream[i] = mixBuffer[i >> shift];
   }
 
   Voice* allocVoice()
