@@ -20,8 +20,8 @@
 #include <SDL.h>
 #include <ogg/ogg.h>
 #include <vorbis/vorbisfile.h>
-#include "audio.h"
 #include "file.h"
+#include "voice.h"
 
 #include "base/util.h"
 #include "base/span.h"
@@ -29,59 +29,6 @@
 using namespace std;
 
 auto const MAX_VOICES = 16;
-
-struct Voice
-{
-  bool isDead() const
-  {
-    return m_isDead;
-  }
-
-  void play(Sound* sound, bool loop = false)
-  {
-    m_sound = sound;
-    m_player = sound->createPlayer();
-    m_isDead = false;
-    m_loop = loop;
-  }
-
-  void mix(Span<float> output)
-  {
-    while(output.len > 0)
-    {
-      auto const n = m_player->mix(output);
-      output.data += n;
-      output.len -= n;
-
-      if(output.len == 0)
-        break;
-
-      m_sound = nextSound();
-
-      if(!m_sound)
-      {
-        m_isDead = true;
-        break;
-      }
-
-      m_player = m_sound->createPlayer();
-    }
-  }
-
-private:
-  Sound* nextSound()
-  {
-    if(m_loop)
-      return m_sound;
-
-    return nullptr;
-  }
-
-  bool m_isDead = true;
-  bool m_loop = false;
-  Sound* m_sound;
-  unique_ptr<ISoundPlayer> m_player;
-};
 
 struct SdlAudio : Audio
 {
