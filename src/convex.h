@@ -16,6 +16,6 @@
 struct Convex
 {
   std::vector<Plane> planes;
-  Trace trace(Vector A, Vector B, float radius) const;
+  Trace trace(Vector A, Vector B, Vector boxSize) const;
 };
 

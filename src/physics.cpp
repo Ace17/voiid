@@ -133,7 +133,7 @@ struct Physics : IPhysics
       b.planes[4] = Plane { Vector3f(0, 0, -1), -other->pos.z };
       b.planes[5] = Plane { Vector3f(0, 0, +1), other->pos.z + other->size.cz };
 
-      auto tr = b.trace(A, B, halfSize.x);
+      auto tr = b.trace(A, B, halfSize);
 
       if(tr.fraction < r.fraction)
       {

@@ -259,7 +259,7 @@ struct GameState : Scene, IGame
     {
       auto const halfSize = Vector3f(box.size.cx, box.size.cy, box.size.cz) * 0.5;
       auto const pos = box.pos + halfSize;
-      auto t = brush.trace(pos, pos + delta, halfSize.x);
+      auto t = brush.trace(pos, pos + delta, halfSize);
 
       if(t.fraction < r.fraction)
       {

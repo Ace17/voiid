@@ -15,7 +15,7 @@
 // Returns the fraction of the move to the first intersection with the convex,
 // or 1.0 if there are no intersections.
 // Also returns the intersecting plane, if any.
-Trace Convex::trace(Vector A, Vector B, float radius) const
+Trace Convex::trace(Vector A, Vector B, Vector boxSize) const
 {
   Trace trace;
   trace.fraction = 1;
@@ -27,6 +27,7 @@ Trace Convex::trace(Vector A, Vector B, float radius) const
 
   for(auto& plane : planes)
   {
+    auto const radius = abs(boxSize.x * plane.N.x) + abs(boxSize.y * plane.N.y) + abs(boxSize.z * plane.N.z);
     auto const epsilon = 1.0f / 128.0f;
     auto const distA = plane.dist(A) + radius;
     auto const distB = plane.dist(B) - radius;
