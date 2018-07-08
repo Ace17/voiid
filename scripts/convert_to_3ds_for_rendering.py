@@ -1,6 +1,7 @@
 # this script is meant to be run from blender
 
 import bpy
+import bmesh
 import sys
 import traceback
 import my_3ds_exporter
@@ -58,6 +59,10 @@ def run():
   #----------------------------------------------------------------------------
   # baking
   #----------------------------------------------------------------------------
+
+  # Delete faces with material 'nope' (i.e "don't render me")
+  deleteNonRenderedFaces()
+
   bpy.ops.object.mode_set(mode='EDIT')
   bpy.ops.mesh.select_all(action='SELECT')
 
@@ -104,6 +109,28 @@ def run():
   my_3ds_exporter.saveAs3ds(bpy.context.scene, output3dsPath)
 
   # bpy.ops.wm.save_mainfile(filepath="/tmp/debug.blend")
+
+def deleteNonRenderedFaces():
+  # Get the active mesh
+  bpy.ops.object.mode_set(mode='OBJECT')
+  obj = bpy.context.object
+
+  # Get the active mesh
+  me = obj.data
+
+  # Get a BMesh representation
+  bm = bmesh.new()   # create an empty BMesh
+  bm.from_mesh(me)   # fill it in from a Mesh
+
+  faces_select = []
+  for f in bm.faces:
+      if obj.material_slots[f.material_index].name == "nope":
+          faces_select.append(f)
+  bmesh.ops.delete(bm, geom=faces_select, context=3) # ONLY_FACES
+
+  # copy bmesh to mesh
+  bm.to_mesh(me)
+
 
 try:
   run()
