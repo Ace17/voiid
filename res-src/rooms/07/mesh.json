@@ -1,0 +1,12 @@
+{
+  "type" : "sheet",
+  "sheet" : "mesh.png",
+  "width" : 2048,
+  "height" : 2048,
+  "actions": [
+    {
+      "name": "default",
+      "frames": [ 0 ]
+    }
+  ]
+}

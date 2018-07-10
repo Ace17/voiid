@@ -47,7 +47,8 @@ static const Resource resources[] =
   { ResourceType::Model, MDL_ROOMS + 4, "res/rooms/04/mesh.json" },
   { ResourceType::Model, MDL_ROOMS + 5, "res/rooms/05/mesh.json" },
   { ResourceType::Model, MDL_ROOMS + 6, "res/rooms/06/mesh.json" },
-  { ResourceType::Model, MDL_ROOMS + 7, "res/rooms/ending/mesh.json" },
+  { ResourceType::Model, MDL_ROOMS + 7, "res/rooms/07/mesh.json" },
+  { ResourceType::Model, MDL_ROOMS + 8, "res/rooms/ending/mesh.json" },
 };
 
 Span<const Resource> getResources()
