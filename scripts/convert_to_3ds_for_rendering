@@ -12,5 +12,9 @@ export PYTHONPATH+=$scriptDir
 blender "$input" --background \
   --python $scriptDir/convert_to_3ds_for_rendering.py \
   --python-exit-code \
-  -- "$output3ds" "$outputPng" >/dev/null
+  -- "$output3ds.tmp" "$outputPng.tmp" >/dev/null
+
+# make the operation atomic
+mv "$output3ds.tmp" "$output3ds"
+mv "$outputPng.tmp" "$outputPng"
 
