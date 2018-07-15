@@ -164,7 +164,10 @@ struct Hero : Player, Damageable
 
     computeVelocity(control);
 
+    auto STAIR_CLIMB = 0.8;
+    physics->moveBody(this, Vector3f(0, 0, STAIR_CLIMB));
     slideMove(physics, this, vel);
+    physics->moveBody(this, Vector3f(0, 0, -STAIR_CLIMB));
 
     auto const onGround = isOnGround(physics, this);
 
