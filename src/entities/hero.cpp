@@ -82,25 +82,12 @@ struct Hero : Player, Damageable
   {
     airMove(c);
 
-    if(ground)
-      doubleJumped = false;
-
     vel.z -= GRAVITY;
 
-    if(jumpbutton.toggle(c.jump))
+    if(jumpbutton.toggle(c.jump) && ground)
     {
-      if(ground)
-      {
-        game->playSound(SND_JUMP);
-        vel.z = JUMP_SPEED;
-        doubleJumped = false;
-      }
-      else if((upgrades & UPGRADE_DJUMP) && !doubleJumped)
-      {
-        game->playSound(SND_JUMP);
-        vel.z = JUMP_SPEED;
-        doubleJumped = true;
-      }
+      game->playSound(SND_JUMP);
+      vel.z = JUMP_SPEED;
     }
 
     // stop jump if the player release the button early
@@ -237,7 +224,6 @@ struct Hero : Player, Damageable
   Toggle jumpbutton, firebutton;
   int hurtDelay = 0;
   int life = 31;
-  bool doubleJumped = false;
   Control control {};
 
   int respawnDelay = 0;
