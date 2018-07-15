@@ -151,7 +151,7 @@ struct Door : Entity, IEventSink
     if(openingDelay > 0)
     {
       auto sign = state ? 1 : -1;
-      slideMove(physics, this, Up * 0.002 * sign);
+      physics->moveBody(this, Up * 0.003 * sign);
     }
   }
 
