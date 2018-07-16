@@ -26,7 +26,7 @@ using namespace std;
 
 auto const TIMESTEP = 1;
 
-Display* createDisplay();
+Display* createDisplay(Size2i resolution);
 Audio* createAudio();
 
 Scene* createGame(View* view, vector<string> argv);
@@ -41,8 +41,7 @@ public:
   {
     SDL_Init(0);
 
-    m_display.reset(createDisplay());
-    m_display->init(Size2i(1024, 1024));
+    m_display.reset(createDisplay(Size2i(1024, 1024)));
     m_audio.reset(createAudio());
 
     for(auto res : getResources())
@@ -63,7 +62,7 @@ public:
     m_lastTime = SDL_GetTicks();
   }
 
-  ~App()
+  virtual ~App()
   {
     SDL_Quit();
   }
@@ -220,7 +219,7 @@ private:
     if(evt->key.keysym.sym == SDLK_TAB)
       m_slowMotion = !m_slowMotion;
 
-    if(evt->key.keysym.sym == SDLK_PAUSE || evt->key.keysym.sym == SDLK_RETURN)
+    if(evt->key.keysym.sym == SDLK_PAUSE)
     {
       m_audio->playSound(0);
       m_paused = !m_paused;

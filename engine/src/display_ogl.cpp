@@ -257,7 +257,7 @@ void printOpenGlVersion()
   auto sVersion = (char const*)glGetString(GL_VERSION);
   auto sLangVersion = (char const*)glGetString(GL_SHADING_LANGUAGE_VERSION);
 
-  auto notNull = [] (char const* s) -> const char*
+  auto notNull = [] (char const* s) -> char const*
     {
       return s ? s : "<null>";
     };
@@ -266,9 +266,9 @@ void printOpenGlVersion()
   printf("[display] OpenGL shading version: %s\n", notNull(sLangVersion));
 }
 
-struct SdlDisplay : Display
+struct OpenglDisplay : Display
 {
-  void init(Size2i resolution) override
+  OpenglDisplay(Size2i resolution)
   {
     if(SDL_InitSubSystem(SDL_INIT_VIDEO))
       throw runtime_error("Can't init SDL");
@@ -519,8 +519,8 @@ struct SdlDisplay : Display
   float m_ambientLight = 0;
 };
 
-Display* createDisplay()
+Display* createDisplay(Size2i resolution)
 {
-  return new SdlDisplay;
+  return new OpenglDisplay(resolution);
 }
 
