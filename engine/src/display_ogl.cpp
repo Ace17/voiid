@@ -383,10 +383,12 @@ struct SdlDisplay : Display
     SDL_SetWindowTitle(m_window, caption);
   }
 
-  void setAmbientLight(float ambientLight_) override
+  void setAmbientLight(float ambientLight) override
   {
-    m_ambientLight = ambientLight_;
+    m_ambientLight = ambientLight;
   }
+
+  int m_blinkCounter = 0;
 
   void drawModel(Rect3f where, Camera const& camera, Model& model, bool blinking, int actionIdx, float ratio)
   {
@@ -394,10 +396,7 @@ struct SdlDisplay : Display
 
     if(blinking)
     {
-      static int blinkCounter;
-      blinkCounter++;
-
-      if((blinkCounter / 4) % 2)
+      if((m_blinkCounter / 4) % 2)
         SAFE_GL(glUniform4f(m_colorId, 0.8, 0.4, 0.4, 0));
     }
 
@@ -483,6 +482,7 @@ struct SdlDisplay : Display
 
   void beginDraw() override
   {
+    m_blinkCounter++;
     SAFE_GL(glUseProgram(m_programId));
 
     glEnable(GL_DEPTH_TEST);
