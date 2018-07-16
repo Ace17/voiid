@@ -275,20 +275,20 @@ struct SdlDisplay : Display
 
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-    mainWindow = SDL_CreateWindow(
+    m_window = SDL_CreateWindow(
         "My Game",
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
         resolution.width, resolution.height,
         SDL_WINDOW_OPENGL
         );
 
-    if(!mainWindow)
+    if(!m_window)
       throw runtime_error("Can't set video mode");
 
     // Create our opengl context and attach it to our window
-    mainContext = SDL_GL_CreateContext(mainWindow);
+    m_context = SDL_GL_CreateContext(m_window);
 
-    if(!mainContext)
+    if(!m_context)
       throw runtime_error("Can't create OpenGL context");
 
     printOpenGlVersion();
@@ -300,17 +300,17 @@ struct SdlDisplay : Display
     SAFE_GL(glGenVertexArrays(1, &VertexArrayID));
     SAFE_GL(glBindVertexArray(VertexArrayID));
 
-    g_ProgramId = loadShaders();
+    m_programId = loadShaders();
 
     glEnable(GL_BLEND);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    g_fontModel = loadTiledAnimation("res/font.png", 256, 16, 16);
+    m_fontModel = loadTiledAnimation("res/font.png", 256, 16, 16);
 
     // don't GL_REPEAT fonts
-    for(auto& action : g_fontModel.actions)
+    for(auto& action : m_fontModel.actions)
     {
       for(auto& texture : action.textures)
       {
@@ -320,52 +320,52 @@ struct SdlDisplay : Display
       }
     }
 
-    sendToOpengl(g_fontModel);
+    sendToOpengl(m_fontModel);
 
-    g_MVP = glGetUniformLocation(g_ProgramId, "MVP");
-    assert(g_MVP >= 0);
+    m_MVP = glGetUniformLocation(m_programId, "MVP");
+    assert(m_MVP >= 0);
 
-    g_colorId = glGetUniformLocation(g_ProgramId, "v_color");
-    assert(g_colorId >= 0);
+    m_colorId = glGetUniformLocation(m_programId, "v_color");
+    assert(m_colorId >= 0);
 
-    g_ambientLoc = glGetUniformLocation(g_ProgramId, "ambientLight");
-    assert(g_ambientLoc >= 0);
+    m_ambientLoc = glGetUniformLocation(m_programId, "ambientLight");
+    assert(m_ambientLoc >= 0);
 
-    g_positionLoc = glGetAttribLocation(g_ProgramId, "a_position");
-    assert(g_positionLoc >= 0);
+    m_positionLoc = glGetAttribLocation(m_programId, "a_position");
+    assert(m_positionLoc >= 0);
 
-    g_texCoordLoc = glGetAttribLocation(g_ProgramId, "a_texCoord");
-    assert(g_texCoordLoc >= 0);
+    m_textCoordLoc = glGetAttribLocation(m_programId, "a_texCoord");
+    assert(m_textCoordLoc >= 0);
 
-    g_normalLoc = glGetAttribLocation(g_ProgramId, "a_normal");
-    assert(g_normalLoc >= 0);
+    m_normalLoc = glGetAttribLocation(m_programId, "a_normal");
+    assert(m_normalLoc >= 0);
   }
 
   void loadModel(int id, const char* path) override
   {
-    if((int)g_Models.size() <= id)
-      g_Models.resize(id + 1);
+    if((int)m_Models.size() <= id)
+      m_Models.resize(id + 1);
 
-    g_Models[id] = loadAnimation(path);
-    sendToOpengl(g_Models[id]);
+    m_Models[id] = loadAnimation(path);
+    sendToOpengl(m_Models[id]);
   }
 
   void setCamera(Vector3f pos, Vector3f dir) override
   {
     auto cam = (Camera { pos, dir });
 
-    if(!g_camera.valid)
+    if(!m_camera.valid)
     {
-      g_camera = cam;
-      g_camera.valid = true;
+      m_camera = cam;
+      m_camera.valid = true;
     }
 
     // avoid big camera jumps
     {
-      auto delta = g_camera.pos - pos;
+      auto delta = m_camera.pos - pos;
 
       if(dotProduct(delta, delta) > 10)
-        g_camera = cam;
+        m_camera = cam;
     }
 
     auto blend = [] (Vector3f a, Vector3f b)
@@ -374,23 +374,23 @@ struct SdlDisplay : Display
         return a * (1 - alpha) + b * alpha;
       };
 
-    g_camera.pos = blend(g_camera.pos, cam.pos);
-    g_camera.dir = cam.dir;
+    m_camera.pos = blend(m_camera.pos, cam.pos);
+    m_camera.dir = cam.dir;
   }
 
   void setCaption(const char* caption) override
   {
-    SDL_SetWindowTitle(mainWindow, caption);
+    SDL_SetWindowTitle(m_window, caption);
   }
 
   void setAmbientLight(float ambientLight_) override
   {
-    baseAmbientLight = ambientLight_;
+    m_ambientLight = ambientLight_;
   }
 
   void drawModel(Rect3f where, Camera const& camera, Model& model, bool blinking, int actionIdx, float ratio)
   {
-    SAFE_GL(glUniform4f(g_colorId, 0, 0, 0, 0));
+    SAFE_GL(glUniform4f(m_colorId, 0, 0, 0, 0));
 
     if(blinking)
     {
@@ -398,7 +398,7 @@ struct SdlDisplay : Display
       blinkCounter++;
 
       if((blinkCounter / 4) % 2)
-        SAFE_GL(glUniform4f(g_colorId, 0.8, 0.4, 0.4, 0));
+        SAFE_GL(glUniform4f(m_colorId, 0.8, 0.4, 0.4, 0));
     }
 
     if(actionIdx < 0 || actionIdx >= (int)model.actions.size())
@@ -426,22 +426,22 @@ struct SdlDisplay : Display
 
     auto mat = perspective * view * pos * scale;
 
-    SAFE_GL(glUniformMatrix4fv(g_MVP, 1, GL_FALSE, &mat[0][0]));
+    SAFE_GL(glUniformMatrix4fv(m_MVP, 1, GL_FALSE, &mat[0][0]));
 
     SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, model.buffer));
 
     {
       // connect the xyz to the "a_position" attribute of the vertex shader
-      SAFE_GL(glEnableVertexAttribArray(g_positionLoc));
-      SAFE_GL(glVertexAttribPointer(g_positionLoc, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const GLvoid*)(0 * sizeof(GLfloat))));
+      SAFE_GL(glEnableVertexAttribArray(m_positionLoc));
+      SAFE_GL(glVertexAttribPointer(m_positionLoc, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const GLvoid*)(0 * sizeof(GLfloat))));
 
       // connect the N to the "a_normal" attribute of the vertex shader
-      SAFE_GL(glEnableVertexAttribArray(g_normalLoc));
-      SAFE_GL(glVertexAttribPointer(g_normalLoc, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const GLvoid*)(5 * sizeof(GLfloat))));
+      SAFE_GL(glEnableVertexAttribArray(m_normalLoc));
+      SAFE_GL(glVertexAttribPointer(m_normalLoc, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const GLvoid*)(5 * sizeof(GLfloat))));
 
       // connect the uv coords to the "v_texCoord" attribute of the vertex shader
-      SAFE_GL(glEnableVertexAttribArray(g_texCoordLoc));
-      SAFE_GL(glVertexAttribPointer(g_texCoordLoc, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat))));
+      SAFE_GL(glEnableVertexAttribArray(m_textCoordLoc));
+      SAFE_GL(glVertexAttribPointer(m_textCoordLoc, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat))));
     }
     SAFE_GL(glDrawArrays(GL_TRIANGLES, 0, model.vertices.size()));
   }
@@ -449,14 +449,14 @@ struct SdlDisplay : Display
   void enableGrab(bool enable) override
   {
     SDL_SetRelativeMouseMode(enable ? SDL_TRUE : SDL_FALSE);
-    SDL_SetWindowGrab(mainWindow, enable ? SDL_TRUE : SDL_FALSE);
+    SDL_SetWindowGrab(m_window, enable ? SDL_TRUE : SDL_FALSE);
     SDL_ShowCursor(enable ? 0 : 1);
   }
 
   void drawActor(Rect3f where, int modelId, bool blinking, int actionIdx, float ratio) override
   {
-    auto& model = g_Models.at(modelId);
-    drawModel(where, g_camera, model, blinking, actionIdx, ratio);
+    auto& model = m_Models.at(modelId);
+    drawModel(where, m_camera, model, blinking, actionIdx, ratio);
   }
 
   void drawText(Vector2f pos, char const* text) override
@@ -475,7 +475,7 @@ struct SdlDisplay : Display
 
     while(*text)
     {
-      drawModel(rect, cam, g_fontModel, false, *text, 0);
+      drawModel(rect, cam, m_fontModel, false, *text, 0);
       rect.pos.x += rect.size.cx;
       ++text;
     }
@@ -483,40 +483,40 @@ struct SdlDisplay : Display
 
   void beginDraw() override
   {
-    SAFE_GL(glUseProgram(g_ProgramId));
+    SAFE_GL(glUseProgram(m_programId));
 
     glEnable(GL_DEPTH_TEST);
     SAFE_GL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
     SAFE_GL(glClearColor(0, 0, 0, 1));
     SAFE_GL(glClear(GL_COLOR_BUFFER_BIT));
 
-    SAFE_GL(glUniform3f(g_ambientLoc, baseAmbientLight, baseAmbientLight, baseAmbientLight));
+    SAFE_GL(glUniform3f(m_ambientLoc, m_ambientLight, m_ambientLight, m_ambientLight));
   }
 
   void endDraw() override
   {
-    SDL_GL_SwapWindow(mainWindow);
+    SDL_GL_SwapWindow(m_window);
   }
 
   // end-of public API
 
-  SDL_Window* mainWindow;
-  SDL_GLContext mainContext;
+  SDL_Window* m_window;
+  SDL_GLContext m_context;
 
-  Camera g_camera;
+  Camera m_camera;
 
-  GLint g_MVP;
-  GLint g_colorId;
-  GLint g_ambientLoc;
-  GLint g_positionLoc;
-  GLint g_texCoordLoc;
-  GLint g_normalLoc;
+  GLint m_MVP;
+  GLint m_colorId;
+  GLint m_ambientLoc;
+  GLint m_positionLoc;
+  GLint m_textCoordLoc;
+  GLint m_normalLoc;
 
-  GLuint g_ProgramId;
-  vector<Model> g_Models;
-  Model g_fontModel;
+  GLuint m_programId;
+  vector<Model> m_Models;
+  Model m_fontModel;
 
-  float baseAmbientLight = 0;
+  float m_ambientLight = 0;
 };
 
 Display* createDisplay()
