@@ -23,6 +23,7 @@ using namespace std;
 #include "base/util.h"
 #include "base/scene.h"
 #include "base/geom.h"
+#include "base/span.h"
 #include "model.h"
 #include "matrix4.h"
 
@@ -50,7 +51,7 @@ void ensureGl(char const* expr, int line)
 }
 
 static
-int compileShader(string code, int type)
+int compileShader(Span<unsigned char> code, int type)
 {
   auto shaderId = glCreateShader(type);
 
@@ -58,8 +59,9 @@ int compileShader(string code, int type)
     throw runtime_error("Can't create shader");
 
   printf("[display] compiling %s shader ... ", (type == GL_VERTEX_SHADER ? "vertex" : "fragment"));
-  auto srcPtr = code.c_str();
-  SAFE_GL(glShaderSource(shaderId, 1, &srcPtr, nullptr));
+  auto srcPtr = (const char*)code.data;
+  auto length = (GLint)code.len;
+  SAFE_GL(glShaderSource(shaderId, 1, &srcPtr, &length));
   SAFE_GL(glCompileShader(shaderId));
 
   // Check compile result
@@ -147,7 +149,8 @@ int loadTexture(string path, Rect2i rect)
   auto dst = (Uint8*)img.data() + bpp * rect.size.width * rect.size.height;
 
   // from glTexImage2D doc:
-  // "The first element corresponds to the lower left corner of the texture image"
+  // "The first element corresponds to the lower left corner of the texture image",
+  // (e.g (u,v) = (0,0))
   for(int y = 0; y < rect.size.height; ++y)
   {
     dst -= bpp * rect.size.width;
@@ -172,18 +175,14 @@ int loadTexture(string path, Rect2i rect)
   return texture;
 }
 
-extern char VertexShaderCode[];
-extern size_t VertexShaderCode_size;
-extern char FragmentShaderCode[];
-extern size_t FragmentShaderCode_size;
+extern const Span<unsigned char> VertexShaderCode;
+extern const Span<unsigned char> FragmentShaderCode;
 
 static
 GLuint loadShaders()
 {
-  auto const vsCode = string(VertexShaderCode, VertexShaderCode + VertexShaderCode_size);
-  auto const fsCode = string(FragmentShaderCode, FragmentShaderCode + FragmentShaderCode_size);
-  auto const vertexId = compileShader(vsCode, GL_VERTEX_SHADER);
-  auto const fragmentId = compileShader(fsCode, GL_FRAGMENT_SHADER);
+  auto const vertexId = compileShader(VertexShaderCode, GL_VERTEX_SHADER);
+  auto const fragmentId = compileShader(FragmentShaderCode, GL_FRAGMENT_SHADER);
 
   auto const progId = linkShaders(vector<int>({ vertexId, fragmentId }));
 
