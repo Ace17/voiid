@@ -219,7 +219,15 @@ private:
     if(evt->key.keysym.sym == SDLK_TAB)
       m_slowMotion = !m_slowMotion;
 
-    if(evt->key.keysym.sym == SDLK_PAUSE)
+    if(evt->key.keysym.sym == SDLK_RETURN && (evt->key.keysym.mod & KMOD_LALT))
+    {
+      if(evt->key.repeat == 0)
+      {
+        m_fullscreen = !m_fullscreen;
+        m_display->setFullscreen(m_fullscreen);
+      }
+    }
+    else if(evt->key.keysym.sym == SDLK_PAUSE)
     {
       m_audio->playSound(0);
       m_paused = !m_paused;
@@ -266,6 +274,7 @@ private:
   vector<string> m_args;
   unique_ptr<Scene> m_scene;
   bool m_slowMotion = false;
+  bool m_fullscreen = false;
   bool m_paused = false;
   bool m_doGrab = true;
   unique_ptr<Audio> m_audio;

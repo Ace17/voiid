@@ -378,6 +378,12 @@ struct OpenglDisplay : Display
     m_camera.dir = cam.dir;
   }
 
+  void setFullscreen(bool fs) override
+  {
+    auto flags = fs ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0;
+    SDL_SetWindowFullscreen(m_window, flags);
+  }
+
   void setCaption(const char* caption) override
   {
     SDL_SetWindowTitle(m_window, caption);
@@ -483,6 +489,14 @@ struct OpenglDisplay : Display
   void beginDraw() override
   {
     m_blinkCounter++;
+
+    {
+      int w, h;
+      SDL_GL_GetDrawableSize(m_window, &w, &h);
+      auto size = min(w, h);
+      SAFE_GL(glViewport((w - size) / 2, (h - size) / 2, size, size));
+    }
+
     SAFE_GL(glUseProgram(m_programId));
 
     glEnable(GL_DEPTH_TEST);
