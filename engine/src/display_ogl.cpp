@@ -500,9 +500,8 @@ struct OpenglDisplay : Display
     SAFE_GL(glUseProgram(m_programId));
 
     glEnable(GL_DEPTH_TEST);
-    SAFE_GL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
     SAFE_GL(glClearColor(0, 0, 0, 1));
-    SAFE_GL(glClear(GL_COLOR_BUFFER_BIT));
+    SAFE_GL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
     SAFE_GL(glUniform3f(m_ambientLoc, m_ambientLight, m_ambientLight, m_ambientLight));
   }
