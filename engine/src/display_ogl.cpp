@@ -266,6 +266,12 @@ void printOpenGlVersion()
   printf("[display] OpenGL shading version: %s\n", notNull(sLangVersion));
 }
 
+template<typename T>
+T blend(T a, T b, float alpha)
+{
+  return a * (1 - alpha) + b * alpha;
+}
+
 struct OpenglDisplay : Display
 {
   OpenglDisplay(Size2i resolution)
@@ -368,13 +374,7 @@ struct OpenglDisplay : Display
         m_camera = cam;
     }
 
-    auto blend = [] (Vector3f a, Vector3f b)
-      {
-        auto const alpha = 0.3f;
-        return a * (1 - alpha) + b * alpha;
-      };
-
-    m_camera.pos = blend(m_camera.pos, cam.pos);
+    m_camera.pos = blend(m_camera.pos, cam.pos, 0.3);
     m_camera.dir = cam.dir;
   }
 
