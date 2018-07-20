@@ -14,7 +14,7 @@
 
 namespace tds
 {
-Mesh load(std::string filename);
-Mesh load(Span<uint8_t const> buffer);
+std::vector<Mesh> load(std::string filename);
+std::vector<Mesh> load(Span<uint8_t const> buffer);
 }
 

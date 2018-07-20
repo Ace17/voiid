@@ -66,7 +66,9 @@ unittest("3ds: simple mesh")
   };
 
   auto mesh = tds::load(input);
-  assertEquals(12u, mesh.vertices.size());
-  assertEquals(20u, mesh.faces.size());
+  assertEquals(1u, mesh.size());
+  assertEquals("Cube", mesh[0].name);
+  assertEquals(12u, mesh[0].vertices.size());
+  assertEquals(20u, mesh[0].faces.size());
 }
 

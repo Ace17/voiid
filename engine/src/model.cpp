@@ -122,7 +122,7 @@ static bool startsWith(string s, string prefix)
 
 Model modelFrom3ds(string path3ds)
 {
-  auto const mesh = tds::load(path3ds);
+  auto const meshes = tds::load(path3ds);
 
   Model r;
 
@@ -145,18 +145,13 @@ Model modelFrom3ds(string path3ds)
       r.vertices.push_back(vt);
     };
 
-  for(int i = 0; i < (int)mesh.objects.size(); i++)
+  for(auto& mesh : meshes)
   {
-    const int start = mesh.objects[i];
-    const int end = i + 1 < (int)mesh.objects.size() ? mesh.objects[i + 1] : (int)mesh.faces.size();
-
-    if(startsWith(mesh.objectNames[i], "f."))
+    if(startsWith(mesh.name, "f."))
       continue;
 
-    for(int j = start; j < end; ++j)
+    for(auto& face : mesh.faces)
     {
-      auto& face = mesh.faces[j];
-
       auto const V1 = mesh.vertices[face.i1];
       auto const V2 = mesh.vertices[face.i2];
       auto const V3 = mesh.vertices[face.i3];

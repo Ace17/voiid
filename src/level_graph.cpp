@@ -35,28 +35,24 @@ Room loadRoom(int roomIdx)
     roomIdx = 0;
   }
 
-  auto mesh = loadMesh(filename);
+  auto meshes = loadMesh(filename);
 
-  for(int objIdx = 0; objIdx < (int)mesh.objects.size(); ++objIdx)
+  for(auto& mesh : meshes)
   {
-    auto name = mesh.objectNames[objIdx];
+    auto name = mesh.name;
 
     if(startsWith(name, "f."))
     {
-      auto const pos = toVector3f(mesh.vertices[mesh.faces[mesh.objects[objIdx]].i1]);
+      auto const pos = toVector3f(mesh.vertices[mesh.faces[0].i1]);
       auto const formula = name.substr(2);
       r.things.push_back({ pos, formula });
       continue;
     }
 
-    const int beginFace = mesh.objects[objIdx];
-    const int endFace = objIdx + 1 < (int)mesh.objects.size() ? mesh.objects[objIdx + 1] : (int)mesh.faces.size();
-
     Convex brush;
 
-    for(int faceIdx = beginFace; faceIdx < endFace; ++faceIdx)
+    for(auto& face : mesh.faces)
     {
-      auto& face = mesh.faces[faceIdx];
       auto A = toVector3f(mesh.vertices[face.i1]);
       auto B = toVector3f(mesh.vertices[face.i2]);
       auto C = toVector3f(mesh.vertices[face.i3]);

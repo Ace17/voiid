@@ -393,7 +393,7 @@ private:
 
 struct MeshLoader : Parser::Listener
 {
-  MeshLoader(Mesh& mesh) : m_Mesh(mesh)
+  MeshLoader(std::vector<Mesh>& meshes_) : meshes(meshes_)
   {
   }
 
@@ -404,9 +404,6 @@ struct MeshLoader : Parser::Listener
 
   void on3dFace(int A, int B, int C, uint32_t /*Flags*/) override
   {
-    A += m_base;
-    B += m_base;
-    C += m_base;
     m_Mesh.faces.push_back({ A, B, C });
   }
 
@@ -419,30 +416,35 @@ struct MeshLoader : Parser::Listener
 
   void onObjName(string Name) override
   {
-    m_Mesh.objectNames.push_back(Name);
-    m_Mesh.objects.push_back((int)m_Mesh.faces.size());
-    m_base = (int)m_Mesh.vertices.size();
+    m_Mesh.name = Name;
+  }
+
+  void onEndObject() override
+  {
+    meshes.push_back(m_Mesh);
+    m_Mesh = Mesh();
+    m_idx = 0;
   }
 
 private:
-  Mesh& m_Mesh;
+  Mesh m_Mesh;
+  std::vector<Mesh>& meshes;
   int m_idx = 0;
-  int m_base = 0;
 };
 
 static
-Mesh load(istream& fp)
+std::vector<Mesh> load(istream& fp)
 {
   auto bs = ByteStream(fp);
 
-  Mesh mesh;
-  MeshLoader loader(mesh);
+  std::vector<Mesh> meshes;
+  MeshLoader loader(meshes);
   Parser parser(&loader, &bs);
   parser.parseChunk();
-  return mesh;
+  return meshes;
 }
 
-Mesh load(Span<uint8_t const> buffer)
+std::vector<Mesh> load(Span<uint8_t const> buffer)
 {
   auto const s = string(buffer.data, buffer.data + buffer.len);
   stringstream mem(s);
@@ -450,7 +452,7 @@ Mesh load(Span<uint8_t const> buffer)
   return load(mem);
 }
 
-Mesh load(string filename)
+std::vector<Mesh> load(string filename)
 {
   auto fp = ifstream(filename, std::ios::binary);
 
@@ -461,7 +463,7 @@ Mesh load(string filename)
 }
 }
 
-Mesh loadMesh(char const* path)
+std::vector<Mesh> loadMesh(char const* path)
 {
   return tds::load(path);
 }
