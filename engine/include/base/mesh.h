@@ -5,7 +5,6 @@
 // License, or (at your option) any later version.
 
 #pragma once
-#include <memory>
 #include <vector>
 #include <string>
 
