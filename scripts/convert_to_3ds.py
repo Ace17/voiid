@@ -11,10 +11,10 @@ argv = argv[argv.index("--") + 1:]
 outputPath = argv[0]
 
 def run():
-  bpy.ops.object.mode_set(mode='OBJECT', toggle=False)
   bpy.ops.object.select_all(action='DESELECT')
   bpy.ops.object.select_all(action='SELECT')
   
+  bpy.context.scene.objects.active = bpy.data.objects[0]
   bpy.ops.object.convert(target='MESH')
   
   print("keys before: ", len(bpy.context.scene.objects.keys()))

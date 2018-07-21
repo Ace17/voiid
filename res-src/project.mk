@@ -20,12 +20,17 @@ TARGETS+=$(PNG_SRCS:res-src/%.png=res/%.png)
 SPRITES_SRC+=$(wildcard res-src/sprites/*.blend)
 TARGETS+=$(SPRITES_SRC:res-src/%.blend=res/%.3ds)
 
-res/%.3ds: res-src/%.blend
+res/%.sa.blend: res-src/%.blend ./scripts/preprocess_blender.py
+	@mkdir -p $(dir $@)
+	@echo "Preprocess blender file $<"
+	@./scripts/preprocess_blender "$<" "$@"
+
+res/%.3ds: res/%.sa.blend ./scripts/convert_to_3ds.py
 	@mkdir -p $(dir $@)
 	@echo "Convert to 3ds (physics) $<"
 	@./scripts/convert_to_3ds "$<" "$@"
 
-res/%.3ds.render: res-src/%.blend
+res/%.3ds.render: res/%.sa.blend ./scripts/convert_to_3ds_for_rendering.py
 	@mkdir -p $(dir $@)
 	@echo "Convert to 3ds (render) $<"
 	@./scripts/convert_to_3ds_for_rendering "$<" "$@" "res/$*.png"

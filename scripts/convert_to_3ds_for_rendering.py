@@ -13,8 +13,6 @@ output3dsPath = argv[0]
 outputPngPath = argv[1]
 
 def run():
-  bpy.ops.object.mode_set(mode='OBJECT')
-
   #----------------------------------------
   bpy.ops.object.select_by_type(type='MESH')
   bpy.ops.object.convert(target='MESH')

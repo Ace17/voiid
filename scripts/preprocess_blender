@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+readonly scriptDir="$(dirname $0)"
+
+readonly input=$1
+readonly outputBlend=$2
+
+export PYTHONPATH+=$scriptDir
+
+blender "$input" --background \
+  --python $scriptDir/preprocess_blender.py \
+  --python-exit-code \
+  -- "$outputBlend.tmp" >/dev/null
+
+# make the operation atomic
+mv "$outputBlend.tmp" "$outputBlend"
+
+
