@@ -47,6 +47,8 @@ def makeStandalone():
   bpy.ops.object.transform_apply(location=True, scale=True, rotation=True)
   bpy.ops.object.select_all(action='DESELECT')
 
+  bpy.ops.file.pack_all()
+
 try:
   run()
   sys.exit(0)

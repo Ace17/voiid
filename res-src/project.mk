@@ -14,9 +14,6 @@ TARGETS+=$(ROOMS_SRC:res-src/%.blend=res/%.3ds.render)
 JSON_SRCS+=$(wildcard res-src/rooms/*/mesh.json)
 TARGETS+=$(JSON_SRCS:res-src/%.json=res/%.json)
 
-PNG_SRCS+=$(wildcard res-src/rooms/*/mesh.png)
-TARGETS+=$(PNG_SRCS:res-src/%.png=res/%.png)
-
 SPRITES_SRC+=$(wildcard res-src/sprites/*.blend)
 TARGETS+=$(SPRITES_SRC:res-src/%.blend=res/%.3ds)
 
