@@ -157,7 +157,11 @@ private:
       if(actor.focus)
       {
         auto const size = Vector3f(actor.scale.cx, actor.scale.cy, actor.scale.cz);
-        m_display->setCamera(actor.pos + size * 0.5, actor.orientation);
+        auto eyesPos = actor.pos + Vector3f(
+            size.x * 0.5,
+            size.y * 0.5,
+            size.z * 0.9);
+        m_display->setCamera(eyesPos, actor.orientation);
         break;
       }
     }
