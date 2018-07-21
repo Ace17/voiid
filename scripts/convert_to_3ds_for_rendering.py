@@ -15,7 +15,10 @@ outputPngPath = argv[1]
 def run():
   #----------------------------------------
   bpy.ops.object.select_by_type(type='MESH')
-  bpy.ops.object.convert(target='MESH')
+
+  if len(bpy.context.selected_objects) > 0:
+    bpy.context.scene.objects.active = bpy.context.selected_objects[0]
+    bpy.ops.object.convert(target='MESH')
 
   # remove non-displayed objects (triggers)
   for obj in bpy.data.objects:
@@ -25,7 +28,8 @@ def run():
   #----------------------------------------------------------------------------
   # join everything into one single object
   #----------------------------------------------------------------------------
-  if len(bpy.context.selected_objects) > 1:
+  if len(bpy.context.selected_objects) > 0:
+    bpy.context.scene.objects.active = bpy.context.selected_objects[0]
     bpy.ops.object.join()
 
   assert(len(bpy.context.selected_objects) == 1)
