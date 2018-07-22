@@ -1,11 +1,9 @@
 #pragma once
 
-#include "base/util.h"
 #include "base/scene.h"
 #include "collision_groups.h"
 #include "entity.h"
 #include "models.h"
-#include "entities/move.h"
 
 struct MovingPlatform : Entity
 {
