@@ -8,11 +8,12 @@
 
 // Bonus entity
 
+#include <cmath> // sin
 #include <algorithm>
-#include <math.h>
 
 #include "base/util.h"
 #include "base/scene.h"
+
 #include "entity.h"
 #include "models.h"
 #include "sounds.h"
@@ -44,7 +45,7 @@ struct Bonus : Entity
     ++time;
   }
 
-  virtual void onCollide(Entity* other) override
+  void onCollide(Entity* other) override
   {
     if(dead)
       return;
