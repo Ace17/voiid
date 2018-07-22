@@ -1,53 +1,16 @@
-/*
- * Copyright (C) 2017 - Sebastien Alaiwan <sebastien.alaiwan@gmail.com>
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as
- * published by the Free Software Foundation, either version 3 of the
- * License, or (at your option) any later version.
- */
-
-// Minimalistic physics engine.
+// Copyright (C) 2018 - Sebastien Alaiwan <sebastien.alaiwan@gmail.com>
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
 
 #pragma once
 
 #include <math.h>
 #include "body.h"
+#include "physics_probe.h"
 
-inline
-void slideMove(IPhysicsProbe* physics, Body* body, Vector delta)
-{
-  for(int i = 0; i < 5; ++i)
-  {
-    auto tr = physics->moveBody(body, delta);
-
-    if(tr.fraction == 1.0)
-      break;
-
-    // remove from 'delta' the fraction of the move that succeeded
-    auto const actual = tr.fraction * delta;
-    delta -= actual;
-
-    // remove from 'delta' its component along the collision normal
-    delta -= dotProduct(delta, tr.plane.N) * tr.plane.N;
-
-    // slight repulsion to avoid going through the floor ...
-    delta += tr.plane.N * 0.01;
-  }
-}
-
-inline
-bool isOnGround(IPhysicsProbe* physics, Body* body)
-{
-  return physics->traceBox(body->getBox(), Down * 0.1, body).fraction < 1.0;
-}
-
-inline
-Vector vectorFromAngles(float alpha, float beta)
-{
-  auto const x = cos(alpha) * cos(beta);
-  auto const y = sin(alpha) * cos(beta);
-  auto const z = sin(beta);
-
-  return Vector(x, y, z);
-}
+void slideMove(IPhysicsProbe* physics, Body* body, Vector delta);
+bool isOnGround(IPhysicsProbe* physics, Body* body);
+Vector vectorFromAngles(float alpha, float beta);
 
