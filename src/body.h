@@ -48,24 +48,3 @@ struct Body
   }
 };
 
-struct IPhysicsProbe
-{
-  struct Trace : public ::Trace
-  {
-    Body* blocker;
-  };
-  // called by entities
-  virtual Trace moveBody(Body* body, Vector delta) = 0;
-  virtual Trace traceBox(Box box, Vector delta, const Body* except) const = 0;
-  virtual Body* getBodiesInBox(Box myRect, int collisionGroup, bool onlySolid = false, const Body* except = nullptr) const = 0;
-};
-
-struct IPhysics : IPhysicsProbe
-{
-  // called by game
-  virtual void addBody(Body* body) = 0;
-  virtual void removeBody(Body* body) = 0;
-  virtual void checkForOverlaps() = 0;
-  virtual void setEdifice(function<::Trace(Box, Vector)> isSolid) = 0;
-};
-

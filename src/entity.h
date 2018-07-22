@@ -14,6 +14,7 @@
 #include "base/geom.h"
 #include "game.h"
 #include "body.h"
+#include "physics_probe.h"
 
 struct Damageable
 {
@@ -22,7 +23,7 @@ struct Damageable
 
 struct Entity : Body
 {
-  virtual ~Entity() {}
+  virtual ~Entity() = default;
 
   virtual void enter()
   {

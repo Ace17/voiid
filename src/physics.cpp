@@ -11,6 +11,7 @@
 // Doesn't know about acceleration or velocity.
 
 #include "body.h"
+#include "physics.h"
 #include "base/util.h"
 #include "convex.h"
 #include <vector>

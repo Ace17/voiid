@@ -1,5 +1,6 @@
 #include "engine/tests/tests.h"
 #include "src/body.h"
+#include "src/physics.h"
 #include <cmath>
 #include <memory>
 
@@ -35,8 +36,6 @@ void assertNearlyEqualsFunc(Vector expected, Vector actual, const char* file, in
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-
-unique_ptr<IPhysics> createPhysics();
 
 static
 ::Trace traceEdifice(Box rect, Vector delta)

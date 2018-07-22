@@ -21,13 +21,11 @@
 #include "room.h"
 #include "variable.h"
 #include "state_machine.h"
+#include "physics.h"
 
 #include "entities/finish.h" // TouchFinishLineEvent
 
 using namespace std;
-
-// from physics.cpp
-unique_ptr<IPhysics> createPhysics();
 
 struct GameState : Scene, IGame
 {
