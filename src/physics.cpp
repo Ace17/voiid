@@ -61,17 +61,17 @@ struct Physics : IPhysics
 
     if(body->pusher)
     {
-      // move stacked bodies
       for(auto otherBody : m_bodies)
       {
-        if(otherBody->ground == body)
+        // skip ourselves
+        if(otherBody == body)
+          continue;
+
+        // move stacked bodies
+        // push potential non-solid bodies
+        if(otherBody->ground == body || overlaps(rect, otherBody->getBox()))
           moveBody(otherBody, delta);
       }
-
-      // push potential non-solid bodies
-      for(auto other : m_bodies)
-        if(other != body && overlaps(rect, other->getBox()))
-          moveBody(other, delta);
     }
 
     // update ground
