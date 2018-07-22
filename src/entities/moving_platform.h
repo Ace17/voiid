@@ -13,7 +13,7 @@ struct MovingPlatform : Entity
     pusher = true;
     size = Size(2, 2, 1);
     collisionGroup = CG_WALLS;
-    ticks = rand();
+    ticks = 0;
     dir = dir_;
   }
 
