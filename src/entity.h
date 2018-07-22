@@ -21,6 +21,14 @@ struct Damageable
   virtual void onDamage(int amount) = 0;
 };
 
+// implemented by doors, switches
+struct Switchable
+{
+  // when the player presses the 'use' button
+  // and we're in range
+  virtual void onSwitch() = 0;
+};
+
 struct Entity : Body
 {
   virtual ~Entity() = default;

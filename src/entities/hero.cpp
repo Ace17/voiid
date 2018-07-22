@@ -175,6 +175,21 @@ struct Hero : Player, Damageable
     }
 
     decrement(debounceLanding);
+    decrement(debounceUse);
+
+    if(control.use && debounceUse == 0)
+    {
+      debounceUse = 200;
+
+      // look in front of us for a body to switch,
+      // and switch it.
+      auto const forward = vectorFromAngles(lookAngleHorz, 0);
+      Box box = getBox();
+      auto body = physics->traceBox(box, forward, this).blocker;
+
+      if(auto switchable = dynamic_cast<Switchable*>(body))
+        switchable->onSwitch();
+    }
 
     if(control.restart)
       onDamage(10000);
@@ -218,6 +233,7 @@ struct Hero : Player, Damageable
   }
 
   int debounceLanding = 0;
+  int debounceUse = 0;
   float lookAngleHorz = 0;
   float lookAngleVert = 0;
   bool ground = false;

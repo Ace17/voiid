@@ -28,7 +28,7 @@ struct TriggerEvent : Event
   int idx;
 };
 
-struct Switch : Entity
+struct Switch : Entity, Switchable
 {
   Switch(int id_) : id(id_)
   {
@@ -55,10 +55,9 @@ struct Switch : Entity
 
   virtual void enter() override
   {
-    Body::onCollision = [this] (Body*) { touch(); };
   }
 
-  void touch()
+  void onSwitch() override
   {
     if(blinking || state)
       return;
