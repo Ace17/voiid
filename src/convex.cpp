@@ -29,7 +29,7 @@ Trace Convex::trace(Vector A, Vector B, Vector boxSize) const
   {
     auto const radius = abs(boxSize.x * plane.N.x) + abs(boxSize.y * plane.N.y) + abs(boxSize.z * plane.N.z);
     auto const epsilon = 1.0f / 128.0f;
-    auto const distA = plane.dist(A) + radius;
+    auto const distA = plane.dist(A) - radius;
     auto const distB = plane.dist(B) - radius;
 
     // trace is completely outside the convex

@@ -103,6 +103,7 @@ SRCS_TESTS:=\
 	engine/tests/util.cpp\
 	tests/entities.cpp\
 	tests/physics.cpp\
+	tests/trace.cpp\
 
 $(BIN)/tests$(EXT): $(SRCS_TESTS:%.cpp=$(BIN)/%.cpp.o)
 	@mkdir -p $(dir $@)
