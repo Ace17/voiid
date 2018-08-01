@@ -118,7 +118,6 @@ struct GameState : Scene, IGame
 
   void loadLevel(int levelIdx)
   {
-    m_levelBoundarySubscription.reset();
 
     {
       char filename[256];
@@ -157,26 +156,16 @@ struct GameState : Scene, IGame
     world = level.brushes;
 
     spawn(m_player);
-
-    {
-      auto f = bind(&GameState::onTouchLevelBoundary, this, placeholders::_1);
-      m_levelBoundary = makeDelegator<TouchFinishLineEvent>(f);
-      m_levelBoundarySubscription = subscribeForEvents(&m_levelBoundary);
-    }
   }
 
-  void onTouchLevelBoundary(const TouchFinishLineEvent* event)
+  void endLevel()
   {
-    (void)event;
     m_shouldLoadLevel = true;
     m_level++;
   }
 
   int m_level = 1;
   bool m_shouldLoadLevel = false;
-
-  EventDelegator m_levelBoundary;
-  unique_ptr<Handle> m_levelBoundarySubscription;
 
   ////////////////////////////////////////////////////////////////
   // IGame: game, as seen by the entities

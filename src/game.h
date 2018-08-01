@@ -51,28 +51,6 @@ struct IEventSink
   virtual void notify(const Event* evt) = 0;
 };
 
-struct EventDelegator : IEventSink
-{
-  void notify(const Event* evt)
-  {
-    m_onNotify(evt);
-  }
-
-  function<void(const Event*)> m_onNotify;
-};
-
-template<typename EventType>
-EventDelegator makeDelegator(function<void(const EventType*)> handler)
-{
-  EventDelegator r;
-  r.m_onNotify = [ = ] (const Event* evt)
-    {
-      if(auto event = evt->as<EventType>())
-        handler(event);
-    };
-  return r;
-}
-
 struct Handle
 {
   virtual ~Handle() {};
@@ -80,6 +58,7 @@ struct Handle
 
 struct IGame
 {
+  virtual void endLevel() {};
   virtual void playSound(SOUND id) = 0;
   virtual void spawn(Entity* e) = 0;
   virtual void postEvent(unique_ptr<Event> event) = 0;

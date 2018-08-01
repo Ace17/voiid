@@ -43,7 +43,7 @@ struct FinishLine : Entity
   virtual void tick() override
   {
     if(decrement(touchDelay))
-      game->postEvent(make_unique<TouchFinishLineEvent>());
+      game->endLevel();
   }
 
   virtual void onCollide(Entity*) override
