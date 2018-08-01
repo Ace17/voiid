@@ -19,7 +19,7 @@ typedef int MUSIC;
 struct View
 {
   virtual ~View() = default;
-
+  virtual void preload(Resource res) = 0;
   virtual void textBox(char const* msg) = 0;
   virtual void playMusic(MUSIC id) = 0;
   virtual void playSound(SOUND id) = 0;

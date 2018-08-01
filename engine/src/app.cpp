@@ -35,27 +35,14 @@ class App : View
 {
 public:
   App(vector<string> argv)
-    :
-    m_args(argv),
-    m_scene(createGame(this, m_args))
+    : m_args(argv)
   {
     SDL_Init(0);
 
     m_display.reset(createDisplay(Size2i(1024, 1024)));
     m_audio.reset(createAudio());
 
-    for(auto res : getResources())
-    {
-      switch(res.type)
-      {
-      case ResourceType::Sound:
-        m_audio->loadSound(res.id, res.path);
-        break;
-      case ResourceType::Model:
-        m_display->loadModel(res.id, res.path);
-        break;
-      }
-    }
+    m_scene.reset(createGame(this, m_args));
 
     m_display->enableGrab(m_doGrab);
 
@@ -252,6 +239,19 @@ private:
   }
 
   // View implementation
+  void preload(Resource res) override
+  {
+    switch(res.type)
+    {
+    case ResourceType::Sound:
+      m_audio->loadSound(res.id, res.path);
+      break;
+    case ResourceType::Model:
+      m_display->loadModel(res.id, res.path);
+      break;
+    }
+  }
+
   void textBox(char const* msg) override
   {
     m_textbox = msg;
