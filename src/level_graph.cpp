@@ -113,12 +113,6 @@ Room loadRoom(int roomIdx)
   char filename[256];
   snprintf(filename, sizeof filename, "res/rooms/%02d/mesh.3ds", roomIdx);
 
-  if(!ifstream(filename).is_open())
-  {
-    snprintf(filename, sizeof filename, "res/rooms/ending/mesh.3ds");
-    roomIdx = 0;
-  }
-
   auto meshes = loadMesh(filename);
 
   for(auto& mesh : meshes)
