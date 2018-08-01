@@ -118,7 +118,6 @@ struct GameState : Scene, IGame
 
   void loadLevel(int levelIdx)
   {
-
     {
       char filename[256];
       sprintf(filename, "res/rooms/%02d/mesh.json", levelIdx);
