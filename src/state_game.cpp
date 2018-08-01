@@ -120,6 +120,12 @@ struct GameState : Scene, IGame
   {
     m_levelBoundarySubscription.reset();
 
+    {
+      char filename[256];
+      sprintf(filename, "res/rooms/%02d/mesh.json", levelIdx);
+      m_view->preload(Resource { ResourceType::Model, MDL_ROOMS + levelIdx, filename });
+    }
+
     if(m_player)
     {
       for(auto& entity : m_entities)
