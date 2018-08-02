@@ -78,16 +78,6 @@ struct GameState : Scene, IGame
 
     r.push_back(Actor(Vector(0, 0, 0), MDL_ROOMS + m_level));
 
-    auto cameraPos = m_player->pos;
-
-    Box cameraRect;
-    cameraRect.size.cx = 32;
-    cameraRect.size.cy = 32;
-    cameraRect.size.cz = 16;
-    cameraRect.pos.x = cameraPos.x - cameraRect.size.cx / 2;
-    cameraRect.pos.y = cameraPos.y - cameraRect.size.cy / 2;
-    cameraRect.pos.z = cameraPos.z - cameraRect.size.cz / 2;
-
     for(auto& entity : m_entities)
     {
       r.push_back(entity->getActor());
