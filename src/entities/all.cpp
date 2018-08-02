@@ -36,6 +36,7 @@ map<string, CreationFunc> getRegistry()
   r["fragile_block"] = [] (EntityArgs &) { return make_unique<FragileBlock>(); };
   r["crumble_block"] = [] (EntityArgs &) { return make_unique<CrumbleBlock>(); };
   r["door"] = [] (EntityArgs& args) { auto arg = atoi(args[0].c_str()); return makeDoor(arg); };
+  r["auto_door"] = [] (EntityArgs &) { return makeAutoDoor(); };
   r["switch"] = [] (EntityArgs& args) { auto arg = atoi(args[0].c_str()); return makeSwitch(arg); };
   r["moving_platform"] = [] (EntityArgs& args) { auto arg = atoi(args[0].c_str()); return make_unique<MovingPlatform>(arg); };
   r["finish"] = [] (EntityArgs &) { return make_unique<FinishLine>(); };

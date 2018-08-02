@@ -79,6 +79,59 @@ unique_ptr<Entity> makeDoor(int id)
 
 ///////////////////////////////////////////////////////////////////////////////
 
+struct AutoDoor : Entity, Switchable
+{
+  AutoDoor()
+  {
+    size = Size3f(0.5, 2, 2);
+    solid = true;
+  }
+
+  virtual void enter()
+  {
+    basePos = pos;
+  }
+
+  virtual void tick() override
+  {
+    if(state)
+    {
+      if(pos.z - basePos.z < 2.0)
+        physics->moveBody(this, Up * 0.004);
+    }
+    else
+    {
+      if(pos.z - basePos.z > 0)
+        physics->moveBody(this, Down * 0.004);
+    }
+  }
+
+  virtual Actor getActor() const override
+  {
+    auto r = Actor(pos, MDL_DOOR);
+    r.action = 1;
+    r.ratio = 0;
+    r.scale = size;
+    return r;
+  }
+
+  virtual void onSwitch() override
+  {
+    game->playSound(SND_DOOR);
+    state = !state;
+  }
+
+  bool state = false;
+  Vector basePos;
+};
+
+unique_ptr<Entity> makeAutoDoor()
+{
+  return make_unique<AutoDoor>();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 #include "entities/explosion.h"
 
 struct BreakableDoor : Entity, Damageable
