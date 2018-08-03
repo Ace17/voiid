@@ -124,6 +124,29 @@ unittest("Physics: left move, blocked by a bigger body")
   assertNearlyEquals(Vector(199, 10, 0), fix.mover.pos);
 }
 
+unittest("Physics: a 1.9-unit wide solid can fit in a 2-unit wide gap")
+{
+  Fixture fix;
+
+  Body leftBlocker;
+  leftBlocker.pos = Vector(-22, 50, 0);
+  leftBlocker.size = Size(22, 1, 1);
+  leftBlocker.solid = true;
+  fix.physics->addBody(&leftBlocker);
+
+  Body rightBlocker;
+  rightBlocker.pos = Vector(2, 50, 0);
+  rightBlocker.size = Size(22, 1, 1);
+  rightBlocker.solid = true;
+  fix.physics->addBody(&rightBlocker);
+
+  fix.mover.pos = Vector(0.01, 0, 0);
+  fix.mover.size = Size(1.9, 1, 1);
+  fix.physics->moveBody(&fix.mover, Vector(0, 100, 0));
+
+  assertNearlyEquals(Vector(0.01, 100, 0), fix.mover.pos);
+}
+
 #include "entities/move.h"
 
 unittest("Physics: slide up-left move, horizontally blocked by vertical wall at x=0")
