@@ -11,7 +11,7 @@
 #include "base/util.h" // clamp
 #include "convex.h"
 
-// Sweeps a sphere from A to B.
+// Sweeps a box from A to B.
 // Returns the fraction of the move to the first intersection with the convex,
 // or 1.0 if there are no intersections.
 // Also returns the intersecting plane, if any.
