@@ -76,7 +76,7 @@ struct GameState : Scene, IGame
   {
     vector<Actor> r;
 
-    r.push_back(Actor(Vector(0, 0, 0), MDL_ROOMS + m_level));
+    r.push_back(Actor(Vector(0, 0, 0), MDL_ROOMS));
 
     for(auto& entity : m_entities)
     {
@@ -111,7 +111,7 @@ struct GameState : Scene, IGame
     {
       char filename[256];
       sprintf(filename, "res/rooms/%02d/mesh.json", levelIdx);
-      m_view->preload(Resource { ResourceType::Model, MDL_ROOMS + levelIdx, filename });
+      m_view->preload(Resource { ResourceType::Model, MDL_ROOMS, filename });
     }
 
     if(m_player)
