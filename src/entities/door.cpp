@@ -94,15 +94,36 @@ struct AutoDoor : Entity, Switchable
 
   virtual void tick() override
   {
-    if(state)
+    switch(state)
     {
-      if(pos.z - basePos.z < 2.3)
-        physics->moveBody(this, Up * 0.004);
-    }
-    else
-    {
-      if(pos.z - basePos.z > 0)
-        physics->moveBody(this, Down * 0.004);
+    case State::Closed:
+      break;
+    case State::Opening:
+      {
+        if(pos.z - basePos.z < 2.3)
+          physics->moveBody(this, Up * 0.004);
+        else
+          state = State::Open;
+
+        break;
+      }
+    case State::Open:
+      {
+        if(decrement(timer))
+        {
+          game->playSound(SND_DOOR);
+          state = State::Closing;
+        }
+
+        break;
+      }
+    case State::Closing:
+      {
+        if(pos.z - basePos.z > 0.001)
+          physics->moveBody(this, Down * 0.004);
+        else
+          state = State::Closed;
+      }
     }
   }
 
@@ -117,12 +138,25 @@ struct AutoDoor : Entity, Switchable
 
   virtual void onSwitch() override
   {
+    if(state != State::Closed)
+      return;
+
     game->playSound(SND_DOOR);
-    state = !state;
+    state = State::Opening;
+    timer = 1500;
   }
 
-  bool state = false;
+  enum class State
+  {
+    Closed,
+    Opening,
+    Open,
+    Closing,
+  };
+
+  State state = State::Closed;
   Vector basePos;
+  int timer = 0;
 };
 
 unique_ptr<Entity> makeAutoDoor()
