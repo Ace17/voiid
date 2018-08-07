@@ -96,7 +96,7 @@ struct AutoDoor : Entity, Switchable
   {
     if(state)
     {
-      if(pos.z - basePos.z < 2.0)
+      if(pos.z - basePos.z < 2.3)
         physics->moveBody(this, Up * 0.004);
     }
     else
