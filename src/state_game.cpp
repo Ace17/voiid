@@ -195,7 +195,6 @@ struct GameState : Scene, IGame
   }
 
   Player* m_player = nullptr;
-  uvector<Entity> m_entities;
   uvector<Entity> m_spawned;
   View* const m_view;
   unique_ptr<IPhysics> m_physics;
@@ -205,6 +204,8 @@ struct GameState : Scene, IGame
   vector<Convex> world;
   bool m_debug;
   bool m_debugFirstTime = true;
+
+  uvector<Entity> m_entities;
 
   // static stuff
 
