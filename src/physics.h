@@ -14,6 +14,8 @@
 
 struct IPhysics : IPhysicsProbe
 {
+  virtual ~IPhysics() = default;
+
   // called by game
   virtual void addBody(Body* body) = 0;
   virtual void removeBody(Body* body) = 0;
