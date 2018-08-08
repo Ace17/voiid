@@ -4,7 +4,6 @@
 // published by the Free Software Foundation, either version 3 of the
 // License, or (at your option) any later version.
 
-#include "engine/src/base64.h"
 #include "engine/src/decompress.h"
 #include "tests.h"
 #include <vector>
@@ -14,12 +13,7 @@ unittest("Decompress: simple")
 {
   auto toString = [] (vector<uint8_t> s)
     {
-      string r;
-
-      for(auto c : s)
-        r.push_back(c);
-
-      return r;
+      return string(s.begin(), s.end());
     };
 
   const uint8_t input[] =
