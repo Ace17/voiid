@@ -50,17 +50,22 @@ struct IEventSink
 
 struct Handle
 {
-  virtual ~Handle() {};
+  virtual ~Handle() = default;
 };
 
 struct IGame
 {
-  virtual void endLevel() {};
+  virtual ~IGame() = default;
+
+  // visual
+  virtual void textBox(char const* msg) = 0;
   virtual void playSound(SOUND id) = 0;
+
+  // logic
   virtual void spawn(Entity* e) = 0;
   virtual void postEvent(unique_ptr<Event> event) = 0;
   virtual unique_ptr<Handle> subscribeForEvents(IEventSink*) = 0;
   virtual Vector getPlayerPosition() = 0;
-  virtual void textBox(char const* msg) = 0;
+  virtual void endLevel() {};
 };
 
