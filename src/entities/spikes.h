@@ -17,7 +17,7 @@ struct Spikes : Entity
 
   virtual Actor getActor() const override
   {
-    auto r = Actor(pos, MDL_SPIKES);
+    auto r = Actor(pos, MDL_RECT);
     r.scale = size;
     r.ratio = 0;
 

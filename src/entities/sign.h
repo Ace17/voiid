@@ -17,7 +17,7 @@ struct Sign : Entity
 
   virtual Actor getActor() const override
   {
-    auto r = Actor(pos, MDL_SIGN);
+    auto r = Actor(pos, MDL_RECT);
     r.scale = size * 2;
     r.pos = pos - r.scale * 0.5;
     r.ratio = 0;

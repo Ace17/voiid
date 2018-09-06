@@ -16,6 +16,11 @@ TARGETS+=$(JSON_SRCS:res-src/%.json=res/%.json)
 
 SPRITES_SRC+=$(wildcard res-src/sprites/*.blend)
 TARGETS+=$(SPRITES_SRC:res-src/%.blend=res/%.3ds)
+TARGETS+=$(SPRITES_SRC:res-src/%.blend=res/%.json)
+TARGETS+=$(SPRITES_SRC:res-src/%.blend=res/%.png)
+
+TARGETS+=res/font.png
+res/font.png: res-src/font.png
 
 res/%.sa.blend: res-src/%.blend ./scripts/preprocess_blender.py
 	@mkdir -p $(dir $@)

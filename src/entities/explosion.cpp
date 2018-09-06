@@ -29,7 +29,7 @@ struct Explosion : Entity
 
   virtual Actor getActor() const override
   {
-    auto r = Actor(pos, MDL_EXPLOSION);
+    auto r = Actor(pos, MDL_RECT);
 
     r.ratio = time / (float)DURATION;
     r.scale = UnitSize * 1.5;

@@ -29,14 +29,8 @@ static const Resource resources[] =
   { ResourceType::Model, MDL_AMULET, "res/sprites/amulet.json" },
   { ResourceType::Model, MDL_INVRECT, "res/sprites/invrect.json" },
   { ResourceType::Model, MDL_SWITCH, "res/sprites/switch.json" },
-  { ResourceType::Model, MDL_WHEEL, "res/sprites/wheel.json" },
-  { ResourceType::Model, MDL_LIFEBAR, "res/sprites/lifebar.json" },
   { ResourceType::Model, MDL_TELEPORTER, "res/sprites/teleporter.json" },
   { ResourceType::Model, MDL_BONUS, "res/sprites/bonus.json" },
-  { ResourceType::Model, MDL_BULLET, "res/sprites/bullet.json" },
-  { ResourceType::Model, MDL_EXPLOSION, "res/sprites/explosion.json" },
-  { ResourceType::Model, MDL_SPIKES, "res/sprites/spikes.json" },
-  { ResourceType::Model, MDL_SIGN, "res/sprites/sign.json" },
 };
 
 Span<const Resource> getResources()
