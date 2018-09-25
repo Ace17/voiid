@@ -5,6 +5,7 @@
 // License, or (at your option) any later version.
 
 #include "base/resource.h"
+#include "base/span.h"
 #include "sounds.h"
 #include "models.h"
 
