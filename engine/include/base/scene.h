@@ -22,7 +22,7 @@ enum class Effect
   Blinking,
 };
 
-// a game object, as seen by the user-interface, i.e a displayable object.
+// a displayable object (= a game object, as seen by the user-interface)
 struct Actor
 {
   Actor(Vector3f pos_ = Vector3f(0, 0, 0), MODEL model_ = 0)
@@ -31,32 +31,33 @@ struct Actor
     pos = pos_;
   }
 
-  Vector3f pos;
+  Vector3f pos; // object position, in logical units
   Vector3f orientation = Vector3f(1, 0, 0);
-  MODEL model = 0;
-  int action = 0;
-  float ratio = 0; // in [0 .. 1]
-  Size3f scale = Size3f(1, 1, 1);
+  MODEL model = 0; // what sprite to display
+  int action = 0; // what sprite action to use
+  float ratio = 0; // in [0 .. 1]. 0 for action beginning, 1 for action end
+  Size3f scale = Size3f(1, 1, 1); // sprite size
   Effect effect = Effect::Normal;
   bool focus = false; // is it the camera?
 };
 
 struct Control
 {
+  // player directions
   bool forward, backward;
+  bool left, right;
   float look_horz = 0;
   float look_vert = 0;
 
-  bool left, right;
-
+  // player actions
   bool fire;
   bool jump;
   bool dash;
   bool use;
 
-  bool restart; // restart level in case one gets stuck
+  bool restart; // kill the player (in case of getting stuck)
 
-  bool debug;
+  bool debug; // toggle debug-mode
 };
 
 // game, seen by the outside world
@@ -65,7 +66,10 @@ struct Scene
 {
   virtual ~Scene() = default;
 
+  // advance the scene simulation to the next frame
   virtual void tick(Control const& c) = 0;
+
+  // return a list of displayable objects for the current frame
   virtual vector<Actor> getActors() const = 0;
 
   float ambientLight = 0;
