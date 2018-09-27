@@ -18,13 +18,14 @@ using namespace std;
 #define GL_GLEXT_PROTOTYPES 1
 #include "GL/gl.h"
 #include "SDL.h" // SDL_INIT_VIDEO
-#include "SDL_image.h"
+#include "png.h"
 
 #include "base/util.h"
 #include "base/scene.h"
 #include "base/geom.h"
 #include "base/span.h"
 #include "model.h"
+#include "file.h" // read
 #include "matrix4.h"
 
 #ifdef NDEBUG
@@ -117,12 +118,49 @@ int linkShaders(vector<int> ids)
 }
 
 static
-SDL_Surface* loadPicture(string path)
+shared_ptr<SDL_Surface> loadPng(string path)
 {
-  auto surface = IMG_Load((char*)path.c_str());
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+  const Uint32 rmask = 0xff000000;
+  const Uint32 gmask = 0x00ff0000;
+  const Uint32 bmask = 0x0000ff00;
+  const Uint32 amask = 0x000000ff;
+#else
+  const Uint32 rmask = 0x000000ff;
+  const Uint32 gmask = 0x0000ff00;
+  const Uint32 bmask = 0x00ff0000;
+  const Uint32 amask = 0xff000000;
+#endif
+
+  int width, height;
+  auto pngDataBuf = read(path);
+  auto pngData = Span<const uint8_t>((uint8_t*)pngDataBuf.data(), (int)pngDataBuf.size());
+  auto pixels = decodePng(pngData, width, height);
+
+  auto surface = shared_ptr<SDL_Surface>(
+      SDL_CreateRGBSurface(0, width, height, 32, rmask, gmask, bmask, amask),
+      &SDL_FreeSurface);
 
   if(!surface)
-    throw runtime_error(string("Can't load texture: ") + SDL_GetError());
+    throw runtime_error(string("Can't create SDL surface for texture: ") + SDL_GetError());
+
+  Uint8* pSrc = (Uint8*)pixels.data();
+  Uint8* pDst = (Uint8*)surface->pixels;
+
+  for(int rows = 0; rows < (int)height; ++rows)
+  {
+    memcpy(pDst, pSrc, width * surface->format->BytesPerPixel);
+    pSrc += 4 * width;
+    pDst += surface->pitch;
+  }
+
+  return surface;
+}
+
+static
+shared_ptr<SDL_Surface> loadPicture(string path)
+{
+  auto surface = loadPng(path);
 
   if(surface->format->BitsPerPixel != 32)
     throw runtime_error("only 32 bit pictures are supported");
@@ -169,8 +207,6 @@ int loadTexture(string path, Rect2i rect)
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-  SDL_FreeSurface(surface);
 
   return texture;
 }
