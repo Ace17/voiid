@@ -17,7 +17,7 @@ using namespace std;
 
 #define GL_GLEXT_PROTOTYPES 1
 #include "GL/gl.h"
-#include "SDL_video.h"
+#include "SDL.h" // SDL_INIT_VIDEO
 #include "SDL_image.h"
 
 #include "base/util.h"
@@ -51,7 +51,7 @@ void ensureGl(char const* expr, int line)
 }
 
 static
-int compileShader(Span<unsigned char> code, int type)
+int compileShader(Span<uint8_t> code, int type)
 {
   auto shaderId = glCreateShader(type);
 
@@ -175,8 +175,8 @@ int loadTexture(string path, Rect2i rect)
   return texture;
 }
 
-extern const Span<unsigned char> VertexShaderCode;
-extern const Span<unsigned char> FragmentShaderCode;
+extern const Span<uint8_t> VertexShaderCode;
+extern const Span<uint8_t> FragmentShaderCode;
 
 static
 GLuint loadShaders()
@@ -281,6 +281,15 @@ struct OpenglDisplay : Display
 
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
+    // require OpenGL 2.0, ES or Core. No compatibility mode.
+    {
+      // SDL_GL_CONTEXT_PROFILE_ES: works in browser, not in native
+      // SDL_GL_CONTEXT_PROFILE_CORE: works in native, not in browser
+      SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE | SDL_GL_CONTEXT_PROFILE_ES);
+      SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+      SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+    }
+
     m_window = SDL_CreateWindow(
         "My Game",
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
@@ -340,8 +349,8 @@ struct OpenglDisplay : Display
     m_positionLoc = glGetAttribLocation(m_programId, "a_position");
     assert(m_positionLoc >= 0);
 
-    m_textCoordLoc = glGetAttribLocation(m_programId, "a_texCoord");
-    assert(m_textCoordLoc >= 0);
+    m_texCoordLoc = glGetAttribLocation(m_programId, "a_texCoord");
+    assert(m_texCoordLoc >= 0);
 
     m_normalLoc = glGetAttribLocation(m_programId, "a_normal");
     assert(m_normalLoc >= 0);
@@ -445,8 +454,8 @@ struct OpenglDisplay : Display
       SAFE_GL(glVertexAttribPointer(m_normalLoc, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const GLvoid*)(5 * sizeof(GLfloat))));
 
       // connect the uv coords to the "v_texCoord" attribute of the vertex shader
-      SAFE_GL(glEnableVertexAttribArray(m_textCoordLoc));
-      SAFE_GL(glVertexAttribPointer(m_textCoordLoc, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat))));
+      SAFE_GL(glEnableVertexAttribArray(m_texCoordLoc));
+      SAFE_GL(glVertexAttribPointer(m_texCoordLoc, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (const GLvoid*)(3 * sizeof(GLfloat))));
     }
     SAFE_GL(glDrawArrays(GL_TRIANGLES, 0, model.vertices.size()));
   }
@@ -522,7 +531,7 @@ struct OpenglDisplay : Display
   GLint m_colorId;
   GLint m_ambientLoc;
   GLint m_positionLoc;
-  GLint m_textCoordLoc;
+  GLint m_texCoordLoc;
   GLint m_normalLoc;
 
   GLuint m_programId;
