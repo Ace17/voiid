@@ -3,7 +3,7 @@
 precision mediump float;
 
 // Interpolated values from the vertex shader
-in vec2 v_texCoord;
+in vec2 UV;
 in vec3 vNormal;
 in float fogFactor;
 
@@ -11,8 +11,8 @@ in float fogFactor;
 out vec4 color;
 
 // Values that stay constant for the whole mesh
-uniform vec4 v_color;
-uniform sampler2D s_baseMap;
+uniform vec4 fragOffset;
+uniform sampler2D DiffuseTextureSampler;
 uniform vec3 ambientLight;
 
 void main()
@@ -21,7 +21,7 @@ void main()
   vec3 diffuseLight = vec3(max(0.0, dot(lightDirEyeSpace, vNormal)));
   vec3 light = diffuseLight + ambientLight;
   light = light * fogFactor;
-  vec4 rawColor = texture2D(s_baseMap, v_texCoord) + v_color;
+  vec4 rawColor = texture2D(DiffuseTextureSampler, UV) + fragOffset;
   color = vec4(rawColor.xyz * light, rawColor.a);
 }
 

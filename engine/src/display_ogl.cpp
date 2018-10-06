@@ -376,20 +376,22 @@ struct OpenglDisplay : Display
     m_MVP = glGetUniformLocation(m_programId, "MVP");
     assert(m_MVP >= 0);
 
-    m_colorId = glGetUniformLocation(m_programId, "v_color");
+    m_colorId = glGetUniformLocation(m_programId, "fragOffset");
     assert(m_colorId >= 0);
 
     m_ambientLoc = glGetUniformLocation(m_programId, "ambientLight");
     assert(m_ambientLoc >= 0);
 
-    m_positionLoc = glGetAttribLocation(m_programId, "a_position");
+    m_positionLoc = glGetAttribLocation(m_programId, "vertexPos_model");
     assert(m_positionLoc >= 0);
 
-    m_texCoordLoc = glGetAttribLocation(m_programId, "a_texCoord");
+    m_texCoordLoc = glGetAttribLocation(m_programId, "vertexUV");
     assert(m_texCoordLoc >= 0);
 
     m_normalLoc = glGetAttribLocation(m_programId, "a_normal");
     assert(m_normalLoc >= 0);
+
+    printf("[display] init OK\n");
   }
 
   void loadModel(int id, const char* path) override
