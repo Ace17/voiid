@@ -9,6 +9,7 @@
 #pragma once
 
 #include "body.h"
+#include "trace.h"
 
 struct IPhysicsProbe
 {

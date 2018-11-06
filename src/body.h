@@ -11,7 +11,6 @@
 
 #include <functional>
 #include "vec.h"
-#include "trace.h"
 
 using namespace std;
 
