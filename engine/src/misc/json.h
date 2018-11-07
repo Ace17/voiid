@@ -4,6 +4,8 @@
 // published by the Free Software Foundation, either version 3 of the
 // License, or (at your option) any later version.
 
+// Simplistic standalone JSON-parser
+
 #pragma once
 
 #include <map>
@@ -28,9 +30,7 @@ To* cast(From* from)
 
 struct Value
 {
-  virtual ~Value()
-  {
-  }
+  virtual ~Value() = default;
 };
 
 struct Object : Value

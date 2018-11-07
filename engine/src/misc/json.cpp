@@ -4,8 +4,195 @@
 // published by the Free Software Foundation, either version 3 of the
 // License, or (at your option) any later version.
 
+// Simplistic standalone JSON-parser
+
 #include "json.h"
-#include "tokenizer.h"
+
+struct Token
+{
+  enum Type
+  {
+    EOF_ = 0,
+    LBRACE,
+    RBRACE,
+    LBRACKET,
+    RBRACKET,
+    STRING,
+    NUMBER,
+    BOOLEAN,
+    COLON,
+    COMMA,
+  };
+
+  string lexem;
+  Type type;
+};
+
+class Tokenizer
+{
+public:
+  Tokenizer(const char* text_, size_t len)
+  {
+    text = text_;
+    textEnd = text_ + len;
+    decodeToken();
+  }
+
+  const Token& front() const
+  {
+    return curr;
+  }
+
+  bool empty() const
+  {
+    return curr.type == Token::EOF_;
+  }
+
+  void popFront()
+  {
+    decodeToken();
+  }
+
+private:
+  void decodeToken()
+  {
+    while(whitespace(frontChar()))
+      ++text;
+
+    curr.lexem = "";
+    switch(frontChar())
+    {
+    case '\0':
+      curr.type = Token::EOF_;
+      break;
+    case '[':
+      accept();
+      curr.type = Token::LBRACKET;
+      break;
+    case ']':
+      accept();
+      curr.type = Token::RBRACKET;
+      break;
+    case '{':
+      accept();
+      curr.type = Token::LBRACE;
+      break;
+    case '}':
+      accept();
+      curr.type = Token::RBRACE;
+      break;
+    case ':':
+      accept();
+      curr.type = Token::COLON;
+      break;
+    case ',':
+      accept();
+      curr.type = Token::COMMA;
+      break;
+    case '"':
+      accept();
+
+      while(frontChar() != '"' && frontChar() != '\0')
+      {
+        if(frontChar() == '\\')
+        {
+          accept();
+          curr.lexem.pop_back();
+
+          // escape sequence
+          accept();
+        }
+        else
+        {
+          accept();
+        }
+      }
+
+      accept();
+
+      curr.type = Token::STRING;
+      curr.lexem = curr.lexem.substr(1, curr.lexem.size() - 2);
+      break;
+    case 't':
+      curr.type = Token::BOOLEAN;
+      expect('t');
+      expect('r');
+      expect('u');
+      expect('e');
+      break;
+
+    case 'f':
+      curr.type = Token::BOOLEAN;
+      expect('f');
+      expect('a');
+      expect('l');
+      expect('s');
+      expect('e');
+      break;
+
+    case '-':
+    case '0':
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+    case '8':
+    case '9':
+      {
+        curr.type = Token::NUMBER;
+
+        if(frontChar() == '-')
+          accept();
+
+        while(isdigit(frontChar()))
+          accept();
+
+        break;
+      }
+    default:
+      {
+        string msg = "Unknown char '";
+        msg += frontChar();
+        msg += "'";
+        throw runtime_error(msg);
+      }
+    }
+  }
+
+  void expect(char c)
+  {
+    if(frontChar() != c)
+      throw runtime_error("Unexpected character");
+
+    accept();
+  }
+
+  void accept()
+  {
+    curr.lexem += frontChar();
+    ++text;
+  }
+
+  char frontChar() const
+  {
+    if(text >= textEnd)
+      return 0;
+
+    return *text;
+  }
+
+  static bool whitespace(char c)
+  {
+    return c == ' ' || c == '\n';
+  }
+
+  const char* text;
+  const char* textEnd;
+  Token curr;
+};
 
 using namespace json;
 
@@ -14,10 +201,12 @@ static unique_ptr<Value> parseValue(Tokenizer& tk);
 static unique_ptr<Value> parseArray(Tokenizer& tk);
 static string expect(Tokenizer& tk, Token::Type type);
 
+#include <cstring> // strlen
+
 unique_ptr<Object> json::parse(const char* text)
 {
   unique_ptr<Object> r;
-  Tokenizer tokenizer(text);
+  Tokenizer tokenizer(text, strlen(text));
   return parseObject(tokenizer);
 }
 

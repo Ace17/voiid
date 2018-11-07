@@ -89,7 +89,6 @@ SRCS_TESTS:=\
 	engine/tests/3ds.cpp\
 	engine/tests/tests.cpp\
 	engine/tests/tests_main.cpp\
-	engine/tests/tokenizer.cpp\
 	engine/tests/util.cpp\
 	tests/entities.cpp\
 	tests/physics.cpp\
