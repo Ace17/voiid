@@ -19,7 +19,7 @@
 #include <ogg/ogg.h>
 #include <vorbis/vorbisfile.h>
 #include "misc/file.h"
-#include "voice.h"
+#include "audio_channel.h"
 
 #include "base/util.h"
 #include "base/span.h"
