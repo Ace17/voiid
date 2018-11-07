@@ -23,7 +23,7 @@
 #include <stdexcept>
 #include <stdint.h>
 #include "base/span.h"
-#include "decompress.h"
+#include "misc/decompress.h"
 
 namespace
 {

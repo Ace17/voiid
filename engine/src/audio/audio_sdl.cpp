@@ -18,7 +18,7 @@
 #include <SDL.h>
 #include <ogg/ogg.h>
 #include <vorbis/vorbisfile.h>
-#include "file.h"
+#include "misc/file.h"
 #include "voice.h"
 
 #include "base/util.h"

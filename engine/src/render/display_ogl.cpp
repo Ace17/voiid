@@ -25,7 +25,7 @@ using namespace std;
 #include "base/geom.h"
 #include "base/span.h"
 #include "model.h"
-#include "file.h" // read
+#include "misc/file.h" // read
 #include "matrix4.h"
 
 #ifdef NDEBUG

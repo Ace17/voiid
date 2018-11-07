@@ -6,11 +6,11 @@
 
 #include <fstream>
 #include <math.h>
-#include "model.h"
 #include "base/geom.h"
 #include "base/util.h"
-#include "json.h"
-#include "file.h"
+#include "misc/json.h"
+#include "misc/file.h"
+#include "model.h"
 #include "3ds.h"
 
 extern int loadTexture(string path, Rect2i rect = Rect2i(0, 0, 0, 0));

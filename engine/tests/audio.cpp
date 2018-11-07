@@ -5,7 +5,7 @@
 // License, or (at your option) any later version.
 
 #include "engine/tests/tests.h"
-#include "engine/src/voice.h"
+#include "engine/src/audio/voice.h"
 
 struct DummyPlayer : IAudioSource
 {

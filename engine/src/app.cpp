@@ -19,8 +19,8 @@
 #include "base/scene.h"
 #include "base/view.h"
 #include "ratecounter.h"
-#include "audio.h"
-#include "display.h"
+#include "audio/audio.h"
+#include "render/display.h"
 
 using namespace std;
 
