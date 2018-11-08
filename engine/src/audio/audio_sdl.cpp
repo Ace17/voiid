@@ -138,7 +138,7 @@ struct SdlAudio : Audio
 
   // accessed by the audio thread
   SDL_AudioSpec audiospec;
-  vector<Voice> voices;
+  vector<AudioChannel> voices;
   unique_ptr<Sound> m_music;
   unique_ptr<Sound> m_nextMusic;
   vector<float> mixBuffer;
@@ -181,7 +181,7 @@ struct SdlAudio : Audio
       stream[i] = mixBuffer[i >> shift];
   }
 
-  Voice* allocVoice()
+  AudioChannel* allocVoice()
   {
     for(int k = 1; k < MAX_VOICES; ++k)
       if(voices[k].isDead())

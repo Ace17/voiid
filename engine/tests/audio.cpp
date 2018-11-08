@@ -76,7 +76,7 @@ unittest("Audio: play voice")
 {
   DummySound sound;
 
-  Voice v;
+  AudioChannel v;
   v.play(&sound);
 
   float buffer[32] = { 0 };
@@ -93,7 +93,7 @@ unittest("Audio: play voice until end")
   DummySound sound;
   sound.length = 14;
 
-  Voice v;
+  AudioChannel v;
   v.play(&sound);
 
   float buffer[32] = { 0 };
@@ -115,7 +115,7 @@ unittest("Audio: play voice until end, loop")
   DummySound sound;
   sound.length = 14;
 
-  Voice v;
+  AudioChannel v;
   v.play(&sound, 0, true);
 
   float buffer[32] = { 0 };

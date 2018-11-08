@@ -4,7 +4,7 @@
 // published by the Free Software Foundation, either version 3 of the
 // License, or (at your option) any later version.
 
-// An audio voice
+// An audio channel
 
 #pragma once
 
@@ -44,7 +44,7 @@ private:
   unique_ptr<IAudioSource> src;
 };
 
-struct Voice
+struct AudioChannel
 {
   bool isDead() const
   {
@@ -121,8 +121,6 @@ struct Voice
     m_targetVolume = 0.0;
     m_volumeIncrement = (m_targetVolume - m_volume) / (200 * fadeOutInertia);
   }
-
-  static const int FADE_CHUNKS = 1000;
 
 private:
   float m_volume = 0.0;
