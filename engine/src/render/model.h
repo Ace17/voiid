@@ -27,7 +27,9 @@ struct Model
   // mesh data
   struct Vertex
   {
-    float x, y, z, u, v, nx, ny, nz;
+    float x, y, z; // position
+    float nx, ny, nz; // normal
+    float u, v;
   };
 
   vector<Vertex> vertices;
