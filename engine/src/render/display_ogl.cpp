@@ -482,23 +482,16 @@ struct OpenglDisplay : Display
 
     SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, model.buffer));
 
-#define OFFSET(a) \
-  (void*)(&(((Model::Vertex*)nullptr)->a))
+    SAFE_GL(glEnableVertexAttribArray(m_positionLoc));
+    SAFE_GL(glEnableVertexAttribArray(m_normalLoc));
+    SAFE_GL(glEnableVertexAttribArray(m_texCoordLoc));
 
-    {
-      // connect the xyz to the "a_position" attribute of the vertex shader
-      SAFE_GL(glEnableVertexAttribArray(m_positionLoc));
-      SAFE_GL(glVertexAttribPointer(m_positionLoc, 3, GL_FLOAT, GL_FALSE, sizeof(Model::Vertex), OFFSET(x)));
-
-      // connect the N to the "a_normal" attribute of the vertex shader
-      SAFE_GL(glEnableVertexAttribArray(m_normalLoc));
-      SAFE_GL(glVertexAttribPointer(m_normalLoc, 3, GL_FLOAT, GL_FALSE, sizeof(Model::Vertex), OFFSET(nx)));
-
-      // connect the uv coords to the "v_texCoord" attribute of the vertex shader
-      SAFE_GL(glEnableVertexAttribArray(m_texCoordLoc));
-      SAFE_GL(glVertexAttribPointer(m_texCoordLoc, 2, GL_FLOAT, GL_FALSE, sizeof(Model::Vertex), OFFSET(u)));
-    }
+#define OFFSET(a) (void*)(&(((Model::Vertex*)nullptr)->a))
+    SAFE_GL(glVertexAttribPointer(m_positionLoc, 3, GL_FLOAT, GL_FALSE, sizeof(Model::Vertex), OFFSET(x)));
+    SAFE_GL(glVertexAttribPointer(m_normalLoc, 3, GL_FLOAT, GL_FALSE, sizeof(Model::Vertex), OFFSET(nx)));
+    SAFE_GL(glVertexAttribPointer(m_texCoordLoc, 2, GL_FLOAT, GL_FALSE, sizeof(Model::Vertex), OFFSET(u)));
 #undef OFFSET
+
     SAFE_GL(glDrawArrays(GL_TRIANGLES, 0, model.vertices.size()));
   }
 
