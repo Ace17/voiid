@@ -8,7 +8,6 @@
 
 #include "room.h"
 #include "base/mesh.h"
-#include <fstream>
 #include <map>
 #include <algorithm>
 
@@ -50,6 +49,7 @@ static bool operator < (Vector3f a, Vector3f b)
   return false;
 }
 
+static
 void bevelSharpEdges(Mesh& mesh, Convex& brush)
 {
   struct EdgeId

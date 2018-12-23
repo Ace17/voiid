@@ -58,7 +58,7 @@ SRCS_GAME:=\
 	src/state_game.cpp\
 	src/state_splash.cpp\
 	src/convex.cpp\
-	src/level_graph.cpp\
+	src/room_loader.cpp\
 	src/physics.cpp\
 	src/resources.cpp\
 
