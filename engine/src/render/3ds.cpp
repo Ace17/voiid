@@ -146,9 +146,7 @@ struct Parser
     auto const type = (TYPE)m_stream.uint16();
     auto const size = m_stream.int32();
 
-    auto const chunk = Chunk {
-      offset + size
-    };
+    auto const chunk = Chunk { offset + size };
 
     if(m_stream.eof())
       return;
@@ -299,8 +297,7 @@ private:
 
   void readObjBlock()
   {
-    string ObjName = m_stream.asciiz();
-
+    auto const ObjName = m_stream.asciiz();
     m_listener.onObjName(ObjName);
   }
 
