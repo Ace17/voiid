@@ -8,9 +8,9 @@
 #include <memory>
 #include <vector>
 #include <sstream>
-#include <fstream>
 #include <string>
 
+#include "misc/file.h"
 #include "3ds.h"
 
 using namespace std;
@@ -350,7 +350,6 @@ private:
   void readFaceMat()
   {
     auto const matName = m_stream.asciiz();
-
     auto const numFaces = m_stream.int16();
 
     for(int i = 0; i < numFaces; ++i)
@@ -454,12 +453,9 @@ std::vector<Mesh> load(Span<uint8_t const> buffer)
 
 std::vector<Mesh> load(string filename)
 {
-  auto fp = ifstream(filename, std::ios::binary);
+  auto bits = read(filename);
 
-  if(!fp.is_open())
-    throw runtime_error("Can't open file '" + filename + "'");
-
-  return load(fp);
+  return load({(uint8_t*)bits.data(), (int)bits.size()});
 }
 }
 
