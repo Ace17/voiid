@@ -104,12 +104,9 @@ void bevelSharpEdges(Mesh& mesh, Convex& brush)
   }
 }
 
-Room loadRoom(int roomIdx)
+Room loadRoom(const char* filename)
 {
   Room r;
-
-  char filename[256];
-  snprintf(filename, sizeof filename, "res/rooms/%02d/mesh.3ds", roomIdx);
 
   auto meshes = loadMesh(filename);
 

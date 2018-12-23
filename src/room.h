@@ -30,5 +30,5 @@ struct Room
   vector<Convex> brushes;
 };
 
-Room loadRoom(int levelIdx);
+Room loadRoom(const char* filename);
 

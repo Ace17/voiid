@@ -125,22 +125,27 @@ struct GameState : Scene, IGame
     m_spawned.clear();
     assert(m_listeners.empty());
 
-    auto level = loadRoom(levelIdx);
-    m_view->playMusic(levelIdx);
-
-    if(!m_player)
-      m_player = makeHero().release();
-
-    m_player->pos = Vector(level.start.x, level.start.y, level.start.z) - m_player->size * 0.5;
-
-    for(auto& thing : level.things)
     {
-      auto ent = createEntity(thing.formula);
-      ent->pos = thing.pos;
-      spawn(ent.release());
+      char filename[256];
+      snprintf(filename, sizeof filename, "res/rooms/%02d/mesh.3ds", levelIdx);
+
+      auto level = loadRoom(filename);
+      world = level.brushes;
+
+      if(!m_player)
+        m_player = makeHero().release();
+
+      m_player->pos = Vector(level.start.x, level.start.y, level.start.z) - m_player->size * 0.5;
+
+      for(auto& thing : level.things)
+      {
+        auto ent = createEntity(thing.formula);
+        ent->pos = thing.pos;
+        spawn(ent.release());
+      }
     }
 
-    world = level.brushes;
+    m_view->playMusic(levelIdx);
 
     spawn(m_player);
   }
