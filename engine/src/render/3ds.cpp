@@ -115,9 +115,8 @@ struct ByteStream
   istream& fp;
 };
 
-class Parser
+struct Parser
 {
-public:
   struct Listener
   {
     virtual void onVertexXYZ(float /*x*/, float /*y*/, float /*z*/) {};
@@ -431,10 +430,12 @@ private:
   int m_idx = 0;
 };
 
-static
-std::vector<Mesh> load(istream& fp)
+std::vector<Mesh> load(Span<uint8_t const> buffer)
 {
-  auto bs = ByteStream(fp);
+  auto const s = string(buffer.data, buffer.data + buffer.len);
+  stringstream mem(s);
+
+  auto bs = ByteStream(mem);
 
   std::vector<Mesh> meshes;
   MeshLoader loader(meshes);
@@ -443,19 +444,11 @@ std::vector<Mesh> load(istream& fp)
   return meshes;
 }
 
-std::vector<Mesh> load(Span<uint8_t const> buffer)
-{
-  auto const s = string(buffer.data, buffer.data + buffer.len);
-  stringstream mem(s);
-
-  return load(mem);
-}
-
 std::vector<Mesh> load(string filename)
 {
   auto bits = read(filename);
 
-  return load({(uint8_t*)bits.data(), (int)bits.size()});
+  return load({ (uint8_t*)bits.data(), (int)bits.size() });
 }
 }
 
