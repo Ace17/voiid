@@ -68,7 +68,7 @@ SRCS:=\
 	$(SRCS_GAME)\
 	$(SRCS_ENGINE)\
 
-$(BIN)/rel/game$(EXT): $(SRCS:%.cpp=$(BIN)/%.cpp.o)
+$(BIN)/rel/game$(EXT): $(SRCS:%=$(BIN)/%.o)
 	@mkdir -p $(dir $@)
 	$(CXX) $^ -o '$@' $(LDFLAGS)
 
@@ -82,19 +82,20 @@ include res-src/project.mk
 SRCS_TESTS:=\
 	$(SRCS_GAME)\
 	$(filter-out $(ENGINE_ROOT)/src/main.cpp, $(SRCS_ENGINE))\
+	engine/tests/tests.cpp\
+	engine/tests/tests_main.cpp\
 	engine/tests/audio.cpp\
 	engine/tests/base64.cpp\
 	engine/tests/decompress.cpp\
 	engine/tests/json.cpp\
 	engine/tests/3ds.cpp\
-	engine/tests/tests.cpp\
-	engine/tests/tests_main.cpp\
 	engine/tests/util.cpp\
+	engine/tests/png.cpp\
 	tests/entities.cpp\
 	tests/physics.cpp\
 	tests/trace.cpp\
 
-$(BIN)/tests$(EXT): $(SRCS_TESTS:%.cpp=$(BIN)/%.cpp.o)
+$(BIN)/tests$(EXT): $(SRCS_TESTS:%=$(BIN)/%.o)
 	@mkdir -p $(dir $@)
 	$(CXX) $^ -o '$@' $(LDFLAGS)
 
