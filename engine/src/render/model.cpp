@@ -4,13 +4,11 @@
 // published by the Free Software Foundation, either version 3 of the
 // License, or (at your option) any later version.
 
-#include <fstream>
-#include <math.h>
+#include "model.h"
 #include "base/geom.h"
-#include "base/util.h"
+#include "base/util.h" // dirName
 #include "misc/json.h"
 #include "misc/file.h"
-#include "model.h"
 #include "3ds.h"
 
 extern int loadTexture(string path, Rect2i rect = Rect2i(0, 0, 0, 0));
