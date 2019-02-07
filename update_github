@@ -11,6 +11,6 @@ trap "rm -rf $tmpDir" EXIT
 
 git clone bzr::http://code.alaiwan.org/bzr/games/$name $tmpDir/repo
 cd $tmpDir/repo
-git remote add github git@github.com:Ace17/voiid.git
+git remote add github git@github.com:Ace17/$name.git
 #git checkout -b master
 git push -f github master
