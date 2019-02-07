@@ -14,13 +14,19 @@ bool jsonOk(string text)
 {
   try
   {
-    json::parse(text.c_str());
+    json::parse(text.c_str(), text.size());
     return true;
   }
   catch(exception const &)
   {
     return false;
   }
+}
+
+static
+auto jsonParse(string text)
+{
+  return json::parse(text.data(), text.size());
 }
 
 unittest("Json parser: empty")
@@ -42,21 +48,27 @@ unittest("Json parser: members")
 
 unittest("Json parser: booleans")
 {
-  json::parse("{ \"var\": true }");
   assert(jsonOk("{ \"var\": true }"));
   assert(jsonOk("{ \"var\": false }"));
 
   {
-    auto o = json::parse("{ \"isCool\" : true }");
-    auto s = o->getMember<json::Boolean>("isCool");
-    assertEquals(true, s->value);
+    auto o = jsonParse("{ \"isCool\" : true }");
+    auto s = o["isCool"];
+    assertEquals((int)json::Value::Type::Boolean, (int)s.type);
+    assertEquals(true, s.boolValue);
   }
 
   {
-    auto o = json::parse("{ \"isSlow\" : false }");
-    auto s = o->getMember<json::Boolean>("isSlow");
-    assertEquals(false, s->value);
+    auto o = jsonParse("{ \"isSlow\" : false }");
+    auto s = o["isSlow"];
+    assertEquals((int)json::Value::Type::Boolean, (int)s.type);
+    assertEquals(false, s.boolValue);
   }
+}
+
+unittest("Json parser: non-zero terminated")
+{
+  json::parse("{ \"isCool\" : true } _invalid_json_token_", 19);
 }
 
 unittest("Json parser: arrays")
@@ -72,23 +84,21 @@ unittest("Json parser: arrays")
 unittest("Json parser: returned value")
 {
   {
-    auto o = json::parse("{}");
-    assert(o);
-    assertEquals(0u, o->members.size());
+    auto o = jsonParse("{}");
+    assertEquals(0u, o.members.size());
   }
   {
-    auto o = json::parse("{ \"N\" : \"hello\"}");
-    assertEquals(1u, o->members.size());
-    auto s = dynamic_cast<json::String*>(o->members["N"].get());
-    assert(s);
-    assert(s->value == "hello");
+    auto o = jsonParse("{ \"N\" : \"hello\"}");
+    assertEquals(1u, o.members.size());
+    auto s = o.members["N"];
+    assertEquals("hello", s.stringValue);
   }
   {
-    auto o = json::parse("{ \"N\" : -1234 }");
-    assertEquals(1u, o->members.size());
-    auto s = dynamic_cast<json::Number*>(o->members["N"].get());
-    assert(s);
-    assertEquals(-1234, s->value);
+    auto o = jsonParse("{ \"N\" : -1234 }");
+    assertEquals(1u, o.members.size());
+    auto s = o.members["N"];
+    assertEquals((int)json::Value::Type::Integer, (int)s.type);
+    assertEquals(-1234, s.intValue);
   }
 }
 

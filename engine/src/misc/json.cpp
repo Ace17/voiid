@@ -38,20 +38,9 @@ public:
     decodeToken();
   }
 
-  const Token& front() const
-  {
-    return curr;
-  }
-
-  bool empty() const
-  {
-    return curr.type == Token::EOF_;
-  }
-
-  void popFront()
-  {
-    decodeToken();
-  }
+  const Token& front() const { return curr; }
+  bool empty() const { return curr.type == Token::EOF_; }
+  void popFront() { decodeToken(); }
 
 private:
   void decodeToken()
@@ -196,23 +185,21 @@ private:
 
 using namespace json;
 
-static unique_ptr<Object> parseObject(Tokenizer& tk);
-static unique_ptr<Value> parseValue(Tokenizer& tk);
-static unique_ptr<Value> parseArray(Tokenizer& tk);
+static Value parseObject(Tokenizer& tk);
+static Value parseValue(Tokenizer& tk);
+static Value parseArray(Tokenizer& tk);
 static string expect(Tokenizer& tk, Token::Type type);
 
-#include <cstring> // strlen
-
-unique_ptr<Object> json::parse(const char* text)
+Value json::parse(const char* text, size_t len)
 {
-  unique_ptr<Object> r;
-  Tokenizer tokenizer(text, strlen(text));
+  Tokenizer tokenizer(text, len);
   return parseObject(tokenizer);
 }
 
-unique_ptr<Object> parseObject(Tokenizer& tk)
+Value parseObject(Tokenizer& tk)
 {
-  auto r = make_unique<Object>();
+  Value r;
+  r.type = Value::Type::Object;
   expect(tk, Token::LBRACE);
   int idx = 0;
 
@@ -223,7 +210,7 @@ unique_ptr<Object> parseObject(Tokenizer& tk)
 
     auto const name = expect(tk, Token::STRING);
     expect(tk, Token::COLON);
-    r->members[name] = parseValue(tk);
+    r.members[name] = parseValue(tk);
     ++idx;
   }
 
@@ -231,7 +218,7 @@ unique_ptr<Object> parseObject(Tokenizer& tk)
   return r;
 }
 
-unique_ptr<Value> parseValue(Tokenizer& tk)
+Value parseValue(Tokenizer& tk)
 {
   if(tk.front().type == Token::LBRACKET)
   {
@@ -243,27 +230,31 @@ unique_ptr<Value> parseValue(Tokenizer& tk)
   }
   else if(tk.front().type == Token::BOOLEAN)
   {
-    auto r = make_unique<Boolean>();
-    r->value = expect(tk, Token::BOOLEAN) == "true";
-    return unique_ptr<Value>(r.release());
+    Value r;
+    r.type = Value::Type::Boolean;
+    r.boolValue = expect(tk, Token::BOOLEAN) == "true";
+    return r;
   }
   else if(tk.front().type == Token::NUMBER)
   {
-    auto r = make_unique<Number>();
-    r->value = atoi(expect(tk, Token::NUMBER).c_str());
-    return unique_ptr<Value>(r.release());
+    Value r;
+    r.type = Value::Type::Integer;
+    r.intValue = atoi(expect(tk, Token::NUMBER).c_str());
+    return r;
   }
   else
   {
-    auto r = make_unique<String>();
-    r->value = expect(tk, Token::STRING);
-    return unique_ptr<Value>(r.release());
+    Value r;
+    r.type = Value::Type::String;
+    r.stringValue = expect(tk, Token::STRING);
+    return r;
   }
 }
 
-unique_ptr<Value> parseArray(Tokenizer& tk)
+Value parseArray(Tokenizer& tk)
 {
-  auto r = make_unique<Array>();
+  Value r;
+  r.type = Value::Type::Array;
   expect(tk, Token::LBRACKET);
   int idx = 0;
 
@@ -272,15 +263,13 @@ unique_ptr<Value> parseArray(Tokenizer& tk)
     if(idx > 0)
       expect(tk, Token::COMMA);
 
-    r->elements.push_back(parseValue(tk));
+    r.elements.push_back(parseValue(tk));
     ++idx;
   }
 
   expect(tk, Token::RBRACKET);
-  return unique_ptr<Value>(r.release());
+  return r;
 }
-
-#include <sstream>
 
 static
 string expect(Tokenizer& tk, Token::Type type)
@@ -289,16 +278,18 @@ string expect(Tokenizer& tk, Token::Type type)
 
   if(front.type != type)
   {
-    stringstream msg;
+    string msg;
 
     if(front.type == Token::EOF_)
-      msg << "Unexpected end of file found";
+      msg += "Unexpected end of file found";
     else
-      msg << "Unexpected token '" + front.lexem + "'";
+    {
+      msg += "Unexpected token '" + front.lexem + "'";
+      msg += " of type " + to_string(front.type);
+      msg += " instead of " + to_string(type);
+    }
 
-    msg << " of type " << front.type;
-    msg << " instead of " << type;
-    throw runtime_error(msg.str());
+    throw runtime_error(msg);
   }
 
   string r = front.lexem;

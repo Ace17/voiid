@@ -14,17 +14,15 @@
 extern int loadTexture(string path, Rect2i rect = Rect2i(0, 0, 0, 0));
 
 static
-Action loadSheetAction(json::Value* val, string sheetPath, Size2i cell)
+Action loadSheetAction(json::Value const& action, string sheetPath, Size2i cell)
 {
   Action r;
 
-  auto action = json::cast<json::Object>(val);
-  action->getMember<json::String>("name");
-  auto frames = action->getMember<json::Array>("frames");
+  (string)action["name"];
 
-  for(auto& frame : frames->elements)
+  for(auto& frame : action["frames"].elements)
   {
-    auto const idx = (json::cast<json::Number>(frame.get()))->value;
+    auto const idx = int(frame);
 
     auto const col = idx % 16;
     auto const row = idx / 16;
@@ -180,23 +178,22 @@ Model loadModel(string jsonPath)
   else
     r = boxModel();
 
-  auto obj = json::parse(data.c_str());
+  auto obj = json::parse(data.c_str(), data.size());
   auto dir = dirName(jsonPath);
 
-  auto type = obj->getMember<json::String>("type")->value;
-  auto actions = obj->getMember<json::Array>("actions");
+  auto type = string(obj["type"]);
 
   if(type != "sheet")
     throw runtime_error("Unknown model type: '" + type + "'");
 
-  auto sheet = obj->getMember<json::String>("sheet")->value;
-  auto width = obj->getMember<json::Number>("width")->value;
-  auto height = obj->getMember<json::Number>("height")->value;
+  auto sheet = string(obj["sheet"]);
+  auto width = int(obj["width"]);
+  auto height = int(obj["height"]);
 
   auto cell = Size2i(width, height);
 
-  for(auto& action : actions->elements)
-    r.actions.push_back(loadSheetAction(action.get(), dir + "/" + sheet, cell));
+  for(auto& action : obj["actions"].elements)
+    r.actions.push_back(loadSheetAction(action, dir + "/" + sheet, cell));
 
   return r;
 }
