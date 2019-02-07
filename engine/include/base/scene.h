@@ -55,8 +55,7 @@ struct Control
   bool dash;
   bool use;
 
-  bool restart; // kill the player (in case of getting stuck)
-
+  bool restart; // kill the player (in case of getting stuck).
   bool debug; // toggle debug-mode
 };
 
