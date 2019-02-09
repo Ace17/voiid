@@ -17,8 +17,8 @@
 // createEntity("door(4)");
 std::unique_ptr<Entity> createEntity(string name);
 
-typedef vector<string> const EntityArgs;
-typedef function<unique_ptr<Entity>(EntityArgs & args)> CreationFunc;
+typedef vector<string> const EntityConfig;
+typedef function<unique_ptr<Entity>(EntityConfig & args)> CreationFunc;
 
 // user-provided
 extern map<string, CreationFunc> getRegistry();
