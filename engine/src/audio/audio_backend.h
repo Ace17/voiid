@@ -6,13 +6,16 @@
 
 #pragma once
 
-struct Audio
-{
-  virtual ~Audio() = default;
+struct Sound;
 
-  virtual void loadSound(int id, const char* path) = 0;
-  virtual void playSound(int id) = 0;
-  virtual void playMusic(int id) = 0;
-  virtual void stopMusic() = 0;
+struct IAudioBackend
+{
+  virtual ~IAudioBackend() = default;
+
+  virtual void playSound(Sound* sound) = 0;
+
+  // takes ownership of 'sound'!
+  virtual void playLoopOnChannelZero(Sound* sound) = 0;
+  virtual void stopLoopOnChannelZero() = 0;
 };
 
