@@ -9,26 +9,14 @@
 // Doesn't know about acceleration or velocity.
 
 #include "body.h"
-#include "physics.h"
 #include "base/util.h"
+#include "physics.h"
 #include "convex.h"
 #include <vector>
 #include <memory>
 #include <algorithm> // find
 
 using namespace std;
-
-template<typename T>
-void unstableRemove(vector<T>& container, T const& val)
-{
-  auto it = find(begin(container), end(container), val);
-
-  if(it == container.end())
-    return;
-
-  swap(*it, container.back());
-  container.pop_back();
-}
 
 struct Physics : IPhysics
 {
@@ -39,7 +27,9 @@ struct Physics : IPhysics
 
   void removeBody(Body* body)
   {
-    unstableRemove(m_bodies, body);
+    auto isItTheOne =
+      [ = ] (Body* candidate) { return candidate == body; };
+    unstableRemove(m_bodies, isItTheOne);
   }
 
   Trace moveBody(Body* body, Vector delta) override

@@ -89,20 +89,16 @@ struct GameState : Scene, IGame
 
   void removeDeadThings()
   {
+    for(auto& entity : m_entities)
     {
-      auto oldEntities = move(m_entities);
-
-      for(auto& entity : oldEntities)
+      if(entity->dead)
       {
-        if(!entity->dead)
-          m_entities.push_back(move(entity));
-        else
-        {
-          entity->leave();
-          m_physics->removeBody(entity.get());
-        }
+        entity->leave();
+        m_physics->removeBody(entity.get());
       }
     }
+
+    unstableRemove(m_entities, &isDead);
 
     for(auto& spawned : m_spawned)
     {
@@ -115,6 +111,11 @@ struct GameState : Scene, IGame
     }
 
     m_spawned.clear();
+  }
+
+  static bool isDead(unique_ptr<Entity> const& e)
+  {
+    return e->dead;
   }
 
   void loadLevel(int levelIdx)
