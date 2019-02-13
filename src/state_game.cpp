@@ -89,7 +89,20 @@ struct GameState : Scene, IGame
 
   void removeDeadThings()
   {
-    removeDeadEntities(m_entities);
+    {
+      auto oldEntities = move(m_entities);
+
+      for(auto& entity : oldEntities)
+      {
+        if(!entity->dead)
+          m_entities.push_back(move(entity));
+        else
+        {
+          entity->leave();
+          m_physics->removeBody(entity.get());
+        }
+      }
+    }
 
     for(auto& spawned : m_spawned)
     {
@@ -211,22 +224,6 @@ struct GameState : Scene, IGame
   uvector<Entity> m_entities;
 
   // static stuff
-
-  void removeDeadEntities(uvector<Entity>& entities)
-  {
-    auto oldEntities = move(entities);
-
-    for(auto& entity : oldEntities)
-    {
-      if(!entity->dead)
-        entities.push_back(move(entity));
-      else
-      {
-        entity->leave();
-        m_physics->removeBody(entity.get());
-      }
-    }
-  }
 
   static Actor getDebugActor(Entity* entity)
   {
