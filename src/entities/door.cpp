@@ -219,3 +219,7 @@ unique_ptr<Entity> makeBreakableDoor()
   return make_unique<BreakableDoor>();
 }
 
+#include "entity_factory.h"
+static auto const reg1 = registerEntity("auto_door", [] (EntityConfig &) { return makeAutoDoor(); });
+static auto const reg2 = registerEntity("door", [] (EntityConfig& args) { auto arg = atoi(args[0].c_str()); return makeDoor(arg); });
+

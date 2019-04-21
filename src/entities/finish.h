@@ -57,3 +57,6 @@ struct FinishLine : Entity
   int touchDelay = 0;
 };
 
+#include "entity_factory.h"
+static auto const reg3_ = registerEntity("finish", [] (EntityConfig &) { return make_unique<FinishLine>(); });
+
