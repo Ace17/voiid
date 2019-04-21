@@ -24,6 +24,7 @@ struct View
   virtual void preload(Resource res) = 0;
   virtual void textBox(char const* msg) = 0;
   virtual void playMusic(MUSIC id) = 0;
+  virtual void stopMusic() = 0;
   virtual void playSound(SOUND id) = 0;
 };
 

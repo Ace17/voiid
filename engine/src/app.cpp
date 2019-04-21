@@ -18,7 +18,7 @@
 #include "base/resource.h"
 #include "base/scene.h"
 #include "base/view.h"
-#include "base/util.h" //clamp
+#include "base/util.h" // clamp
 #include "ratecounter.h"
 #include "audio/audio.h"
 #include "render/display.h"
@@ -264,12 +264,17 @@ private:
     m_textboxDelay = 60 * 2;
   }
 
-  void playMusic(int id) override
+  void playMusic(MUSIC id) override
   {
     m_audio->playMusic(id);
   }
 
-  void playSound(int sound) override
+  void stopMusic() override
+  {
+    m_audio->stopMusic();
+  }
+
+  void playSound(SOUND sound) override
   {
     m_audio->playSound(sound);
   }
