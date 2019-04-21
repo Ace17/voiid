@@ -70,7 +70,5 @@ struct Scene
 
   // return a list of displayable objects for the current frame
   virtual vector<Actor> getActors() const = 0;
-
-  float ambientLight = 0;
 };
 

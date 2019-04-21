@@ -18,7 +18,7 @@ struct SplashState : Scene
 {
   SplashState(View* view_, StateMachine* fsm_) : view(view_), fsm(fsm_)
   {
-    ambientLight = 10;
+    view->setAmbientLight(10);
   }
 
   ////////////////////////////////////////////////////////////////
@@ -44,7 +44,7 @@ struct SplashState : Scene
 
     if(activated)
     {
-      ambientLight = delay / float(FADE_TIME);
+      view->setAmbientLight(delay / float(FADE_TIME));
 
       if(decrement(delay))
       {

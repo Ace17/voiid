@@ -134,8 +134,6 @@ private:
 
   void draw()
   {
-    m_display->setAmbientLight(m_scene->ambientLight);
-
     m_display->beginDraw();
 
     auto actors = m_scene->getActors();
@@ -277,6 +275,11 @@ private:
   void playSound(SOUND sound) override
   {
     m_audio->playSound(sound);
+  }
+
+  void setAmbientLight(float amount) override
+  {
+    m_display->setAmbientLight(amount);
   }
 
   int keys[SDL_NUM_SCANCODES] {};

@@ -26,5 +26,6 @@ struct View
   virtual void playMusic(MUSIC id) = 0;
   virtual void stopMusic() = 0;
   virtual void playSound(SOUND id) = 0;
+  virtual void setAmbientLight(float amount) = 0;
 };
 
