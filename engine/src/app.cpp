@@ -18,6 +18,7 @@
 #include "base/resource.h"
 #include "base/scene.h"
 #include "base/view.h"
+#include "base/util.h" //clamp
 #include "ratecounter.h"
 #include "audio/audio.h"
 #include "render/display.h"
