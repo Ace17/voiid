@@ -55,7 +55,7 @@ SRCS_GAME:=\
 	src/entities/move.cpp\
 	src/entity_factory.cpp\
 	src/game.cpp\
-	src/state_game.cpp\
+	src/state_playing.cpp\
 	src/state_splash.cpp\
 	src/convex.cpp\
 	src/room_loader.cpp\
