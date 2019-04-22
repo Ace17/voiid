@@ -26,7 +26,7 @@
 
 using namespace std;
 
-auto const TIMESTEP = 1;
+auto const TIMESTEP = 10;
 
 Display* createDisplay(Size2i resolution);
 Audio* createAudio();
@@ -71,7 +71,8 @@ public:
 
       if(!m_paused)
       {
-        m_scene->tick(m_control);
+        for(int i = 0; i < 10; ++i)
+          m_scene->tick(m_control);
       }
 
       dirty = true;
