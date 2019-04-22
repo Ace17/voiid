@@ -26,7 +26,7 @@ struct SplashState : Scene
 
   void tick(Control const& c) override
   {
-    auto const FADE_TIME = 2000;
+    auto const FADE_TIME = 200;
 
     view->playMusic(1);
 

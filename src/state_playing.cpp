@@ -54,7 +54,10 @@ struct GameState : Scene, IGame
     m_player->think(c);
 
     for(auto& e : m_entities)
-      e->tick();
+    {
+      for(int i = 0; i < 10; ++i)
+        e->tick();
+    }
 
     m_physics->checkForOverlaps();
     removeDeadThings();

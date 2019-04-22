@@ -71,8 +71,7 @@ public:
 
       if(!m_paused)
       {
-        for(int i = 0; i < 10; ++i)
-          m_scene->tick(m_control);
+        m_scene->tick(m_control);
       }
 
       dirty = true;
