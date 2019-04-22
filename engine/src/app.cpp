@@ -18,6 +18,7 @@
 #include "base/resource.h"
 #include "base/scene.h"
 #include "base/view.h"
+#include "app.h"
 #include "base/util.h" // clamp
 #include "ratecounter.h"
 #include "audio/audio.h"
@@ -32,11 +33,11 @@ Audio* createAudio();
 
 Scene* createGame(View* view, vector<string> argv);
 
-class App : View
+class App : View, public IApp
 {
 public:
-  App(vector<string> argv)
-    : m_args(argv)
+  App(Span<char*> args)
+    : m_args({ args.data, args.data + args.len })
   {
     SDL_Init(0);
 
@@ -55,7 +56,7 @@ public:
     SDL_Quit();
   }
 
-  bool tick()
+  bool tick() override
   {
     processInput();
 
@@ -305,18 +306,8 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 
-App* App_create(vector<string> argv)
+unique_ptr<IApp> createApp(Span<char*> args)
 {
-  return new App(argv);
-}
-
-void App_destroy(App* app)
-{
-  delete app;
-}
-
-bool App_tick(App* app)
-{
-  return app->tick();
+  return make_unique<App>(args);
 }
 
