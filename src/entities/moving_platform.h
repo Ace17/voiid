@@ -38,7 +38,7 @@ struct MovingPlatform : Entity
 };
 
 #include "entity_factory.h"
-static auto const reg1_ = registerEntity("moving_platform", [] (EntityConfig &) { return makeBonus(4, UPGRADE_CLIMB, "jump while against wall"); });
-// aliasfor legacy levels
-static auto const reg2_ = registerEntity("mp", [] (EntityConfig &) { return makeBonus(4, UPGRADE_CLIMB, "jump while against wall"); });
+static auto const reg1_ = registerEntity("moving_platform", [] (EntityConfig& args) { auto arg = atoi(args[0].c_str()); return make_unique<MovingPlatform>(arg); });
+// alias for legacy levels
+static auto const reg2_ = registerEntity("mp", [] (EntityConfig& args) { auto arg = atoi(args[0].c_str()); return make_unique<MovingPlatform>(arg); });
 
