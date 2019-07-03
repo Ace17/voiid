@@ -27,7 +27,7 @@ struct Room
   };
 
   vector<Thing> things;
-  vector<Convex> brushes;
+  vector<Convex> colliders;
 };
 
 Room loadRoom(const char* filename);

@@ -147,7 +147,7 @@ struct GameState : Scene, IGame
       snprintf(filename, sizeof filename, "res/rooms/%02d/mesh.3ds", levelIdx);
 
       auto level = loadRoom(filename);
-      world = level.brushes;
+      world = level.colliders;
 
       if(!m_player)
         m_player = makeHero().release();

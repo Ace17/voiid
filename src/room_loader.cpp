@@ -134,7 +134,7 @@ Room loadRoom(const char* filename)
 
     bevelSharpEdges(mesh, brush);
 
-    r.brushes.push_back(brush);
+    r.colliders.push_back(brush);
   }
 
   r.start = Vector3i(0, 0, 5);
