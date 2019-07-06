@@ -9,7 +9,7 @@ import my_3ds_exporter
 argv = sys.argv
 argv = argv[argv.index("--") + 1:]
 
-output3dsPath = argv[0]
+outputMeshPath = argv[0]
 outputPngPath = argv[1]
 
 def run():
@@ -20,6 +20,11 @@ def run():
     bpy.context.scene.objects.active = bpy.context.selected_objects[0]
     bpy.ops.object.convert(target='MESH')
 
+  bpy.ops.object.select_by_type(type='FONT')
+  for obj in bpy.context.selected_objects:
+    bpy.context.scene.objects.active = obj
+    bpy.ops.object.convert(target='MESH')
+
   # remove non-displayed objects (triggers)
   for obj in bpy.data.objects:
     if obj.name.startswith("f."):
@@ -28,6 +33,7 @@ def run():
   #----------------------------------------------------------------------------
   # join everything into one single object
   #----------------------------------------------------------------------------
+  bpy.ops.object.select_by_type(type='MESH')
   if len(bpy.context.selected_objects) > 0:
     bpy.context.scene.objects.active = bpy.context.selected_objects[0]
     bpy.ops.object.join()
@@ -39,14 +45,15 @@ def run():
     if mesh.users == 0:
       bpy.data.meshes.remove(mesh)
 
-  assert(len(bpy.data.meshes) == 1)
-  ob = bpy.data.meshes[0]
-  ob.uv_textures[0].name = "TextureUV"
-  bpy.ops.mesh.uv_texture_add()
-  ob.uv_textures[1].name = "AtlasUV"
-
   # apply all transforms
   bpy.ops.object.transform_apply(location=True, scale=True, rotation=True)
+
+  assert(len(bpy.data.meshes) == 1)
+
+  ob = bpy.data.meshes[0]
+  ob.uv_textures[0].name = "DiffuseUV"
+  bpy.ops.mesh.uv_texture_add()
+  ob.uv_textures[1].name = "LightmapUV"
 
   # ambient occlusion enable
   # bpy.data.worlds["World"].ambient_color[0] = 0.1
@@ -78,8 +85,8 @@ def run():
   bpy.context.scene.render.bake_margin = 2
 
   # Set the UV coordinates
-  ob.uv_textures['TextureUV'].active_render = True
-  ob.uv_textures['AtlasUV'].active_render = False
+  ob.uv_textures['DiffuseUV'].active_render = True
+  ob.uv_textures['LightmapUV'].active_render = False
   ob.uv_textures.active_index = 1
 
   # Specify the bake type
@@ -89,7 +96,7 @@ def run():
   bpy.ops.object.mode_set(mode='OBJECT')
 
   # Set the target image
-  for d in ob.uv_textures['AtlasUV'].data:
+  for d in ob.uv_textures['LightmapUV'].data:
      d.image = bpy.data.images["myLightMap"]
 
   # Enter edit mode
@@ -102,13 +109,13 @@ def run():
   bpy.data.images["myLightMap"].save_render(outputPngPath, bpy.context.scene)
 
   # Set the UV coordinates
-  ob.uv_textures['TextureUV'].active_render = False
-  ob.uv_textures['AtlasUV'].active_render = True
+  ob.uv_textures['DiffuseUV'].active_render = False
+  ob.uv_textures['LightmapUV'].active_render = True
   ob.uv_textures.active_index = 1
 
   # bpy.ops.wm.save_mainfile(filepath="/tmp/debug.blend")
 
-  my_3ds_exporter.saveAs3ds(bpy.context.scene, output3dsPath)
+  my_3ds_exporter.saveAs3ds(bpy.context.scene, outputMeshPath)
 
   # bpy.ops.wm.save_mainfile(filepath="/tmp/debug.blend")
 
@@ -140,3 +147,4 @@ try:
 except Exception:
   traceback.print_exc()
   sys.exit(1)
+
