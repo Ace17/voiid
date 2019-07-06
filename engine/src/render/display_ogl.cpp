@@ -24,7 +24,7 @@ using namespace std;
 #include "base/scene.h"
 #include "base/geom.h"
 #include "base/span.h"
-#include "model.h"
+#include "rendermesh.h"
 #include "misc/file.h" // read
 #include "matrix4.h"
 
@@ -168,7 +168,7 @@ shared_ptr<SDL_Surface> loadPicture(string path)
   return surface;
 }
 
-// exported to Model
+// exported to RenderMesh
 int loadTexture(string path, Rect2i rect)
 {
   auto surface = loadPicture(path);
@@ -228,7 +228,7 @@ GLuint loadShaders()
   return progId;
 }
 
-Model boxModel();
+RenderMesh boxModel();
 
 struct Camera
 {
@@ -238,7 +238,7 @@ struct Camera
 };
 
 static
-void sendToOpengl(Model& model)
+void sendToOpengl(RenderMesh& model)
 {
   SAFE_GL(glGenBuffers(1, &model.buffer));
   SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, model.buffer));
@@ -247,7 +247,7 @@ void sendToOpengl(Model& model)
 }
 
 static
-Model loadTiledAnimation(string path, int count, int COLS, int SIZE)
+RenderMesh loadTiledAnimation(string path, int count, int COLS, int SIZE)
 {
   auto m = boxModel();
 
@@ -265,7 +265,7 @@ Model loadTiledAnimation(string path, int count, int COLS, int SIZE)
 }
 
 static
-Model loadAnimation(string path)
+RenderMesh loadAnimation(string path)
 {
   if(endsWith(path, ".json"))
   {
@@ -443,7 +443,7 @@ struct OpenglDisplay : Display
 
   int m_blinkCounter = 0;
 
-  void drawModel(Rect3f where, Camera const& camera, Model& model, bool blinking, int actionIdx, float ratio)
+  void renderMesh(Rect3f where, Camera const& camera, RenderMesh& model, bool blinking, int actionIdx, float ratio)
   {
     SAFE_GL(glUniform4f(m_colorId, 0, 0, 0, 0));
 
@@ -486,10 +486,10 @@ struct OpenglDisplay : Display
     SAFE_GL(glEnableVertexAttribArray(m_normalLoc));
     SAFE_GL(glEnableVertexAttribArray(m_texCoordLoc));
 
-#define OFFSET(a) (void*)(&(((Model::Vertex*)nullptr)->a))
-    SAFE_GL(glVertexAttribPointer(m_positionLoc, 3, GL_FLOAT, GL_FALSE, sizeof(Model::Vertex), OFFSET(x)));
-    SAFE_GL(glVertexAttribPointer(m_normalLoc, 3, GL_FLOAT, GL_FALSE, sizeof(Model::Vertex), OFFSET(nx)));
-    SAFE_GL(glVertexAttribPointer(m_texCoordLoc, 2, GL_FLOAT, GL_FALSE, sizeof(Model::Vertex), OFFSET(u)));
+#define OFFSET(a) (void*)(&(((RenderMesh::Vertex*)nullptr)->a))
+    SAFE_GL(glVertexAttribPointer(m_positionLoc, 3, GL_FLOAT, GL_FALSE, sizeof(RenderMesh::Vertex), OFFSET(x)));
+    SAFE_GL(glVertexAttribPointer(m_normalLoc, 3, GL_FLOAT, GL_FALSE, sizeof(RenderMesh::Vertex), OFFSET(nx)));
+    SAFE_GL(glVertexAttribPointer(m_texCoordLoc, 2, GL_FLOAT, GL_FALSE, sizeof(RenderMesh::Vertex), OFFSET(u)));
 #undef OFFSET
 
     SAFE_GL(glDrawArrays(GL_TRIANGLES, 0, model.vertices.size()));
@@ -505,7 +505,7 @@ struct OpenglDisplay : Display
   void drawActor(Rect3f where, int modelId, bool blinking, int actionIdx, float ratio) override
   {
     auto& model = m_Models.at(modelId);
-    drawModel(where, m_camera, model, blinking, actionIdx, ratio);
+    renderMesh(where, m_camera, model, blinking, actionIdx, ratio);
   }
 
   void drawText(Vector2f pos, char const* text) override
@@ -524,7 +524,7 @@ struct OpenglDisplay : Display
 
     while(*text)
     {
-      drawModel(rect, cam, m_fontModel, false, *text, 0);
+      renderMesh(rect, cam, m_fontModel, false, *text, 0);
       rect.pos.x += rect.size.cx;
       ++text;
     }
@@ -570,8 +570,8 @@ struct OpenglDisplay : Display
   GLint m_normalLoc;
 
   GLuint m_programId;
-  vector<Model> m_Models;
-  Model m_fontModel;
+  vector<RenderMesh> m_Models;
+  RenderMesh m_fontModel;
 
   float m_ambientLight = 0;
 };

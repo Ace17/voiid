@@ -19,7 +19,7 @@ struct Action
   void addTexture(string path, Rect2i rect = Rect2i(0, 0, 0, 0));
 };
 
-struct Model
+struct RenderMesh
 {
   uint32_t buffer = 0;
   vector<Action> actions;
@@ -35,5 +35,5 @@ struct Model
   vector<Vertex> vertices;
 };
 
-Model loadModel(string jsonPath);
+RenderMesh loadModel(string jsonPath);
 

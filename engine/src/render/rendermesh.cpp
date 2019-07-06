@@ -4,7 +4,7 @@
 // published by the Free Software Foundation, either version 3 of the
 // License, or (at your option) any later version.
 
-#include "model.h"
+#include "rendermesh.h"
 #include "base/geom.h"
 #include "base/util.h" // dirName
 #include "misc/json.h"
@@ -32,9 +32,9 @@ Action loadSheetAction(json::Value const& action, string sheetPath, Size2i cell)
   return r;
 }
 
-Model boxModel()
+RenderMesh boxModel()
 {
-  static const Model::Vertex vertices[] =
+  static const RenderMesh::Vertex vertices[] =
   {
     { -0.5, -0.5, +0.5, /* N */ 0, 0, 1, /* uv */ 0, 0, },
     { -0.5, +0.5, +0.5, /* N */ 0, 0, 1, /* uv */ 0, 1, },
@@ -83,7 +83,7 @@ Model boxModel()
     20, 23, 22,
   };
 
-  Model model;
+  RenderMesh model;
 
   for(auto idx : faces)
     model.vertices.push_back(vertices[idx]);
@@ -116,16 +116,16 @@ static bool startsWith(string s, string prefix)
   return s.substr(0, prefix.size()) == prefix;
 }
 
-Model modelFrom3ds(string path3ds)
+RenderMesh modelFrom3ds(string path3ds)
 {
   auto const meshes = tds::load(path3ds);
 
-  Model r;
+  RenderMesh r;
 
   auto addVertex =
     [&] (Mesh::Vertex vert, Vector3f N)
     {
-      Model::Vertex vt {};
+      RenderMesh::Vertex vt {};
 
       vt.x = vert.x;
       vt.y = vert.y;
@@ -163,10 +163,10 @@ Model modelFrom3ds(string path3ds)
   return r;
 }
 
-Model loadModel(string jsonPath)
+RenderMesh loadModel(string jsonPath)
 {
   auto data = read(jsonPath);
-  Model r;
+  RenderMesh r;
 
   auto const path3dsRender = setExtension(jsonPath, "3ds.render");
   auto const path3ds = setExtension(jsonPath, "3ds");
