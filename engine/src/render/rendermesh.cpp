@@ -123,7 +123,7 @@ RenderMesh loadModel(string renderPath)
     r = boxModel();
 
   r.diffuse = loadTexture(setExtension(renderPath, "diffuse.png"));
-  r.lightmap = loadTexture(setExtension(renderPath, "png"));
+  r.lightmap = loadTexture(setExtension(renderPath, "lightmap.png"));
   return r;
 }
 
