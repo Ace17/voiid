@@ -108,6 +108,8 @@ RenderMesh loadTxtRenderMesh(string path)
     mesh.vertices.push_back(vertex);
   }
 
+  fclose(fp);
+
   return mesh;
 }
 
