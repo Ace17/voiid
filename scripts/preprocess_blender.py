@@ -1,4 +1,5 @@
 # this script is meant to be run from blender
+# Preprocess a blender file so it's fully standalone
 
 import bpy
 import sys
