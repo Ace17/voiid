@@ -10,7 +10,7 @@ readonly outputPng=$3
 
 export PYTHONPATH+=$scriptDir
 blender "$input" --background \
-  --python $scriptDir/convert_to_3ds_for_rendering.py \
+  --python $scriptDir/import_rendermesh_from_blender.py \
   --python-exit-code \
   -- "$output3ds.tmp" "$outputPng.tmp" >/dev/null
 

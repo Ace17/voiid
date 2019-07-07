@@ -10,6 +10,7 @@
 #include "misc/json.h"
 #include "misc/file.h"
 #include "3ds.h"
+#include <string.h> // strlen
 
 extern int loadTexture(string path, Rect2i rect = Rect2i(0, 0, 0, 0));
 
@@ -116,6 +117,45 @@ static bool startsWith(string s, string prefix)
   return s.substr(0, prefix.size()) == prefix;
 }
 
+RenderMesh modelFromTxt(string path)
+{
+  auto fp = fopen(path.c_str(), "rb");
+
+  if(!fp)
+    throw runtime_error("Can't open model file: '" + path + "'");
+
+  RenderMesh mesh;
+  char line[256];
+
+  while(fgets(line, sizeof line, fp))
+  {
+    auto n = strlen(line);
+
+    if(n > 0 && line[n - 1] == '\n')
+      line[n - 1] = 0;
+
+    if(line[0] == 0 || line[0] == '#')
+      continue;
+
+    float u, v;
+    RenderMesh::Vertex vertex;
+    int count = sscanf(line,
+                       "%f %f %f - %f %f %f - %f %f - %f %f",
+                       &vertex.x, &vertex.y, &vertex.z,
+                       &vertex.nx, &vertex.ny, &vertex.nz,
+                       &u, &v,
+                       &vertex.u, &vertex.v
+                       );
+
+    if(count != 10)
+      throw runtime_error("Invalid line in mesh file: '" + string(line) + "'");
+
+    mesh.vertices.push_back(vertex);
+  }
+
+  return mesh;
+}
+
 RenderMesh modelFrom3ds(string path3ds)
 {
   auto const meshes = tds::load(path3ds);
@@ -168,11 +208,11 @@ RenderMesh loadModel(string jsonPath)
   auto data = read(jsonPath);
   RenderMesh r;
 
-  auto const path3dsRender = setExtension(jsonPath, "3ds.render");
+  auto const pathTxtRender = setExtension(jsonPath, "render");
   auto const path3ds = setExtension(jsonPath, "3ds");
 
-  if(exists(path3dsRender))
-    r = modelFrom3ds(path3dsRender);
+  if(exists(pathTxtRender))
+    r = modelFromTxt(pathTxtRender);
   else if(exists(path3ds))
     r = modelFrom3ds(path3ds);
   else

@@ -9,7 +9,7 @@ res/%.ogg: res-src/%.ogg
 
 ROOMS_SRC+=$(wildcard res-src/rooms/*/mesh.blend)
 TARGETS+=$(ROOMS_SRC:res-src/%.blend=res/%.3ds)
-TARGETS+=$(ROOMS_SRC:res-src/%.blend=res/%.3ds.render)
+TARGETS+=$(ROOMS_SRC:res-src/%.blend=res/%.render)
 
 JSON_SRCS+=$(wildcard res-src/rooms/*/mesh.json)
 TARGETS+=$(JSON_SRCS:res-src/%.json=res/%.json)
@@ -32,10 +32,10 @@ res/%.3ds: res/%.sa.blend ./scripts/convert_to_3ds.py
 	@echo "Convert to 3ds (physics) $<"
 	@./scripts/convert_to_3ds "$<" "$@"
 
-res/%.3ds.render: res/%.sa.blend ./scripts/convert_to_3ds_for_rendering.py
+res/%.render: res/%.sa.blend ./scripts/import_rendermesh_from_blender.py
 	@mkdir -p $(dir $@)
 	@echo "Convert to 3ds (render) $<"
-	@./scripts/convert_to_3ds_for_rendering "$<" "$@" "res/$*.png"
+	@./scripts/import_rendermesh_from_blender "$<" "$@" "res/$*.png"
 
 res/%: res-src/%
 	@mkdir -p $(dir $@)
