@@ -25,13 +25,13 @@ static const Resource resources[] =
   { ResourceType::Sound, SND_DISAPPEAR, "res/sounds/disappear.ogg" },
   { ResourceType::Sound, SND_TELEPORT, "res/sounds/teleport.ogg" },
 
-  { ResourceType::Model, MDL_DOOR, "res/sprites/door.json" },
-  { ResourceType::Model, MDL_RECT, "res/sprites/rect.json" },
-  { ResourceType::Model, MDL_AMULET, "res/sprites/amulet.json" },
-  { ResourceType::Model, MDL_INVRECT, "res/sprites/invrect.json" },
-  { ResourceType::Model, MDL_SWITCH, "res/sprites/switch.json" },
-  { ResourceType::Model, MDL_TELEPORTER, "res/sprites/teleporter.json" },
-  { ResourceType::Model, MDL_BONUS, "res/sprites/bonus.json" },
+  { ResourceType::Model, MDL_DOOR, "res/sprites/door.render" },
+  { ResourceType::Model, MDL_RECT, "res/sprites/rect.render" },
+  { ResourceType::Model, MDL_AMULET, "res/sprites/amulet.render" },
+  { ResourceType::Model, MDL_INVRECT, "res/sprites/invrect.render" },
+  { ResourceType::Model, MDL_SWITCH, "res/sprites/switch.render" },
+  { ResourceType::Model, MDL_TELEPORTER, "res/sprites/teleporter.render" },
+  { ResourceType::Model, MDL_BONUS, "res/sprites/bonus.render" },
 };
 
 Span<const Resource> getResources()

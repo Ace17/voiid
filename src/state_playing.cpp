@@ -125,7 +125,7 @@ struct GameState : Scene, IGame
   {
     {
       char filename[256];
-      sprintf(filename, "res/rooms/%02d/mesh.json", levelIdx);
+      sprintf(filename, "res/rooms/%02d/mesh.render", levelIdx);
       m_view->preload(Resource { ResourceType::Model, MDL_ROOMS, filename });
     }
 

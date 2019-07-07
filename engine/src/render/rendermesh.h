@@ -13,27 +13,25 @@ using namespace std;
 
 #include "base/geom.h"
 
-struct Action
-{
-  vector<int> textures;
-  void addTexture(string path, Rect2i rect = Rect2i(0, 0, 0, 0));
-};
-
 struct RenderMesh
 {
   uint32_t buffer = 0;
-  vector<Action> actions;
+
+  // textures
+  int diffuse  {};
+  int lightmap {};
 
   // mesh data
   struct Vertex
   {
     float x, y, z; // position
     float nx, ny, nz; // normal
-    float u, v;
+    float diffuse_u, diffuse_v;
+    float lightmap_u, lightmap_v;
   };
 
   vector<Vertex> vertices;
 };
 
-RenderMesh loadModel(string jsonPath);
+RenderMesh loadModel(string path);
 

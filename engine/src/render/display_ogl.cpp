@@ -247,44 +247,22 @@ void sendToOpengl(RenderMesh& model)
 }
 
 static
-RenderMesh loadTiledAnimation(string path, int count, int COLS, int SIZE)
+std::vector<RenderMesh> loadTiledAnimation(string path, int count, int COLS, int SIZE)
 {
-  auto m = boxModel();
+  std::vector<RenderMesh> r;
 
   for(int i = 0; i < count; ++i)
   {
+    auto m = boxModel();
+
     auto col = i % COLS;
     auto row = i / COLS;
 
-    Action action;
-    action.addTexture(path, Rect2i(col * SIZE, row * SIZE, SIZE, SIZE));
-    m.actions.push_back(action);
+    m.diffuse = loadTexture(path, Rect2i(col * SIZE, row * SIZE, SIZE, SIZE));
+    r.push_back(m);
   }
 
-  return m;
-}
-
-static
-RenderMesh loadAnimation(string path)
-{
-  if(endsWith(path, ".json"))
-  {
-    return loadModel(path);
-  }
-  else if(endsWith(path, ".mdl"))
-  {
-    path = setExtension(path, "png");
-
-    return loadTiledAnimation(path, 32, 4, 32);
-  }
-  else
-  {
-    auto m = boxModel();
-    Action action;
-    action.addTexture(path, Rect2i());
-    m.actions.push_back(action);
-    return m;
-  }
+  return r;
 }
 
 static
@@ -361,20 +339,24 @@ struct OpenglDisplay : Display
     m_fontModel = loadTiledAnimation("res/font.png", 256, 16, 16);
 
     // don't GL_REPEAT fonts
-    for(auto& action : m_fontModel.actions)
+    for(auto& glyph : m_fontModel)
     {
-      for(auto& texture : action.textures)
-      {
-        glBindTexture(GL_TEXTURE_2D, texture);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-      }
+      glBindTexture(GL_TEXTURE_2D, glyph.diffuse);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
     }
 
-    sendToOpengl(m_fontModel);
+    for(auto& glyph : m_fontModel)
+      sendToOpengl(glyph);
 
     m_MVP = glGetUniformLocation(m_programId, "MVP");
     assert(m_MVP >= 0);
+
+    m_DiffuseTex = glGetUniformLocation(m_programId, "DiffuseTex");
+    assert(m_DiffuseTex >= 0);
+
+    m_LightmapTex = glGetUniformLocation(m_programId, "LightmapTex");
+    assert(m_LightmapTex >= 0);
 
     m_colorId = glGetUniformLocation(m_programId, "fragOffset");
     assert(m_colorId >= 0);
@@ -385,8 +367,11 @@ struct OpenglDisplay : Display
     m_positionLoc = glGetAttribLocation(m_programId, "vertexPos_model");
     assert(m_positionLoc >= 0);
 
-    m_texCoordLoc = glGetAttribLocation(m_programId, "vertexUV");
-    assert(m_texCoordLoc >= 0);
+    m_uvDiffuseLoc = glGetAttribLocation(m_programId, "vertexUV");
+    assert(m_uvDiffuseLoc >= 0);
+
+    m_uvLightmapLoc = glGetAttribLocation(m_programId, "vertexUV_lightmap");
+    assert(m_uvLightmapLoc >= 0);
 
     m_normalLoc = glGetAttribLocation(m_programId, "a_normal");
     assert(m_normalLoc >= 0);
@@ -399,7 +384,7 @@ struct OpenglDisplay : Display
     if((int)m_Models.size() <= id)
       m_Models.resize(id + 1);
 
-    m_Models[id] = loadAnimation(path);
+    m_Models[id] = ::loadModel(path);
     sendToOpengl(m_Models[id]);
   }
 
@@ -443,7 +428,7 @@ struct OpenglDisplay : Display
 
   int m_blinkCounter = 0;
 
-  void renderMesh(Rect3f where, Camera const& camera, RenderMesh& model, bool blinking, int actionIdx, float ratio)
+  void renderMesh(Rect3f where, Camera const& camera, RenderMesh& model, bool blinking)
   {
     SAFE_GL(glUniform4f(m_colorId, 0, 0, 0, 0));
 
@@ -453,17 +438,15 @@ struct OpenglDisplay : Display
         SAFE_GL(glUniform4f(m_colorId, 0.8, 0.4, 0.4, 0));
     }
 
-    if(actionIdx < 0 || actionIdx >= (int)model.actions.size())
-      throw runtime_error("invalid action index");
+    // Texture Unit 0: Diffuse
+    SAFE_GL(glActiveTexture(GL_TEXTURE0));
+    SAFE_GL(glBindTexture(GL_TEXTURE_2D, model.diffuse));
+    SAFE_GL(glUniform1i(m_DiffuseTex, 0));
 
-    auto const& action = model.actions[actionIdx];
-
-    if(action.textures.empty())
-      throw runtime_error("action has no textures");
-
-    auto const N = (int)action.textures.size();
-    auto const idx = ::clamp<int>(ratio * N, 0, N - 1);
-    glBindTexture(GL_TEXTURE_2D, action.textures[idx]);
+    // Texture Unit 1: Lightmap
+    SAFE_GL(glActiveTexture(GL_TEXTURE1));
+    SAFE_GL(glBindTexture(GL_TEXTURE_2D, model.lightmap));
+    SAFE_GL(glUniform1i(m_LightmapTex, 1));
 
     auto const target = camera.pos + camera.dir;
     auto const view = ::lookAt(camera.pos, target, Vector3f(0, 0, 1));
@@ -484,12 +467,14 @@ struct OpenglDisplay : Display
 
     SAFE_GL(glEnableVertexAttribArray(m_positionLoc));
     SAFE_GL(glEnableVertexAttribArray(m_normalLoc));
-    SAFE_GL(glEnableVertexAttribArray(m_texCoordLoc));
+    SAFE_GL(glEnableVertexAttribArray(m_uvDiffuseLoc));
+    SAFE_GL(glEnableVertexAttribArray(m_uvLightmapLoc));
 
 #define OFFSET(a) (void*)(&(((RenderMesh::Vertex*)nullptr)->a))
     SAFE_GL(glVertexAttribPointer(m_positionLoc, 3, GL_FLOAT, GL_FALSE, sizeof(RenderMesh::Vertex), OFFSET(x)));
     SAFE_GL(glVertexAttribPointer(m_normalLoc, 3, GL_FLOAT, GL_FALSE, sizeof(RenderMesh::Vertex), OFFSET(nx)));
-    SAFE_GL(glVertexAttribPointer(m_texCoordLoc, 2, GL_FLOAT, GL_FALSE, sizeof(RenderMesh::Vertex), OFFSET(u)));
+    SAFE_GL(glVertexAttribPointer(m_uvDiffuseLoc, 2, GL_FLOAT, GL_FALSE, sizeof(RenderMesh::Vertex), OFFSET(diffuse_u)));
+    SAFE_GL(glVertexAttribPointer(m_uvLightmapLoc, 2, GL_FLOAT, GL_FALSE, sizeof(RenderMesh::Vertex), OFFSET(lightmap_u)));
 #undef OFFSET
 
     SAFE_GL(glDrawArrays(GL_TRIANGLES, 0, model.vertices.size()));
@@ -504,8 +489,10 @@ struct OpenglDisplay : Display
 
   void drawActor(Rect3f where, int modelId, bool blinking, int actionIdx, float ratio) override
   {
+    (void)actionIdx;
+    (void)ratio;
     auto& model = m_Models.at(modelId);
-    renderMesh(where, m_camera, model, blinking, actionIdx, ratio);
+    renderMesh(where, m_camera, model, blinking);
   }
 
   void drawText(Vector2f pos, char const* text) override
@@ -524,7 +511,7 @@ struct OpenglDisplay : Display
 
     while(*text)
     {
-      renderMesh(rect, cam, m_fontModel, false, *text, 0);
+      renderMesh(rect, cam, m_fontModel[*text], false);
       rect.pos.x += rect.size.cx;
       ++text;
     }
@@ -562,16 +549,20 @@ struct OpenglDisplay : Display
 
   Camera m_camera;
 
+  // shader attribute/uniform locations
   GLint m_MVP;
   GLint m_colorId;
   GLint m_ambientLoc;
+  GLint m_DiffuseTex;
+  GLint m_LightmapTex;
   GLint m_positionLoc;
-  GLint m_texCoordLoc;
+  GLint m_uvDiffuseLoc;
+  GLint m_uvLightmapLoc;
   GLint m_normalLoc;
 
   GLuint m_programId;
   vector<RenderMesh> m_Models;
-  RenderMesh m_fontModel;
+  vector<RenderMesh> m_fontModel;
 
   float m_ambientLight = 0;
 };

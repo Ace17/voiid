@@ -77,7 +77,7 @@ def run():
   bpy.ops.mesh.select_all(action='SELECT')
 
   # Create new image
-  bpy.ops.image.new(name="myLightMap", width=2048, height=2048)
+  bpy.ops.image.new(name="myLightMap", width=512, height=512)
 
   # Compute lightmap UV coords
   bpy.ops.uv.lightmap_pack()
@@ -123,6 +123,9 @@ def deleteNonRenderedFaces():
   bpy.ops.object.mode_set(mode='OBJECT')
   obj = bpy.context.object
 
+  if len(obj.material_slots) == 0:
+      return
+
   # Get the active mesh
   me = obj.data
 
@@ -132,6 +135,7 @@ def deleteNonRenderedFaces():
 
   faces_select = []
   for f in bm.faces:
+      # sys.stderr.write("material_index=" + str(f.material_index) + "\n")
       if obj.material_slots[f.material_index].name == "nope":
           faces_select.append(f)
   bmesh.ops.delete(bm, geom=faces_select, context=3) # ONLY_FACES
