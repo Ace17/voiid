@@ -52,6 +52,7 @@ struct View
   virtual void playMusic(MUSIC id) = 0;
   virtual void stopMusic() = 0;
   virtual void playSound(SOUND id) = 0;
+  virtual void setCameraPos(Vector3f pos, Vector3f orientation) = 0;
   virtual void setAmbientLight(float amount) = 0;
 
   // adds a displayable object to the current frame

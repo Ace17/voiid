@@ -145,20 +145,6 @@ private:
 
     for(auto& actor : m_actors)
     {
-      if(actor.focus)
-      {
-        auto const size = Vector3f(actor.scale.cx, actor.scale.cy, actor.scale.cz);
-        auto eyesPos = actor.pos + Vector3f(
-            size.x * 0.5,
-            size.y * 0.5,
-            size.z * 0.9);
-        m_display->setCamera(eyesPos, actor.orientation);
-        break;
-      }
-    }
-
-    for(auto& actor : m_actors)
-    {
       auto where = Rect3f(
           actor.pos.x, actor.pos.y, actor.pos.z,
           actor.scale.cx, actor.scale.cy, actor.scale.cz);
@@ -310,6 +296,11 @@ private:
   void sendActor(Actor const& actor) override
   {
     m_actors.push_back(actor);
+  }
+
+  void setCameraPos(Vector3f pos, Vector3f orientation)
+  {
+    m_display->setCamera(pos, orientation);
   }
 
   int keys[SDL_NUM_SCANCODES] {};
