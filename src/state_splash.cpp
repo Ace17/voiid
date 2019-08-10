@@ -54,9 +54,8 @@ struct SplashState : Scene
     }
   }
 
-  vector<Actor> getActors() const override
+  void draw() override
   {
-    return vector<Actor>();
   }
 
 private:

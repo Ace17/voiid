@@ -73,21 +73,17 @@ struct GameState : Scene, IGame
     m_view->setAmbientLight(1.0 + min(0.0f, 0.02f * m_player->pos.z));
   }
 
-  vector<Actor> getActors() const override
+  void draw() override
   {
-    vector<Actor> r;
-
-    r.push_back(Actor(Vector(0, 0, 0), MDL_ROOMS));
+    m_view->sendActor(Actor(Vector(0, 0, 0), MDL_ROOMS));
 
     for(auto& entity : m_entities)
     {
-      r.push_back(entity->getActor());
+      m_view->sendActor(entity->getActor());
 
       if(m_debug)
-        r.push_back(getDebugActor(entity.get()));
+        m_view->sendActor(getDebugActor(entity.get()));
     }
-
-    return r;
   }
 
   void removeDeadThings()

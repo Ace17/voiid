@@ -13,6 +13,32 @@
 
 typedef int SOUND;
 typedef int MUSIC;
+typedef int MODEL;
+
+enum class Effect
+{
+  Normal,
+  Blinking,
+};
+
+// a displayable object (= a game object, as seen by the user-interface)
+struct Actor
+{
+  Actor(Vector3f pos_ = Vector3f(0, 0, 0), MODEL model_ = 0)
+  {
+    model = model_;
+    pos = pos_;
+  }
+
+  Vector3f pos; // object position, in logical units
+  Vector3f orientation = Vector3f(1, 0, 0);
+  MODEL model = 0; // what sprite to display
+  int action = 0; // what sprite action to use
+  float ratio = 0; // in [0 .. 1]. 0 for action beginning, 1 for action end
+  Size3f scale = Size3f(1, 1, 1); // sprite size
+  Effect effect = Effect::Normal;
+  bool focus = false; // is it the camera?
+};
 
 // This interface should act as a message sink.
 // It should provide no way to query anything about the outside world.
@@ -27,5 +53,8 @@ struct View
   virtual void stopMusic() = 0;
   virtual void playSound(SOUND id) = 0;
   virtual void setAmbientLight(float amount) = 0;
+
+  // adds a displayable object to the current frame
+  virtual void sendActor(Actor const& actor) = 0;
 };
 

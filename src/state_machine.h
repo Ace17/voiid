@@ -18,10 +18,10 @@ struct StateMachine : Scene
     current->tick(c);
   }
 
-  vector<Actor> getActors() const override
+  void draw() override
   {
     auto current = states[currIdx].get();
-    return current->getActors();
+    current->draw();
   }
 
   vector<unique_ptr<Scene>> states;

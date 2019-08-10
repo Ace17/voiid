@@ -79,6 +79,8 @@ public:
 
     if(dirty)
     {
+      m_actors.clear();
+      m_scene->draw();
       draw();
       m_fps.tick(now);
     }
@@ -141,9 +143,7 @@ private:
   {
     m_display->beginDraw();
 
-    auto actors = m_scene->getActors();
-
-    for(auto& actor : actors)
+    for(auto& actor : m_actors)
     {
       if(actor.focus)
       {
@@ -157,7 +157,7 @@ private:
       }
     }
 
-    for(auto& actor : actors)
+    for(auto& actor : m_actors)
     {
       auto where = Rect3f(
           actor.pos.x, actor.pos.y, actor.pos.z,
@@ -307,6 +307,11 @@ private:
     m_display->setAmbientLight(amount);
   }
 
+  void sendActor(Actor const& actor) override
+  {
+    m_actors.push_back(actor);
+  }
+
   int keys[SDL_NUM_SCANCODES] {};
   int m_running = 1;
 
@@ -322,6 +327,7 @@ private:
   bool m_doGrab = true;
   unique_ptr<Audio> m_audio;
   unique_ptr<Display> m_display;
+  vector<Actor> m_actors;
 
   string m_title;
   string m_textbox;
