@@ -19,7 +19,7 @@ struct Display
   virtual void endDraw() = 0;
   virtual void drawActor(Rect3f where, int modelId, bool blinking, int actionIdx, float frame) = 0;
   virtual void drawText(Vector2f pos, char const* text) = 0;
-  virtual void setCamera(Vector3f pos, Vector3f dir) = 0;
+  virtual void setCamera(Vector3f pos, Quaternion dir) = 0;
   virtual void setAmbientLight(float ambientLight) = 0;
   virtual void enableGrab(bool enable) = 0;
 };

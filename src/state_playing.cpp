@@ -89,6 +89,7 @@ struct GameState : Scene, IGame
             size.x * 0.5,
             size.y * 0.5,
             size.z * 0.9);
+
         m_view->setCameraPos(eyesPos, actor.orientation);
       }
 

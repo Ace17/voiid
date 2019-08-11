@@ -35,7 +35,7 @@ struct Editor : Player
     r.scale = UnitSize * 0;
     r.focus = true;
 
-    r.orientation = vectorFromAngles(lookAngleHorz, lookAngleVert);
+    r.orientation = Quaternion::fromEuler(lookAngleHorz, lookAngleVert, 0);
 
     return r;
   }

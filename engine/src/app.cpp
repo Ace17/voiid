@@ -288,7 +288,7 @@ private:
     m_audio->playSound(sound);
   }
 
-  void setCameraPos(Vector3f pos, Vector3f orientation)
+  void setCameraPos(Vector3f pos, Quaternion orientation)
   {
     m_display->setCamera(pos, orientation);
   }

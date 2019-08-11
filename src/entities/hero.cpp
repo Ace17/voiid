@@ -55,7 +55,7 @@ struct Hero : Player, Damageable
       r.action = 1;
     }
 
-    r.orientation = vectorFromAngles(lookAngleHorz, lookAngleVert);
+    r.orientation = Quaternion::fromEuler(lookAngleHorz, -lookAngleVert, 0);
 
     return r;
   }

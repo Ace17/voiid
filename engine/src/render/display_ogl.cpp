@@ -388,9 +388,10 @@ struct OpenglDisplay : Display
     sendToOpengl(m_Models[id]);
   }
 
-  void setCamera(Vector3f pos, Vector3f dir) override
+  void setCamera(Vector3f pos, Quaternion dir) override
   {
-    auto cam = (Camera { pos, dir });
+    Vector3f v(1, 0, 0);
+    auto cam = (Camera { pos, dir.rotate(v) });
 
     if(!m_camera.valid)
     {

@@ -529,6 +529,83 @@ private:
 };
 
 ///////////////////////////////////////////////////////////////////////////////
+// Quaternion
+///////////////////////////////////////////////////////////////////////////////
+
+struct Quaternion
+{
+  Vector3f v = Vector3f(0, 0, 0);
+  float s = 0;
+
+  static Quaternion rotation(Vector3f axis, float angle)
+  {
+    Quaternion r;
+    r.v = axis * sin(angle / 2);
+    r.s = cos(angle / 2);
+    return r.normalized();
+  }
+
+  static Quaternion fromEuler(float yaw, float pitch, float roll)
+  {
+    // Abbreviations for the various angular functions
+    auto const cy = cos(yaw * 0.5);
+    auto const sy = sin(yaw * 0.5);
+    auto const cp = cos(pitch * 0.5);
+    auto const sp = sin(pitch * 0.5);
+    auto const cr = cos(roll * 0.5);
+    auto const sr = sin(roll * 0.5);
+
+    Quaternion q;
+    q.s = cy * cp * cr + sy * sp * sr;
+    q.v.x = cy * cp * sr - sy * sp * cr;
+    q.v.y = sy * cp * sr + cy * sp * cr;
+    q.v.z = sy * cp * cr - cy * sp * sr;
+
+    return q;
+  }
+
+  Quaternion operator * (Quaternion q) const
+  {
+    auto const& p = *this;
+    Quaternion r;
+    // p * q = [( pS qV + qS pV + pV × qV ), ( pS qS − pV qV )]
+    r.v = p.s * q.v + q.s * p.v + crossProduct(p.v, q.v);
+    r.s = p.s * q.s - dotProduct(p.v, q.v);
+    return r;
+  }
+
+  Quaternion operator * (float f) const
+  {
+    return Quaternion { v* f, s* f };
+  }
+
+  void operator *= (float f)
+  {
+    *this = *this * f;
+  }
+
+  float magnitude() const
+  {
+    return sqrt(v.x * v.x + v.y * v.y + v.z * v.z + s * s);
+  }
+
+  Quaternion conjugate() const
+  {
+    return Quaternion { v* -1.0f, s };
+  }
+
+  Quaternion normalized() const
+  {
+    return *this * (1.0 / magnitude());
+  }
+
+  Vector3f rotate(Vector3f v) const
+  {
+    return (*this * Quaternion { v, 0 } *this->conjugate()).v;
+  }
+};
+
+///////////////////////////////////////////////////////////////////////////////
 // Trigo
 ///////////////////////////////////////////////////////////////////////////////
 static auto const PI = 3.14159265358979323846;

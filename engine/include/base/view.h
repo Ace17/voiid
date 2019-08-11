@@ -31,7 +31,7 @@ struct Actor
   }
 
   Vector3f pos; // object position, in logical units
-  Vector3f orientation = Vector3f(1, 0, 0);
+  Quaternion orientation = Quaternion::rotation(Vector3f(1, 0, 0), 0);
   MODEL model = 0; // what sprite to display
   int action = 0; // what sprite action to use
   float ratio = 0; // in [0 .. 1]. 0 for action beginning, 1 for action end
@@ -52,7 +52,7 @@ struct View
   virtual void playMusic(MUSIC id) = 0;
   virtual void stopMusic() = 0;
   virtual void playSound(SOUND id) = 0;
-  virtual void setCameraPos(Vector3f pos, Vector3f orientation) = 0;
+  virtual void setCameraPos(Vector3f pos, Quaternion orientation) = 0;
   virtual void setAmbientLight(float amount) = 0;
 
   // adds a displayable object to the current frame
