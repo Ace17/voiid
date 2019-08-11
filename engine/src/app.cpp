@@ -288,6 +288,11 @@ private:
     m_audio->playSound(sound);
   }
 
+  void setCameraPos(Vector3f pos, Vector3f orientation)
+  {
+    m_display->setCamera(pos, orientation);
+  }
+
   void setAmbientLight(float amount) override
   {
     m_display->setAmbientLight(amount);
@@ -298,16 +303,11 @@ private:
     m_actors.push_back(actor);
   }
 
-  void setCameraPos(Vector3f pos, Vector3f orientation)
-  {
-    m_display->setCamera(pos, orientation);
-  }
-
   int keys[SDL_NUM_SCANCODES] {};
   int m_running = 1;
 
   int m_lastTime;
-  int m_lastFps = 0;
+  int m_lastFps = -1;
   RateCounter m_fps;
   Control m_control {};
   vector<string> m_args;
