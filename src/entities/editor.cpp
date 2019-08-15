@@ -29,7 +29,7 @@ struct Editor : Player
     size = Size(0.5, 0.5, 0.5);
   }
 
-  virtual Actor getActor() const override
+  virtual void onDraw(View* view) const override
   {
     auto r = Actor(pos - size * 0.5, MDL_INVRECT);
     r.scale = UnitSize * 0;
@@ -37,7 +37,7 @@ struct Editor : Player
 
     r.orientation = Quaternion::fromEuler(lookAngleHorz, lookAngleVert, 0);
 
-    return r;
+    view->sendActor(r);
   }
 
   void think(Control const& c) override

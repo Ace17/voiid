@@ -30,12 +30,12 @@ struct FinishLine : Entity
     collidesWith = CG_PLAYER | CG_SOLIDPLAYER;
   }
 
-  virtual Actor getActor() const override
+  virtual void onDraw(View* view) const override
   {
     auto r = Actor(pos, MDL_TELEPORTER);
     r.scale = size;
     r.effect = touchDelay > 0 ? Effect::Blinking : Effect::Normal;
-    return r;
+    view->sendActor(r);
   }
 
   virtual void tick() override

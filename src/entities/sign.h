@@ -15,7 +15,7 @@ struct Sign : Entity
     collidesWith = 0;
   }
 
-  virtual Actor getActor() const override
+  virtual void onDraw(View* view) const override
   {
     auto r = Actor(pos, MDL_RECT);
     r.scale = size * 2;
@@ -23,7 +23,7 @@ struct Sign : Entity
     r.ratio = 0;
     r.action = which;
 
-    return r;
+    view->sendActor(r);
   }
 
   int const which;

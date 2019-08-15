@@ -79,19 +79,7 @@ struct GameState : Scene, IGame
 
     for(auto& entity : m_entities)
     {
-      auto actor = entity->getActor();
-      m_view->sendActor(actor);
-
-      if(actor.focus)
-      {
-        auto const size = Vector3f(actor.scale.cx, actor.scale.cy, actor.scale.cz);
-        auto eyesPos = actor.pos + Vector3f(
-            size.x * 0.5,
-            size.y * 0.5,
-            size.z * 0.9);
-
-        m_view->setCameraPos(eyesPos, actor.orientation);
-      }
+      entity->onDraw(m_view);
 
       if(m_debug)
         m_view->sendActor(getDebugActor(entity.get()));

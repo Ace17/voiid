@@ -5,18 +5,41 @@
 
 #include "engine/tests/tests.h"
 
+static Actor getActor(Entity* entity)
+{
+  struct FakeView : View
+  {
+    virtual void setTitle(char const*) {};
+    virtual void preload(Resource) {};
+    virtual void textBox(char const*) {};
+    virtual void playMusic(MUSIC) {};
+    virtual void stopMusic() {};
+    virtual void playSound(SOUND) {};
+    virtual void setCameraPos(Vector3f, Quaternion) {};
+    virtual void setAmbientLight(float) {};
+
+    // adds a displayable object to the current frame
+    virtual void sendActor(Actor const& actor) { this->actor = actor; };
+
+    Actor actor;
+  };
+  FakeView fakeView;
+  entity->onDraw(&fakeView);
+  return fakeView.actor;
+};
+
 unittest("Entity: explosion")
 {
   auto explosion = makeExplosion();
 
   assert(!explosion->dead);
-  assertEquals(0, explosion->getActor().ratio);
+  assertEquals(0, getActor(explosion.get()).ratio);
 
   for(int i = 0; i < 10000; ++i)
     explosion->tick();
 
   assert(explosion->dead);
-  assertEquals(100, int(explosion->getActor().ratio * 100));
+  assertEquals(100, int(getActor(explosion.get()).ratio * 100));
 }
 
 #include "entities/player.h"
@@ -36,9 +59,8 @@ struct NullPlayer : Player
   {
   }
 
-  virtual Actor getActor() const override
+  virtual void onDraw(View*) const override
   {
-    return Actor(pos, 0);
   }
 };
 
@@ -144,7 +166,7 @@ unittest("Entity: animate")
 
   for(int i = 0; i < 1000; ++i)
   {
-    auto actor = ent->getActor();
+    auto actor = getActor(ent.get());
     minVal = min(minVal, actor.ratio);
     maxVal = max(maxVal, actor.ratio);
     ent->tick();

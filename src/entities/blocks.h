@@ -14,7 +14,7 @@ struct CrumbleBlock : Entity
     collisionGroup = CG_WALLS;
   }
 
-  virtual Actor getActor() const override
+  virtual void onDraw(View* view) const override
   {
     auto r = Actor(pos, MDL_RECT);
     r.scale = size;
@@ -24,7 +24,7 @@ struct CrumbleBlock : Entity
     if(!solid)
       r.scale = UnitSize * 0.01;
 
-    return r;
+    view->sendActor(r);
   }
 
   virtual void enter() override
@@ -70,14 +70,14 @@ struct FragileBlock : Entity, Damageable
     reappear();
   }
 
-  virtual Actor getActor() const override
+  virtual void onDraw(View* view) const override
   {
     auto r = Actor(pos, MDL_RECT);
     r.scale = size;
     r.ratio = 0;
     r.action = solid ? 4 : 1;
 
-    return r;
+    view->sendActor(r);
   }
 
   virtual void onDamage(int) override

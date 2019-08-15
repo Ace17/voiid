@@ -27,15 +27,14 @@ struct Bonus : Entity
     size = UnitSize;
   }
 
-  virtual Actor getActor() const override
+  virtual void onDraw(View* view) const override
   {
     auto s = sin(time * 0.01);
     auto r = Actor { pos, MDL_BONUS };
     r.scale = UnitSize;
     r.ratio = max(s, 0.0);
     r.action = modelAction;
-
-    return r;
+    view->sendActor(r);
   }
 
   virtual void tick() override

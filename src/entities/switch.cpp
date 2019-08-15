@@ -25,7 +25,7 @@ struct Switch : Entity, Switchable
     solid = true;
   }
 
-  virtual Actor getActor() const override
+  virtual void onDraw(View* view) const override
   {
     auto r = Actor(pos, MDL_SWITCH);
     r.scale = size;
@@ -34,7 +34,7 @@ struct Switch : Entity, Switchable
       r.effect = Effect::Blinking;
 
     r.action = state ? 1 : 0;
-    return r;
+    view->sendActor(r);
   }
 
   virtual void tick() override
@@ -80,11 +80,11 @@ struct DetectorSwitch : Entity
     collidesWith = CG_PLAYER | CG_SOLIDPLAYER;
   }
 
-  virtual Actor getActor() const override
+  virtual void onDraw(View* view) const override
   {
     auto r = Actor(pos, MDL_RECT);
     r.scale = size;
-    return r;
+    view->sendActor(r);
   }
 
   virtual void tick() override

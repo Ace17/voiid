@@ -18,14 +18,13 @@ struct SpiderBullet : Entity
     collidesWith = CG_SOLIDPLAYER;
   }
 
-  virtual Actor getActor() const override
+  virtual void onDraw(View* view) const override
   {
     auto r = Actor(pos, MDL_RECT);
     r.scale = size;
     r.action = 0;
     r.ratio = 0;
-
-    return r;
+    view->sendActor(r);
   }
 
   void tick() override
@@ -59,7 +58,7 @@ struct Spider : Entity, Damageable
     collidesWith = CG_SOLIDPLAYER;
   }
 
-  virtual Actor getActor() const override
+  virtual void onDraw(View* view) const override
   {
     auto r = Actor(pos, MDL_RECT);
 
@@ -71,7 +70,7 @@ struct Spider : Entity, Damageable
     r.action = 0;
     r.ratio = (time % 800) / 800.0f;
 
-    return r;
+    view->sendActor(r);
   }
 
   virtual void tick() override

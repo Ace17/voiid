@@ -15,13 +15,12 @@ struct Spikes : Entity
     collidesWith = CG_SOLIDPLAYER;
   }
 
-  virtual Actor getActor() const override
+  virtual void onDraw(View* view) const override
   {
     auto r = Actor(pos, MDL_RECT);
     r.scale = size;
     r.ratio = 0;
-
-    return r;
+    view->sendActor(r);
   }
 
   void onCollide(Entity* other) override

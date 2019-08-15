@@ -27,7 +27,7 @@ struct Explosion : Entity
     }
   }
 
-  virtual Actor getActor() const override
+  virtual void onDraw(View* view) const override
   {
     auto r = Actor(pos, MDL_RECT);
 
@@ -35,7 +35,7 @@ struct Explosion : Entity
     r.scale = UnitSize * 1.5;
     r.pos -= r.scale * 0.5;
 
-    return r;
+    view->sendActor(r);
   }
 
   int time = 0;

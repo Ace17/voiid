@@ -40,24 +40,21 @@ struct Hero : Player, Damageable
     respawnPoint = pos;
   }
 
-  virtual Actor getActor() const override
+  virtual void onDraw(View* view) const override
   {
     auto r = Actor(pos, MDL_INVRECT);
     r.scale = size;
     r.focus = true;
-
-    if(1) // hide debug box
-    {
-      r.action = 0;
-    }
-    else
-    {
-      r.action = 1;
-    }
-
     r.orientation = Quaternion::fromEuler(lookAngleHorz, -lookAngleVert, 0);
+    if(0) // hide debug box
+      view->sendActor(r);
 
-    return r;
+    auto eyesPos = r.pos + Vector3f(
+        r.scale.cx * 0.5,
+        r.scale.cy * 0.5,
+        r.scale.cz * 0.9);
+
+    view->setCameraPos(eyesPos, r.orientation);
   }
 
   void think(Control const& c) override

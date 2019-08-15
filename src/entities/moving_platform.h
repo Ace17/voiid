@@ -17,12 +17,11 @@ struct MovingPlatform : Entity
     dir = dir_;
   }
 
-  virtual Actor getActor() const override
+  virtual void onDraw(View* view) const override
   {
     auto r = Actor(pos, MDL_RECT);
     r.scale = size;
-
-    return r;
+    view->sendActor(r);
   }
 
   void tick() override

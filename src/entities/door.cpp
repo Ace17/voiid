@@ -40,13 +40,13 @@ struct Door : Entity, IEventSink
     }
   }
 
-  virtual Actor getActor() const override
+  virtual void onDraw(View* view) const override
   {
     auto r = Actor(pos, MDL_DOOR);
     r.action = 1;
     r.ratio = 0;
     r.scale = size;
-    return r;
+    view->sendActor(r);
   }
 
   virtual void notify(const Event* evt) override
@@ -127,13 +127,13 @@ struct AutoDoor : Entity, Switchable
     }
   }
 
-  virtual Actor getActor() const override
+  virtual void onDraw(View* view) const override
   {
     auto r = Actor(pos, MDL_DOOR);
     r.action = 1;
     r.ratio = 0;
     r.scale = size;
-    return r;
+    view->sendActor(r);
   }
 
   virtual void onSwitch() override
@@ -177,7 +177,7 @@ struct BreakableDoor : Entity, Damageable
     collisionGroup = CG_WALLS;
   }
 
-  virtual Actor getActor() const override
+  virtual void onDraw(View* view) const override
   {
     auto r = Actor(pos, MDL_DOOR);
     r.scale = size;
@@ -185,7 +185,7 @@ struct BreakableDoor : Entity, Damageable
     if(blinking)
       r.effect = Effect::Blinking;
 
-    return r;
+    view->sendActor(r);
   }
 
   virtual void tick() override

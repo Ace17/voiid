@@ -15,12 +15,12 @@ struct Conveyor : Entity
     solid = 1;
   }
 
-  virtual Actor getActor() const override
+  virtual void onDraw(View* view) const override
   {
     auto r = Actor(pos, MDL_RECT);
     r.action = 2;
     r.scale = size;
-    return r;
+    view->sendActor(r);
   }
 
   virtual void enter() override
