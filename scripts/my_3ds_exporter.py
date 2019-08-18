@@ -27,10 +27,7 @@ import bpy
 import sys
 import traceback
 
-def saveAs3ds(scene, filepath="",
-         use_selection=True,
-         global_matrix=None,
-         ):
+def saveAs3ds(scene, filepath):
 
     import bpy
     import mathutils
@@ -44,8 +41,7 @@ def saveAs3ds(scene, filepath="",
     time1 = time.clock()
     #Blender.Window.WaitCursor(1)
 
-    if global_matrix is None:
-        global_matrix = mathutils.Matrix()
+    global_matrix = mathutils.Matrix()
 
     if bpy.ops.object.mode_set.poll():
         bpy.ops.object.mode_set(mode='OBJECT')
@@ -69,10 +65,7 @@ def saveAs3ds(scene, filepath="",
     materialDict = {}
     mesh_objects = []
 
-    if use_selection:
-        objects = (ob for ob in scene.objects if ob.is_visible(scene) and ob.select)
-    else:
-        objects = (ob for ob in scene.objects if ob.is_visible(scene))
+    objects = (ob for ob in scene.objects if ob.is_visible(scene))
 
     for ob in objects:
         # get derived objects

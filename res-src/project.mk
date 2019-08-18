@@ -31,7 +31,7 @@ res/%.3ds: res/%.sa.blend ./scripts/convert_to_3ds.py
 
 res/%.render: res/%.sa.blend ./scripts/import_rendermesh_from_blender.py
 	@mkdir -p $(dir $@)
-	@echo "Convert to 3ds (render) $<"
+	@echo "Convert to rendermesh: $<"
 	@cp res-src/$*.png res/$*.diffuse.png
 	@./scripts/import_rendermesh_from_blender "$<" "$@" "res/$*.lightmap.png"
 
