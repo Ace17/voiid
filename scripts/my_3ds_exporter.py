@@ -32,16 +32,9 @@ def saveAs3ds(scene, filepath):
     import bpy
     import mathutils
 
-    import time
     from bpy_extras.io_utils import create_derived_objects, free_derived_objects
 
     """Save the Blender scene to a 3ds file."""
-
-    # Time the export
-    time1 = time.clock()
-    #Blender.Window.WaitCursor(1)
-
-    global_matrix = mathutils.Matrix()
 
     if bpy.ops.object.mode_set.poll():
         bpy.ops.object.mode_set(mode='OBJECT')
@@ -84,9 +77,8 @@ def saveAs3ds(scene, filepath):
                 data = None
 
             if data:
-                matrix = global_matrix * mat
-                data.transform(matrix)
-                mesh_objects.append((ob_derived, data, matrix))
+                data.transform(mat)
+                mesh_objects.append((ob_derived, data, mat))
                 mat_ls = data.materials
                 mat_ls_len = len(mat_ls)
 
