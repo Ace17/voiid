@@ -170,40 +170,42 @@ def exportMesh(scene, filepath=""):
             except:
                 data = None
 
-            if data:
-                matrix = mat
-                data.transform(matrix)
-                mesh_objects.append((ob_derived, data, matrix))
-                mat_ls = data.materials
-                mat_ls_len = len(mat_ls)
+            if data is None:
+                continue
 
-                # get material/image tuples.
-                if data.tessface_uv_textures:
-                    if not mat_ls:
-                        mat = mat_name = None
+            matrix = mat
+            data.transform(matrix)
+            mesh_objects.append((ob_derived, data, matrix))
+            mat_ls = data.materials
+            mat_ls_len = len(mat_ls)
 
-                    for f, uf in zip(data.tessfaces, data.tessface_uv_textures.active.data):
-                        if mat_ls:
-                            mat_index = f.material_index
-                            if mat_index >= mat_ls_len:
-                                mat_index = f.mat = 0
-                            mat = mat_ls[mat_index]
-                            mat_name = None if mat is None else mat.name
-                        # else there already set to none
+            # get material/image tuples.
+            if data.tessface_uv_textures:
+                if not mat_ls:
+                    mat = mat_name = None
 
-                        img = uf.image
-                        img_name = None if img is None else img.name
+                for f, uf in zip(data.tessfaces, data.tessface_uv_textures.active.data):
+                    if mat_ls:
+                        mat_index = f.material_index
+                        if mat_index >= mat_ls_len:
+                            mat_index = f.mat = 0
+                        mat = mat_ls[mat_index]
+                        mat_name = None if mat is None else mat.name
+                    # else there already set to none
 
-                        materialDict.setdefault((mat_name, img_name), (mat, img))
+                    img = uf.image
+                    img_name = None if img is None else img.name
 
-                else:
-                    for mat in mat_ls:
-                        if mat:  # material may be None so check its not.
-                            materialDict.setdefault((mat.name, None), (mat, None))
+                    materialDict.setdefault((mat_name, img_name), (mat, img))
 
-                    for f in data.tessfaces:
-                        if f.material_index >= mat_ls_len:
-                            f.material_index = 0
+            else:
+                for mat in mat_ls:
+                    if mat:  # material may be None so check its not.
+                        materialDict.setdefault((mat.name, None), (mat, None))
+
+                for f in data.tessfaces:
+                    if f.material_index >= mat_ls_len:
+                        f.material_index = 0
 
         if free:
             free_derived_objects(ob)
