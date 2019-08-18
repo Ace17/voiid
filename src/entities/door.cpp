@@ -220,6 +220,6 @@ unique_ptr<Entity> makeBreakableDoor()
 }
 
 #include "entity_factory.h"
-static auto const reg1 = registerEntity("auto_door", [] (EntityConfig &) { return makeAutoDoor(); });
-static auto const reg2 = registerEntity("door", [] (EntityConfig& args) { auto arg = atoi(args[0].c_str()); return makeDoor(arg); });
+static auto const reg1 = registerEntity("auto_door", [] (IEntityConfig*) { return makeAutoDoor(); });
+static auto const reg2 = registerEntity("door", [] (IEntityConfig* args) { auto arg = args->getInt("0"); return makeDoor(arg); });
 

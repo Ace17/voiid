@@ -54,5 +54,5 @@ struct FinishLine : Entity
 };
 
 #include "entity_factory.h"
-static auto const reg3_ = registerEntity("finish", [] (EntityConfig &) { return make_unique<FinishLine>(); });
+static auto const reg3_ = registerEntity("finish", [] (IEntityConfig*) { return make_unique<FinishLine>(); });
 

@@ -116,6 +116,6 @@ struct DetectorSwitch : Entity
 
 #include "entity_factory.h"
 static auto const reg1 = registerEntity("switch",
-                                        [] (EntityConfig& args) { auto arg = atoi(args[0].c_str()); return makeSwitch(arg); }
+                                        [] (IEntityConfig* args) { auto arg = args->getInt("0"); return makeSwitch(arg); }
                                         );
 

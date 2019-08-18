@@ -8,6 +8,8 @@
 
 #include <algorithm>
 #include <list>
+#include <map>
+
 #include "base/scene.h"
 #include "base/util.h"
 
@@ -23,6 +25,145 @@
 #include "models.h"
 
 using namespace std;
+
+static
+vector<string> parseCall(string content)
+{
+  content += '\0';
+  auto stream = content.c_str();
+
+  auto head = [&] ()
+    {
+      return *stream;
+    };
+
+  auto accept = [&] (char what)
+    {
+      if(!*stream)
+        return false;
+
+      if(head() != what)
+        return false;
+
+      stream++;
+      return true;
+    };
+
+  auto expect = [&] (char what)
+    {
+      if(!accept(what))
+        throw runtime_error(string("Expected '") + what + "'");
+    };
+
+  auto parseString = [&] ()
+    {
+      string r;
+
+      while(!accept('"'))
+      {
+        char c = head();
+        accept(c);
+        r += c;
+      }
+
+      return r;
+    };
+
+  auto parseIdentifier = [&] ()
+    {
+      string r;
+
+      while(isalnum(head()) || head() == '_' || head() == '-')
+      {
+        char c = head();
+        accept(c);
+        r += c;
+      }
+
+      return r;
+    };
+
+  auto parseArgument = [&] ()
+    {
+      if(accept('"'))
+        return parseString();
+      else
+        return parseIdentifier();
+    };
+
+  vector<string> r;
+  r.push_back(parseIdentifier());
+
+  if(accept('('))
+  {
+    bool first = true;
+
+    while(!accept(')'))
+    {
+      if(!first)
+        expect(',');
+
+      r.push_back(parseArgument());
+      first = false;
+    }
+  }
+
+  return r;
+}
+
+struct EntityConfigImpl : IEntityConfig
+{
+  string getString(const char* varName, string defaultValue) override
+  {
+    auto i = values.find(varName);
+
+    if(i == values.end())
+      return defaultValue;
+
+    return i->second;
+  }
+
+  int getInt(const char* varName, int defaultValue) override
+  {
+    auto i = values.find(varName);
+
+    if(i == values.end())
+      return defaultValue;
+
+    return atoi(i->second.c_str());
+  }
+
+  map<string, string> values;
+};
+
+static
+void spawnEntities(Room const& room, IGame* game, int levelIdx)
+{
+  // avoid collisions between static entities from different rooms
+  int id = levelIdx * 1000;
+
+  for(auto& spawner : room.things)
+  {
+    auto words = parseCall(spawner.formula);
+    auto name = words[0];
+    words.erase(words.begin());
+
+    EntityConfigImpl config;
+
+    {
+      int i = 0;
+
+      for(auto& varValue : words)
+        config.values[to_string(i++)] = varValue;
+    }
+
+    auto entity = createEntity(name, &config);
+    entity->pos = spawner.pos;
+    game->spawn(entity.release());
+
+    ++id;
+  }
+}
 
 struct GameState : Scene, IGame
 {
@@ -149,12 +290,7 @@ struct GameState : Scene, IGame
 
       m_player->pos = Vector(level.start.x, level.start.y, level.start.z) - m_player->size * 0.5;
 
-      for(auto& thing : level.things)
-      {
-        auto ent = createEntity(thing.formula);
-        ent->pos = thing.pos;
-        spawn(ent.release());
-      }
+      spawnEntities(level, this, levelIdx);
     }
 
     m_view->playMusic(levelIdx);
