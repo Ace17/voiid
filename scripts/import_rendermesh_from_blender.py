@@ -176,10 +176,11 @@ def exportMesh(scene, filepath=""):
             matrix = mat
             data.transform(matrix)
             mesh_objects.append((ob_derived, data, matrix))
+
+            # get material/image tuples.
             mat_ls = data.materials
             mat_ls_len = len(mat_ls)
 
-            # get material/image tuples.
             if data.tessface_uv_textures:
                 if not mat_ls:
                     mat = mat_name = None
