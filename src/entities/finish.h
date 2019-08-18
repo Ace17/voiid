@@ -16,10 +16,6 @@
 #include "toggle.h"
 #include "collision_groups.h"
 
-struct TouchFinishLineEvent : Event
-{
-};
-
 struct FinishLine : Entity
 {
   FinishLine()

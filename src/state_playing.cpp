@@ -20,8 +20,7 @@
 #include "variable.h"
 #include "state_machine.h"
 #include "physics.h"
-
-#include "entities/finish.h" // TouchFinishLineEvent
+#include "models.h"
 
 using namespace std;
 
