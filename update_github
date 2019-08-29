@@ -1,16 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-set -x
+readonly scriptDir=$(dirname $0)
+source $scriptDir/gamename.sh
 
-readonly name="voiid"
-
-readonly tmpDir=/tmp/update-github-$name
+readonly tmpDir=/tmp/update-github-$NAME
 mkdir -p $tmpDir
 trap "rm -rf $tmpDir" EXIT
 
-git clone bzr::http://code.alaiwan.org/bzr/games/$name $tmpDir/repo
+git clone bzr::http://code.alaiwan.org/bzr/games/$NAME $tmpDir/repo
 cd $tmpDir/repo
-git remote add github git@github.com:Ace17/$name.git
+git remote add github git@github.com:Ace17/$NAME.git
 #git checkout -b master
 git push -f github master

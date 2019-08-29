@@ -1,7 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
-readonly NAME="voiid"
+readonly scriptDir=$(dirname $0)
+source $scriptDir/gamename.sh
 
 readonly tmpDir=/tmp/deliver-$NAME-$$
 trap "rm -rf $tmpDir" EXIT
