@@ -67,17 +67,11 @@ struct NullPlayer : Player
 struct NullGame : IGame
 {
   virtual void playSound(int) {}
-
   virtual void spawn(Entity*) {}
-
   virtual void postEvent(unique_ptr<Event> ) {}
-
   virtual unique_ptr<Handle> subscribeForEvents(IEventSink*) { return nullptr; }
-
   virtual void unsubscribeForEvents(IEventSink*) {}
-
   virtual Vector3f getPlayerPosition() { return Vector3f(0, 0, 0); }
-
   virtual void textBox(char const*) {}
 };
 
