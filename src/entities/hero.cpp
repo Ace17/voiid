@@ -26,7 +26,7 @@ auto const MAX_FALL_SPEED = 0.02f;
 auto const HURT_DELAY = 500;
 auto const STAIR_CLIMB = 0.5;
 
-static auto const NORMAL_SIZE = Size(0.7, 0.7, 1.7);
+static auto const NORMAL_SIZE = Size(0.7, 0.7, 1.5);
 
 struct Hero : Player, Damageable
 {
