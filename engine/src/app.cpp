@@ -273,7 +273,7 @@ private:
     m_textboxDelay = 60 * 2;
   }
 
-  void playMusic(MUSIC id) override
+  void playMusic(int id) override
   {
     m_audio->playMusic(id);
   }
@@ -283,7 +283,7 @@ private:
     m_audio->stopMusic();
   }
 
-  void playSound(SOUND sound) override
+  void playSound(int sound) override
   {
     m_audio->playSound(sound);
   }

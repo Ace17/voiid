@@ -11,10 +11,6 @@
 #include "geom.h"
 #include "resource.h"
 
-typedef int SOUND;
-typedef int MUSIC;
-typedef int MODEL;
-
 enum class Effect
 {
   Normal,
@@ -24,7 +20,7 @@ enum class Effect
 // a displayable object (= a game object, as seen by the user-interface)
 struct Actor
 {
-  Actor(Vector3f pos_ = Vector3f(0, 0, 0), MODEL model_ = 0)
+  Actor(Vector3f pos_ = Vector3f(0, 0, 0), int model_ = 0)
   {
     model = model_;
     pos = pos_;
@@ -32,7 +28,7 @@ struct Actor
 
   Vector3f pos; // object position, in logical units
   Quaternion orientation = Quaternion::rotation(Vector3f(1, 0, 0), 0);
-  MODEL model = 0; // what sprite to display
+  int model = 0; // what sprite to display
   int action = 0; // what sprite action to use
   float ratio = 0; // in [0 .. 1]. 0 for action beginning, 1 for action end
   Size3f scale = Size3f(1, 1, 1); // sprite size
@@ -49,9 +45,9 @@ struct View
   virtual void setTitle(char const* gameTitle) = 0;
   virtual void preload(Resource res) = 0;
   virtual void textBox(char const* msg) = 0;
-  virtual void playMusic(MUSIC id) = 0;
+  virtual void playMusic(int id) = 0;
   virtual void stopMusic() = 0;
-  virtual void playSound(SOUND id) = 0;
+  virtual void playSound(int id) = 0;
   virtual void setCameraPos(Vector3f pos, Quaternion orientation) = 0;
   virtual void setAmbientLight(float amount) = 0;
 

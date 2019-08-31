@@ -59,7 +59,7 @@ struct IGame
 
   // visual
   virtual void textBox(char const* msg) = 0;
-  virtual void playSound(SOUND id) = 0;
+  virtual void playSound(int id) = 0;
 
   // logic
   virtual void spawn(Entity* e) = 0;

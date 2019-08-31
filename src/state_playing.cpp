@@ -310,7 +310,7 @@ struct GameState : Scene, IGame
   ////////////////////////////////////////////////////////////////
   // IGame: game, as seen by the entities
 
-  void playSound(SOUND sound) override
+  void playSound(int sound) override
   {
     m_view->playSound(sound);
   }

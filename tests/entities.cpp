@@ -12,9 +12,9 @@ static Actor getActor(Entity* entity)
     virtual void setTitle(char const*) {};
     virtual void preload(Resource) {};
     virtual void textBox(char const*) {};
-    virtual void playMusic(MUSIC) {};
+    virtual void playMusic(int) {};
     virtual void stopMusic() {};
-    virtual void playSound(SOUND) {};
+    virtual void playSound(int) {};
     virtual void setCameraPos(Vector3f, Quaternion) {};
     virtual void setAmbientLight(float) {};
 
@@ -66,7 +66,7 @@ struct NullPlayer : Player
 
 struct NullGame : IGame
 {
-  virtual void playSound(SOUND) {}
+  virtual void playSound(int) {}
 
   virtual void spawn(Entity*) {}
 
