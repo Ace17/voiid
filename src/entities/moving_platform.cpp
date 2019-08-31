@@ -43,7 +43,7 @@ struct MovingPlatform : Entity
 };
 
 #include "entity_factory.h"
-static auto const reg1_ = registerEntity("moving_platform", [] (IEntityConfig* args) { auto arg = args->getInt("0"); return make_unique<MovingPlatform>(arg); });
+static auto const reg1_ = registerEntity("moving_platform", [] (IEntityConfig* args) -> unique_ptr<Entity> { auto arg = args->getInt("0"); return make_unique<MovingPlatform>(arg); });
 // alias for legacy levels
-static auto const reg2_ = registerEntity("mp", [] (IEntityConfig* args) { auto arg = args->getInt("0"); return make_unique<MovingPlatform>(arg); });
+static auto const reg2_ = registerEntity("mp", [] (IEntityConfig* args) -> unique_ptr<Entity> { auto arg = args->getInt("0"); return make_unique<MovingPlatform>(arg); });
 
