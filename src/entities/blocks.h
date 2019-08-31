@@ -3,8 +3,10 @@
 #include "base/util.h"
 #include "base/scene.h"
 #include "collision_groups.h"
+#include "toggle.h" // decrement
 #include "entity.h"
 #include "models.h"
+#include "sounds.h"
 
 struct CrumbleBlock : Entity
 {

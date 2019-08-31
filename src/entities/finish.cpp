@@ -4,9 +4,7 @@
 // published by the Free Software Foundation, either version 3 of the
 // License, or (at your option) any later version.
 
-// Entity for 'end-of-level'
-
-#pragma once
+// 'end-of-level' touch-trigger entity
 
 #include "base/util.h"
 #include "base/scene.h"

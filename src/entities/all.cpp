@@ -8,14 +8,6 @@
 
 #include "entity_factory.h"
 
-#include "switch.h"
-#include "spider.h"
-#include "bonus.h"
-#include "player.h"
-#include "spikes.h"
 #include "blocks.h"
 #include "conveyor.h"
-#include "sign.h"
-#include "finish.h"
-#include "moving_platform.h"
 

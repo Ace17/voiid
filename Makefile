@@ -51,8 +51,10 @@ SRCS_GAME:=\
 	src/entities/editor.cpp\
 	src/entities/explosion.cpp\
 	src/entities/hero.cpp\
-	src/entities/switch.cpp\
 	src/entities/move.cpp\
+	src/entities/moving_platform.cpp\
+	src/entities/finish.cpp\
+	src/entities/switch.cpp\
 	src/entity_factory.cpp\
 	src/game.cpp\
 	src/state_playing.cpp\
