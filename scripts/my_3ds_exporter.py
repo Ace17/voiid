@@ -51,7 +51,7 @@ def saveAs3ds(scene, filepath):
 
     mesh_objects = []
 
-    objects = (ob for ob in scene.objects if ob.is_visible(scene))
+    objects = scene.objects
 
     for ob in objects:
         # get derived objects
@@ -72,6 +72,9 @@ def saveAs3ds(scene, filepath):
             if data:
                 data.transform(mat)
                 mesh_objects.append((ob_derived, data, mat))
+
+            for propName in ob_derived.keys():
+                sys.stderr.write("prop: '" + propName + "'\n")
 
         if free:
             free_derived_objects(ob)
@@ -106,22 +109,11 @@ def saveAs3ds(scene, filepath):
         else:
             print("Object can't be written into a 3DS file")
 
-        # COMMENTED OUT FOR 2.42 RELEASE!! CRASHES 3DS MAX
-        # make a kf object node for the object:
-        # kfdata.add_subchunk(make_kf_obj_node(ob, name_to_id))
-
         if not blender_mesh.users:
             bpy.data.meshes.remove(blender_mesh)
         #blender_mesh.vertices = None
 
         i += i
-
-    # Create chunks for all empties:
-    # COMMENTED OUT FOR 2.42 RELEASE!! CRASHES 3DS MAX
-    # for ob in empty_objects:
-    #     # Empties only require a kf object node:
-    #     kfdata.add_subchunk(make_kf_obj_node(ob, name_to_id))
-    #     pass
 
     # Add main object info chunk to primary chunk:
     primary.add_subchunk(object_info)
@@ -842,128 +834,4 @@ def make_mesh_chunk(mesh, matrix):
     mesh_chunk.add_subchunk(make_matrix_4x3_chunk(matrix))
 
     return mesh_chunk
-
-
-# COMMENTED OUT FOR 2.42 RELEASE!! CRASHES 3DS MAX
-def make_kfdata(start=0, stop=0, curtime=0):
-    """Make the basic keyframe data chunk"""
-    kfdata = _3ds_chunk(KFDATA)
-
-    kfhdr = _3ds_chunk(KFDATA_KFHDR)
-    kfhdr.add_variable("revision", _3ds_ushort(0))
-    # Not really sure what filename is used for, but it seems it is usually used
-    # to identify the program that generated the .3ds:
-    kfhdr.add_variable("filename", _3ds_string("Blender"))
-    kfhdr.add_variable("animlen", _3ds_uint(stop-start))
-
-    kfseg = _3ds_chunk(KFDATA_KFSEG)
-    kfseg.add_variable("start", _3ds_uint(start))
-    kfseg.add_variable("stop", _3ds_uint(stop))
-
-    kfcurtime = _3ds_chunk(KFDATA_KFCURTIME)
-    kfcurtime.add_variable("curtime", _3ds_uint(curtime))
-
-    kfdata.add_subchunk(kfhdr)
-    kfdata.add_subchunk(kfseg)
-    kfdata.add_subchunk(kfcurtime)
-    return kfdata
-
-def make_track_chunk(ID, obj):
-    """Make a chunk for track data.
-
-    Depending on the ID, this will construct a position, rotation or scale track."""
-    track_chunk = _3ds_chunk(ID)
-    track_chunk.add_variable("track_flags", _3ds_ushort())
-    track_chunk.add_variable("unknown", _3ds_uint())
-    track_chunk.add_variable("unknown", _3ds_uint())
-    track_chunk.add_variable("nkeys", _3ds_uint(1))
-    # Next section should be repeated for every keyframe, but for now, animation is not actually supported.
-    track_chunk.add_variable("tcb_frame", _3ds_uint(0))
-    track_chunk.add_variable("tcb_flags", _3ds_ushort())
-    if obj.type=='Empty':
-        if ID==POS_TRACK_TAG:
-            # position vector:
-            track_chunk.add_variable("position", _3ds_point_3d(obj.getLocation()))
-        elif ID==ROT_TRACK_TAG:
-            # rotation (quaternion, angle first, followed by axis):
-            q = obj.getEuler().to_quaternion()  # XXX, todo!
-            track_chunk.add_variable("rotation", _3ds_point_4d((q.angle, q.axis[0], q.axis[1], q.axis[2])))
-        elif ID==SCL_TRACK_TAG:
-            # scale vector:
-            track_chunk.add_variable("scale", _3ds_point_3d(obj.getSize()))
-    else:
-        # meshes have their transformations applied before
-        # exporting, so write identity transforms here:
-        if ID==POS_TRACK_TAG:
-            # position vector:
-            track_chunk.add_variable("position", _3ds_point_3d((0.0,0.0,0.0)))
-        elif ID==ROT_TRACK_TAG:
-            # rotation (quaternion, angle first, followed by axis):
-            track_chunk.add_variable("rotation", _3ds_point_4d((0.0, 1.0, 0.0, 0.0)))
-        elif ID==SCL_TRACK_TAG:
-            # scale vector:
-            track_chunk.add_variable("scale", _3ds_point_3d((1.0, 1.0, 1.0)))
-
-    return track_chunk
-
-def make_kf_obj_node(obj, name_to_id):
-    """Make a node chunk for a Blender object.
-
-    Takes the Blender object as a parameter. Object id's are taken from the dictionary name_to_id.
-    Blender Empty objects are converted to dummy nodes."""
-
-    name = obj.name
-    # main object node chunk:
-    kf_obj_node = _3ds_chunk(KFDATA_OBJECT_NODE_TAG)
-    # chunk for the object id:
-    obj_id_chunk = _3ds_chunk(OBJECT_NODE_ID)
-    # object id is from the name_to_id dictionary:
-    obj_id_chunk.add_variable("node_id", _3ds_ushort(name_to_id[name]))
-
-    # object node header:
-    obj_node_header_chunk = _3ds_chunk(OBJECT_NODE_HDR)
-    # object name:
-    if obj.type == 'Empty':
-        # Empties are called "$$$DUMMY" and use the OBJECT_INSTANCE_NAME chunk
-        # for their name (see below):
-        obj_node_header_chunk.add_variable("name", _3ds_string("$$$DUMMY"))
-    else:
-        # Add the name:
-        obj_node_header_chunk.add_variable("name", _3ds_string(sane_name(name)))
-    # Add Flag variables (not sure what they do):
-    obj_node_header_chunk.add_variable("flags1", _3ds_ushort(0))
-    obj_node_header_chunk.add_variable("flags2", _3ds_ushort(0))
-
-    # Check parent-child relationships:
-    parent = obj.parent
-    if (parent is None) or (parent.name not in name_to_id):
-        # If no parent, or the parents name is not in the name_to_id dictionary,
-        # parent id becomes -1:
-        obj_node_header_chunk.add_variable("parent", _3ds_ushort(-1))
-    else:
-        # Get the parent's id from the name_to_id dictionary:
-        obj_node_header_chunk.add_variable("parent", _3ds_ushort(name_to_id[parent.name]))
-
-    # Add pivot chunk:
-    obj_pivot_chunk = _3ds_chunk(OBJECT_PIVOT)
-    obj_pivot_chunk.add_variable("pivot", _3ds_point_3d(obj.getLocation()))
-    kf_obj_node.add_subchunk(obj_pivot_chunk)
-
-    # add subchunks for object id and node header:
-    kf_obj_node.add_subchunk(obj_id_chunk)
-    kf_obj_node.add_subchunk(obj_node_header_chunk)
-
-    # Empty objects need to have an extra chunk for the instance name:
-    if obj.type == 'Empty':
-        obj_instance_name_chunk = _3ds_chunk(OBJECT_INSTANCE_NAME)
-        obj_instance_name_chunk.add_variable("name", _3ds_string(sane_name(name)))
-        kf_obj_node.add_subchunk(obj_instance_name_chunk)
-
-    # Add track chunks for position, rotation and scale:
-    kf_obj_node.add_subchunk(make_track_chunk(POS_TRACK_TAG, obj))
-    kf_obj_node.add_subchunk(make_track_chunk(ROT_TRACK_TAG, obj))
-    kf_obj_node.add_subchunk(make_track_chunk(SCL_TRACK_TAG, obj))
-
-    return kf_obj_node
-
 
