@@ -14,7 +14,7 @@ def run():
   bpy.ops.object.select_all(action='DESELECT')
   bpy.ops.object.select_all(action='SELECT')
   
-  bpy.context.scene.objects.active = bpy.data.objects[0]
+  bpy.context.view_layer.objects.active = bpy.data.objects[0]
   bpy.ops.object.convert(target='MESH')
   
   # apply all transforms
