@@ -222,7 +222,6 @@ import struct
 name_unique = []  # stores str, ascii only
 name_mapping = {}  # stores {orig: byte} mapping
 
-
 def sane_name(name):
     name_fixed = name_mapping.get(name)
     if name_fixed is not None:
@@ -241,7 +240,6 @@ def sane_name(name):
     name_mapping[name] = new_name = new_name.encode("ASCII", "replace")
     return new_name
 
-
 def uv_key(uv):
     return round(uv[0], 6), round(uv[1], 6)
 
@@ -249,7 +247,6 @@ def uv_key(uv):
 SZ_SHORT = 2
 SZ_INT = 4
 SZ_FLOAT = 4
-
 
 class _3ds_ushort(object):
     """Class representing a short (2-byte integer) for a 3ds file.
@@ -268,7 +265,6 @@ class _3ds_ushort(object):
     def __str__(self):
         return str(self.value)
 
-
 class _3ds_uint(object):
     """Class representing an int (4-byte integer) for a 3ds file."""
     __slots__ = ("value", )
@@ -285,7 +281,6 @@ class _3ds_uint(object):
     def __str__(self):
         return str(self.value)
 
-
 class _3ds_float(object):
     """Class representing a 4-byte IEEE floating point number for a 3ds file."""
     __slots__ = ("value", )
@@ -301,7 +296,6 @@ class _3ds_float(object):
 
     def __str__(self):
         return str(self.value)
-
 
 class _3ds_string(object):
     """Class representing a zero-terminated string for a 3ds file."""
@@ -321,7 +315,6 @@ class _3ds_string(object):
     def __str__(self):
         return self.value
 
-
 class _3ds_point_3d(object):
     """Class representing a three-dimensional point for a 3ds file."""
     __slots__ = "x", "y", "z"
@@ -337,23 +330,6 @@ class _3ds_point_3d(object):
 
     def __str__(self):
         return '(%f, %f, %f)' % (self.x, self.y, self.z)
-
-# Used for writing a track
-class _3ds_point_4d(object):
-    """Class representing a four-dimensional point for a 3ds file, for instance a quaternion."""
-    __slots__ = "x","y","z","w"
-    def __init__(self, point=(0.0,0.0,0.0,0.0)):
-        self.x, self.y, self.z, self.w = point
-
-    def get_size(self):
-        return 4*SZ_FLOAT
-
-    def write(self,file):
-        data=struct.pack('<4f', self.x, self.y, self.z, self.w)
-        file.write(data)
-
-    def __str__(self):
-        return '(%f, %f, %f, %f)' % (self.x, self.y, self.z, self.w)
 
 class _3ds_point_uv(object):
     """Class representing a UV-coordinate for a 3ds file."""
@@ -371,24 +347,6 @@ class _3ds_point_uv(object):
 
     def __str__(self):
         return '(%g, %g)' % self.uv
-
-
-class _3ds_rgb_color(object):
-    """Class representing a (24-bit) rgb color for a 3ds file."""
-    __slots__ = "r", "g", "b"
-
-    def __init__(self, col):
-        self.r, self.g, self.b = col
-
-    def get_size(self):
-        return 3
-
-    def write(self, file):
-        file.write(struct.pack('<3B', int(255 * self.r), int(255 * self.g), int(255 * self.b)))
-
-    def __str__(self):
-        return '{%f, %f, %f}' % (self.r, self.g, self.b)
-
 
 class _3ds_face(object):
     """Class representing a face for a 3ds file."""
@@ -409,7 +367,6 @@ class _3ds_face(object):
 
     def __str__(self):
         return "[%d %d %d]" % (self.vindex[0], self.vindex[1], self.vindex[2])
-
 
 class _3ds_array(object):
     """Class representing an array of variables for a 3ds file.
@@ -443,7 +400,6 @@ class _3ds_array(object):
     def __str__(self):
         return '(%d items)' % len(self.values)
 
-
 class _3ds_named_variable(object):
     """Convenience class for named variables."""
 
@@ -469,7 +425,6 @@ class _3ds_named_variable(object):
                   self.name if self.name else "[unnamed]",
                   " = ",
                   self.value)
-
 
 #the chunk class
 class _3ds_chunk(object):
@@ -545,116 +500,9 @@ class _3ds_chunk(object):
         for subchunk in self.subchunks:
             subchunk.dump(indent + 1)
 
-
 ######################################################
 # EXPORT
 ######################################################
-
-def get_material_image_texslots(material):
-    # blender utility func.
-    if material:
-        return [s for s in material.texture_slots if s and s.texture.type == 'IMAGE' and s.texture.image]
-
-    return []
-
-    """
-    images = []
-    if material:
-        for mtex in material.getTextures():
-            if mtex and mtex.tex.type == Blender.Texture.Types.IMAGE:
-                image = mtex.tex.image
-                if image:
-                    images.append(image) # maye want to include info like diffuse, spec here.
-    return images
-    """
-
-
-def make_material_subchunk(chunk_id, color):
-    """Make a material subchunk.
-
-    Used for color subchunks, such as diffuse color or ambient color subchunks."""
-    mat_sub = _3ds_chunk(chunk_id)
-    col1 = _3ds_chunk(RGB1)
-    col1.add_variable("color1", _3ds_rgb_color(color))
-    mat_sub.add_subchunk(col1)
-    # optional:
-    #col2 = _3ds_chunk(RGB1)
-    #col2.add_variable("color2", _3ds_rgb_color(color))
-    #mat_sub.add_subchunk(col2)
-    return mat_sub
-
-
-def make_material_texture_chunk(chunk_id, texslots, tess_uv_image=None):
-    """Make Material Map texture chunk given a seq. of `MaterialTextureSlot`'s
-
-        `tess_uv_image` is optionally used as image source if the slots are
-        empty. No additional filtering for mapping modes is done, all
-        slots are written "as is".
-    """
-
-    mat_sub = _3ds_chunk(chunk_id)
-    has_entry = False
-
-    import bpy
-
-    def add_texslot(texslot):
-        texture = texslot.texture
-        image = texture.image
-
-        filename = bpy.path.basename(image.filepath)
-        mat_sub_file = _3ds_chunk(MATMAPFILE)
-        mat_sub_file.add_variable("mapfile", _3ds_string(sane_name(filename)))
-        mat_sub.add_subchunk(mat_sub_file)
-
-        maptile = 0
-
-        # no perfect mapping for mirror modes - 3DS only has uniform mirror w. repeat=2
-        if texture.extension == 'REPEAT' and (texture.use_mirror_x and texture.repeat_x > 1) \
-           or (texture.use_mirror_y and texture.repeat_y > 1):
-            maptile |= 0x2
-        # CLIP maps to 3DS' decal flag
-        elif texture.extension == 'CLIP':
-            maptile |= 0x10
-
-        mat_sub_tile = _3ds_chunk(MAT_MAP_TILING)
-        mat_sub_tile.add_variable("maptiling", _3ds_ushort(maptile))
-        mat_sub.add_subchunk(mat_sub_tile)
-
-        mat_sub_uscale = _3ds_chunk(MAT_MAP_USCALE)
-        mat_sub_uscale.add_variable("mapuscale", _3ds_float(texslot.scale[0]))
-        mat_sub.add_subchunk(mat_sub_uscale)
-
-        mat_sub_vscale = _3ds_chunk(MAT_MAP_VSCALE)
-        mat_sub_vscale.add_variable("mapuscale", _3ds_float(texslot.scale[1]))
-        mat_sub.add_subchunk(mat_sub_vscale)
-
-        mat_sub_uoffset = _3ds_chunk(MAT_MAP_UOFFSET)
-        mat_sub_uoffset.add_variable("mapuoffset", _3ds_float(texslot.offset[0]))
-        mat_sub.add_subchunk(mat_sub_uoffset)
-
-        mat_sub_voffset = _3ds_chunk(MAT_MAP_VOFFSET)
-        mat_sub_voffset.add_variable("mapvoffset", _3ds_float(texslot.offset[1]))
-        mat_sub.add_subchunk(mat_sub_voffset)
-
-    # store all textures for this mapto in order. This at least is what
-    # the 3DS exporter did so far, afaik most readers will just skip
-    # over 2nd textures.
-    for slot in texslots:
-        add_texslot(slot)
-        has_entry = True
-
-    # image from tess. UV face - basically the code above should handle
-    # this already. No idea why its here so keep it :-)
-    if tess_uv_image and not has_entry:
-        has_entry = True
-
-        filename = bpy.path.basename(tess_uv_image.filepath)
-        mat_sub_file = _3ds_chunk(MATMAPFILE)
-        mat_sub_file.add_variable("mapfile", _3ds_string(sane_name(filename)))
-        mat_sub.add_subchunk(mat_sub_file)
-
-    return mat_sub if has_entry else None
-
 
 class tri_wrapper(object):
     """Class representing a triangle.
@@ -669,7 +517,6 @@ class tri_wrapper(object):
         self.image = image
         self.faceuvs = faceuvs
         self.offset = [0, 0, 0]  # offset indices
-
 
 def extract_triangles(mesh):
     """Extract triangles from a mesh.
@@ -709,7 +556,6 @@ def extract_triangles(mesh):
             tri_list.append(new_tri_2)
 
     return tri_list
-
 
 def remove_face_uv(verts, tri_list):
     """Remove face UV coordinates from a list of triangles.
@@ -776,7 +622,6 @@ def remove_face_uv(verts, tri_list):
 
     return vert_array, uv_array, tri_list
 
-
 def make_faces_chunk(tri_list, mesh):
     """Make a chunk for the faces."""
 
@@ -796,14 +641,12 @@ def make_vert_chunk(vert_array):
     vert_chunk.add_variable("vertices", vert_array)
     return vert_chunk
 
-
 def make_matrix_4x3_chunk(matrix):
     matrix_chunk = _3ds_chunk(OBJECT_TRANS_MATRIX)
     for vec in matrix.col:
         for f in vec[:3]:
             matrix_chunk.add_variable("matrix_f", _3ds_float(f))
     return matrix_chunk
-
 
 def make_mesh_chunk(mesh, matrix):
     """Make a chunk out of a Blender mesh."""
