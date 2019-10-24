@@ -4,14 +4,15 @@
 // published by the Free Software Foundation, either version 3 of the
 // License, or (at your option) any later version.
 
-#include <stdint.h>
+#include "3ds.h"
+
 #include <memory>
-#include <vector>
 #include <sstream>
+#include <stdint.h>
 #include <string>
+#include <vector>
 
 #include "misc/file.h"
-#include "3ds.h"
 
 using namespace std;
 
@@ -119,15 +120,15 @@ struct Parser
 {
   struct Listener
   {
-    virtual void onVertexXYZ(float /*x*/, float /*y*/, float /*z*/) {};
-    virtual void onVertexUV(float /*U*/, float /*V*/) {};
-    virtual void on3dFace(int /*A*/, int /*B*/, int /*C*/, uint32_t /*Flags*/) {};
-    virtual void onFaceMaterial(string /*Name*/, int /*Number*/) {};
-    virtual void onMaterialName(string /*Name*/) {};
-    virtual void onObjName(string /*Name*/) {};
-    virtual void onTransformMatrix(float /*m*/[4][4]) {};
-    virtual void onEndObject() {};
-    virtual void onMapFileName(string /*filename*/) {};
+    virtual void onVertexXYZ(float /*x*/, float /*y*/, float /*z*/) {}
+    virtual void onVertexUV(float /*U*/, float /*V*/) {}
+    virtual void on3dFace(int /*A*/, int /*B*/, int /*C*/, uint32_t /*Flags*/) {}
+    virtual void onFaceMaterial(string /*Name*/, int /*Number*/) {}
+    virtual void onMaterialName(string /*Name*/) {}
+    virtual void onObjName(string /*Name*/) {}
+    virtual void onTransformMatrix(float /*m*/[4][4]) {}
+    virtual void onEndObject() {}
+    virtual void onMapFileName(string /*filename*/) {}
   };
 
   Parser(Listener* listener, ByteStream* stream) :

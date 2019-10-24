@@ -8,13 +8,13 @@
 // Only handles collision detection and moving.
 // Doesn't know about acceleration or velocity.
 
-#include "body.h"
 #include "base/util.h"
-#include "physics.h"
+#include "body.h"
 #include "convex.h"
-#include <vector>
-#include <memory>
+#include "physics.h"
 #include <algorithm> // find
+#include <memory>
+#include <vector>
 
 using namespace std;
 

@@ -8,8 +8,8 @@
 // (Quake games call these "brushes")
 
 #pragma once
-#include <vector>
 #include "trace.h"
+#include <vector>
 
 struct Convex
 {

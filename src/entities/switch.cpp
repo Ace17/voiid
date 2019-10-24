@@ -7,13 +7,13 @@
 #include <algorithm>
 #include <cmath>
 
-#include "base/util.h"
 #include "base/scene.h"
+#include "base/util.h"
 #include "collision_groups.h"
 #include "entity.h"
 #include "models.h"
-#include "sounds.h"
 #include "move.h"
+#include "sounds.h"
 #include "toggle.h"
 #include "trigger.h"
 

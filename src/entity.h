@@ -8,11 +8,11 @@
 
 #pragma once
 
+#include "base/geom.h"
 #include "base/scene.h"
 #include "base/view.h"
-#include "base/geom.h"
-#include "game.h"
 #include "body.h"
+#include "game.h"
 #include "physics_probe.h"
 
 struct Damageable

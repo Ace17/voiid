@@ -10,13 +10,13 @@
 #include "base/util.h"
 
 #include "collision_groups.h"
-#include "entities/player.h"
 #include "entities/move.h"
+#include "entities/player.h"
 #include "entity.h"
+#include "hero.h"
 #include "models.h"
 #include "sounds.h"
 #include "toggle.h"
-#include "hero.h"
 
 auto const GRAVITY = 0.00005;
 auto const JUMP_SPEED = 0.012;
@@ -51,9 +51,9 @@ struct Hero : Player, Damageable
       view->sendActor(r);
 
     auto eyesPos = r.pos + Vector3f(
-        r.scale.cx * 0.5,
-        r.scale.cy * 0.5,
-        r.scale.cz * 0.9);
+      r.scale.cx * 0.5,
+      r.scale.cy * 0.5,
+      r.scale.cz * 0.9);
 
     view->setCameraPos(eyesPos, r.orientation);
   }

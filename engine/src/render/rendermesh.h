@@ -7,8 +7,8 @@
 #pragma once
 
 #include <stdint.h>
-#include <vector>
 #include <string>
+#include <vector>
 using namespace std;
 
 #include "base/geom.h"

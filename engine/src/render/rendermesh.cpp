@@ -4,11 +4,11 @@
 // published by the Free Software Foundation, either version 3 of the
 // License, or (at your option) any later version.
 
-#include "rendermesh.h"
+#include "3ds.h"
 #include "base/geom.h"
 #include "base/util.h" // setExtension
 #include "misc/file.h"
-#include "3ds.h"
+#include "rendermesh.h"
 #include <string.h> // strlen
 
 extern int loadTexture(string path, Rect2i rect = Rect2i(0, 0, 0, 0));

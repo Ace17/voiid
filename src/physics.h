@@ -8,9 +8,9 @@
 
 #pragma once
 
-#include <memory>
 #include "body.h"
 #include "physics_probe.h"
+#include <memory>
 
 struct IPhysics : IPhysicsProbe
 {

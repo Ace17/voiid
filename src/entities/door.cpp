@@ -4,12 +4,12 @@
 // published by the Free Software Foundation, either version 3 of the
 // License, or (at your option) any later version.
 
+#include "collision_groups.h" // CG_WALLS
 #include "entity.h"
 #include "models.h" // MDL_DOOR
 #include "sounds.h" // SND_DOOR
 #include "toggle.h" // decrement
 #include "trigger.h" // TriggerEvent
-#include "collision_groups.h" // CG_WALLS
 
 struct Door : Entity, IEventSink
 {

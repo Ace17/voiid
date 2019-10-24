@@ -8,21 +8,23 @@
 // No game-specific code should be here,
 // and no platform-specific code should be here (SDL is OK).
 
-#include <vector>
-#include <string>
+#include "app.h"
+
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "SDL.h"
 
+#include "audio/audio.h"
 #include "base/geom.h"
 #include "base/resource.h"
 #include "base/scene.h"
-#include "base/view.h"
-#include "app.h"
 #include "base/util.h" // clamp
-#include "ratecounter.h"
-#include "audio/audio.h"
+#include "base/view.h"
 #include "render/display.h"
+
+#include "ratecounter.h"
 
 using namespace std;
 
@@ -146,8 +148,8 @@ private:
     for(auto& actor : m_actors)
     {
       auto where = Rect3f(
-          actor.pos.x, actor.pos.y, actor.pos.z,
-          actor.scale.cx, actor.scale.cy, actor.scale.cz);
+        actor.pos.x, actor.pos.y, actor.pos.z,
+        actor.scale.cx, actor.scale.cy, actor.scale.cz);
       m_display->drawActor(where, (int)actor.model, actor.effect == Effect::Blinking, actor.action, actor.ratio);
     }
 

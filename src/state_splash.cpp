@@ -9,10 +9,10 @@
 #include "base/scene.h"
 #include "base/view.h"
 
-#include "toggle.h"
 #include "models.h" // MDL_SPLASH
 #include "sounds.h" // SND_PAUSE
 #include "state_machine.h"
+#include "toggle.h"
 
 struct SplashState : Scene
 {

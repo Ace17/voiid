@@ -8,11 +8,11 @@
 
 #pragma once
 
-#include <memory>
-#include <functional>
 #include "base/geom.h"
 #include "base/scene.h"
 #include "base/view.h"
+#include <functional>
+#include <memory>
 
 typedef Matrix3<int> Matrix;
 typedef Vector3f Vector;
@@ -66,6 +66,6 @@ struct IGame
   virtual void postEvent(unique_ptr<Event> event) = 0;
   virtual unique_ptr<Handle> subscribeForEvents(IEventSink*) = 0;
   virtual Vector getPlayerPosition() = 0;
-  virtual void endLevel() {};
+  virtual void endLevel() {}
 };
 

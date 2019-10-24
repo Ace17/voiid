@@ -5,8 +5,8 @@
 // License, or (at your option) any later version.
 
 #pragma once
-#include <vector>
 #include <string>
+#include <vector>
 
 struct Mesh
 {

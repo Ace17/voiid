@@ -6,10 +6,10 @@
 
 // Loader for rooms (levels)
 
-#include "room.h"
 #include "base/mesh.h"
-#include <map>
+#include "room.h"
 #include <algorithm>
+#include <map>
 
 static Vector3f toVector3f(Mesh::Vertex v)
 {

@@ -1,8 +1,8 @@
 #pragma once
 
 #include "base/scene.h"
-#include <vector>
 #include <memory>
+#include <vector>
 
 struct StateMachine : Scene
 {

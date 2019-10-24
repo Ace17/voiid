@@ -11,28 +11,28 @@
 #include <cassert>
 #include <cstdio>
 #include <sstream>
-#include <vector>
 #include <stdexcept>
+#include <vector>
 using namespace std;
 
 #define GL_GLEXT_PROTOTYPES 1
 #include "GL/gl.h"
-#include "SDL.h" // SDL_INIT_VIDEO
 #include "png.h"
+#include "SDL.h" // SDL_INIT_VIDEO
 
-#include "base/util.h"
-#include "base/scene.h"
 #include "base/geom.h"
+#include "base/scene.h"
 #include "base/span.h"
-#include "rendermesh.h"
-#include "misc/file.h" // read
+#include "base/util.h"
 #include "matrix4.h"
+#include "misc/file.h" // read
+#include "rendermesh.h"
 
 #ifdef NDEBUG
 #define SAFE_GL(a) a
 #else
 #define SAFE_GL(a) \
-  do { a; ensureGl(# a, __LINE__); } while(0)
+  do { a; ensureGl(# a, __LINE__); } while (0)
 #endif
 
 static
@@ -138,8 +138,8 @@ shared_ptr<SDL_Surface> loadPng(string path)
   auto pixels = decodePng(pngData, width, height);
 
   auto surface = shared_ptr<SDL_Surface>(
-      SDL_CreateRGBSurface(0, width, height, 32, rmask, gmask, bmask, amask),
-      &SDL_FreeSurface);
+    SDL_CreateRGBSurface(0, width, height, 32, rmask, gmask, bmask, amask),
+    &SDL_FreeSurface);
 
   if(!surface)
     throw runtime_error(string("Can't create SDL surface for texture: ") + SDL_GetError());
@@ -181,7 +181,7 @@ int loadTexture(string path, Rect2i rect)
 
   auto const bpp = surface->format->BytesPerPixel;
 
-  vector<uint8_t> img(rect.size.width* rect.size.height* bpp);
+  vector<uint8_t> img(rect.size.width * rect.size.height * bpp);
 
   auto src = (Uint8*)surface->pixels + rect.pos.x * bpp + rect.pos.y * surface->pitch;
   auto dst = (Uint8*)img.data() + bpp * rect.size.width * rect.size.height;
@@ -305,11 +305,11 @@ struct OpenglDisplay : Display
     }
 
     m_window = SDL_CreateWindow(
-        "My Game",
-        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-        resolution.width, resolution.height,
-        SDL_WINDOW_OPENGL
-        );
+      "My Game",
+      SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+      resolution.width, resolution.height,
+      SDL_WINDOW_OPENGL
+      );
 
     if(!m_window)
       throw runtime_error("Can't set video mode");

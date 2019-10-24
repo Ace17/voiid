@@ -21,23 +21,23 @@ struct Matrix4f
   {
     float elements[4];
 
-    float const & operator [] (int i) const
+    float const& operator [] (int i) const
     {
       return elements[i];
     }
 
-    float & operator [] (int i)
+    float& operator [] (int i)
     {
       return elements[i];
     }
   };
 
-  const col & operator [] (int i) const
+  const col& operator [] (int i) const
   {
     return data[i];
   }
 
-  col & operator [] (int i)
+  col& operator [] (int i)
   {
     return data[i];
   }

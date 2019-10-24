@@ -6,13 +6,13 @@
 
 // 'end-of-level' touch-trigger entity
 
-#include "base/util.h"
 #include "base/scene.h"
+#include "base/util.h"
+#include "collision_groups.h"
 #include "entity.h"
 #include "models.h"
 #include "sounds.h"
 #include "toggle.h"
-#include "collision_groups.h"
 
 struct FinishLine : Entity
 {

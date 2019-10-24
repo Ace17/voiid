@@ -9,8 +9,8 @@
 #pragma once
 #include <vector>
 
-#include "util.h"
 #include "geom.h"
+#include "util.h"
 
 using namespace std;
 

@@ -10,7 +10,7 @@
   assertNearlyEqualsFunc(u, v, __FILE__, __LINE__)
 
 static inline
-std::ostream & operator << (std::ostream& o, const Vector& v)
+std::ostream& operator << (std::ostream& o, const Vector& v)
 {
   o << "(";
   o << v.x;

@@ -8,9 +8,9 @@
 
 #pragma once
 
+#include "base/geom.h"
 #include <string>
 #include <vector>
-#include "base/geom.h"
 using namespace std;
 
 #include "base/mesh.h"

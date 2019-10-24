@@ -6,11 +6,11 @@
 
 #pragma once
 
-#include <vector>
 #include <string>
+#include <vector>
 
-#include "base/span.h"
 #include "base/mesh.h"
+#include "base/span.h"
 
 namespace tds
 {

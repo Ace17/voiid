@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include <cmath>
 #include <cassert>
+#include <cmath>
 
 ///////////////////////////////////////////////////////////////////////////////
 // Dimension
@@ -322,7 +322,7 @@ struct Matrix2
   Matrix2() = default;
 
   Matrix2(Matrix2 const &) = delete;
-  void operator = (Matrix2 const &) = delete;
+  void operator = (Matrix2 const&) = delete;
 
   Matrix2(Matrix2&& other)
   {
@@ -362,13 +362,13 @@ struct Matrix2
 
   Size2i size = Size2i(0, 0);
 
-  T& get(int x, int y)
+  T & get(int x, int y)
   {
     assert(isInside(x, y));
     return data[raster(x, y)];
   }
 
-  const T& get(int x, int y) const
+  const T & get(int x, int y) const
   {
     assert(isInside(x, y));
     return data[raster(x, y)];
@@ -472,13 +472,13 @@ struct Matrix3
 
   Size3i size;
 
-  T& get(int x, int y, int z)
+  T & get(int x, int y, int z)
   {
     assert(isInside(x, y, z));
     return data[raster(x, y, z)];
   }
 
-  const T& get(int x, int y, int z) const
+  const T & get(int x, int y, int z) const
   {
     assert(isInside(x, y, z));
     return data[raster(x, y, z)];

@@ -13,16 +13,16 @@
 #include "base/scene.h"
 #include "base/util.h"
 
-#include "entities/player.h"
-#include "entities/hero.h"
 #include "entities/editor.h"
+#include "entities/hero.h"
+#include "entities/player.h"
 #include "entity_factory.h"
 #include "game.h"
-#include "room.h"
-#include "variable.h"
-#include "state_machine.h"
-#include "physics.h"
 #include "models.h"
+#include "physics.h"
+#include "room.h"
+#include "state_machine.h"
+#include "variable.h"
 
 using namespace std;
 

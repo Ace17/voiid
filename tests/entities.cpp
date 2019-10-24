@@ -9,24 +9,24 @@ static Actor getActor(Entity* entity)
 {
   struct FakeView : View
   {
-    virtual void setTitle(char const*) {};
-    virtual void preload(Resource) {};
-    virtual void textBox(char const*) {};
-    virtual void playMusic(int) {};
-    virtual void stopMusic() {};
-    virtual void playSound(int) {};
-    virtual void setCameraPos(Vector3f, Quaternion) {};
-    virtual void setAmbientLight(float) {};
+    virtual void setTitle(char const*) {}
+    virtual void preload(Resource) {}
+    virtual void textBox(char const*) {}
+    virtual void playMusic(int) {}
+    virtual void stopMusic() {}
+    virtual void playSound(int) {}
+    virtual void setCameraPos(Vector3f, Quaternion) {}
+    virtual void setAmbientLight(float) {}
 
     // adds a displayable object to the current frame
-    virtual void sendActor(Actor const& actor) { this->actor = actor; };
+    virtual void sendActor(Actor const& actor) { this->actor = actor; }
 
     Actor actor;
   };
   FakeView fakeView;
   entity->onDraw(&fakeView);
   return fakeView.actor;
-};
+}
 
 unittest("Entity: explosion")
 {
@@ -46,7 +46,7 @@ unittest("Entity: explosion")
 
 struct NullPlayer : Player
 {
-  virtual void think(Control const &)
+  virtual void think(Control const&)
   {
   }
 
@@ -68,7 +68,7 @@ struct NullGame : IGame
 {
   virtual void playSound(int) {}
   virtual void spawn(Entity*) {}
-  virtual void postEvent(unique_ptr<Event> ) {}
+  virtual void postEvent(unique_ptr<Event>) {}
   virtual unique_ptr<Handle> subscribeForEvents(IEventSink*) { return nullptr; }
   virtual void unsubscribeForEvents(IEventSink*) {}
   virtual Vector3f getPlayerPosition() { return Vector3f(0, 0, 0); }

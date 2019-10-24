@@ -8,11 +8,13 @@
 // Uses libogg/libvorbis.
 
 #include "sound.h"
-#include <string.h> // memcpy
+
+#include "misc/file.h" // read
+
 #include <cassert>
 #include <ogg/ogg.h>
+#include <string.h> // memcpy
 #include <vorbis/vorbisfile.h>
-#include "misc/file.h" // read
 
 using namespace std;
 
