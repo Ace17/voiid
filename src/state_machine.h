@@ -4,6 +4,8 @@
 #include <memory>
 #include <vector>
 
+using namespace std;
+
 struct StateMachine : Scene
 {
   void next()

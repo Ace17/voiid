@@ -7,12 +7,6 @@
 // Game, as seen by the outside world
 
 #pragma once
-#include <vector>
-
-#include "geom.h"
-#include "util.h"
-
-using namespace std;
 
 struct Control
 {
