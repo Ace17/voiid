@@ -16,5 +16,5 @@ blender "$input" --background \
 
 # make the operation atomic
 mv "$output3ds.tmp" "$output3ds"
-mv "$outputPng.tmp" "$outputPng"
+#mv "$outputPng.tmp" "$outputPng"
 

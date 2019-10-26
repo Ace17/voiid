@@ -19,7 +19,7 @@ def run():
 
 def ensureInitialStateIsClean():
   bpy.ops.object.select_all(action='DESELECT')
-  bpy.context.scene.objects.active = None
+  bpy.context.view_layer.objects.active = None
 
   # ensure we're not in 'edit mode'
   for mesh in bpy.data.meshes:

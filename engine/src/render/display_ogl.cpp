@@ -171,29 +171,53 @@ shared_ptr<SDL_Surface> loadPicture(string path)
 // exported to RenderMesh
 int loadTexture(string path, Rect2i rect)
 {
-  auto surface = loadPicture(path);
+  vector<uint8_t> img;
 
-  if(rect.size.width == 0 && rect.size.height == 0)
-    rect = Rect2i(0, 0, surface->w, surface->h);
-
-  if(rect.pos.x < 0 || rect.pos.y < 0 || rect.pos.x + rect.size.width > surface->w || rect.pos.y + rect.size.height > surface->h)
-    throw runtime_error("Invalid boundaries for '" + path + "'");
-
-  auto const bpp = surface->format->BytesPerPixel;
-
-  vector<uint8_t> img(rect.size.width * rect.size.height * bpp);
-
-  auto src = (Uint8*)surface->pixels + rect.pos.x * bpp + rect.pos.y * surface->pitch;
-  auto dst = (Uint8*)img.data() + bpp * rect.size.width * rect.size.height;
-
-  // from glTexImage2D doc:
-  // "The first element corresponds to the lower left corner of the texture image",
-  // (e.g (u,v) = (0,0))
-  for(int y = 0; y < rect.size.height; ++y)
+  try
   {
-    dst -= bpp * rect.size.width;
-    memcpy(dst, src, bpp * rect.size.width);
-    src += surface->pitch;
+    auto surface = loadPicture(path);
+
+    if(rect.size.width == 0 && rect.size.height == 0)
+      rect = Rect2i(0, 0, surface->w, surface->h);
+
+    if(rect.pos.x < 0 || rect.pos.y < 0 || rect.pos.x + rect.size.width > surface->w || rect.pos.y + rect.size.height > surface->h)
+      throw runtime_error("Invalid boundaries for '" + path + "'");
+
+    auto const bpp = surface->format->BytesPerPixel;
+
+    img.resize(rect.size.width * rect.size.height * bpp);
+
+    auto src = (Uint8*)surface->pixels + rect.pos.x * bpp + rect.pos.y * surface->pitch;
+    auto dst = (Uint8*)img.data() + bpp * rect.size.width * rect.size.height;
+
+    // from glTexImage2D doc:
+    // "The first element corresponds to the lower left corner of the texture image",
+    // (e.g (u,v) = (0,0))
+    for(int y = 0; y < rect.size.height; ++y)
+    {
+      dst -= bpp * rect.size.width;
+      memcpy(dst, src, bpp * rect.size.width);
+      src += surface->pitch;
+    }
+  }
+  catch(std::exception const& e)
+  {
+    printf("[display] can't load texture: %s\n", e.what());
+    printf("[display] falling back on generated texture\n");
+
+    rect.size = Size2i(32, 32);
+    img.resize(rect.size.width * rect.size.height * 4);
+
+    for(int y = 0; y < rect.size.height; ++y)
+    {
+      for(int x = 0; x < rect.size.width; ++x)
+      {
+        img[(x + y * rect.size.width) * 4 + 0] = 0xff;
+        img[(x + y * rect.size.width) * 4 + 1] = x < 16 ? 0xff : 0x00;
+        img[(x + y * rect.size.width) * 4 + 2] = y < 16 ? 0xff : 0x00;
+        img[(x + y * rect.size.width) * 4 + 3] = 0xff;
+      }
+    }
   }
 
   GLuint texture;
