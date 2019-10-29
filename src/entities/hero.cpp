@@ -79,8 +79,7 @@ struct Hero : Player, Damageable
   {
     airMove(c);
 
-    if(0)
-      vel.z -= GRAVITY;
+    vel.z -= GRAVITY;
 
     if(jumpbutton.toggle(c.jump) && ground)
     {

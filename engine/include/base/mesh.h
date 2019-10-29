@@ -13,6 +13,7 @@ struct Mesh
   struct Vertex
   {
     float x, y, z;
+    float nx, ny, nz;
     float u, v;
   };
 
@@ -22,6 +23,7 @@ struct Mesh
   };
 
   std::string name;
+  std::string material;
   std::vector<Vertex> vertices;
   std::vector<Face> faces;
 };

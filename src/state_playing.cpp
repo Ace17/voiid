@@ -280,7 +280,7 @@ struct GameState : Scene, IGame
 
     {
       char filename[256];
-      snprintf(filename, sizeof filename, "res/rooms/%02d/mesh.3ds", levelIdx);
+      snprintf(filename, sizeof filename, "res/rooms/%02d/mesh.mesh", levelIdx);
 
       auto level = loadRoom(filename);
       world = level.colliders;

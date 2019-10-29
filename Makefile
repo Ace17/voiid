@@ -90,7 +90,6 @@ SRCS_TESTS:=\
 	engine/tests/base64.cpp\
 	engine/tests/decompress.cpp\
 	engine/tests/json.cpp\
-	engine/tests/3ds.cpp\
 	engine/tests/util.cpp\
 	engine/tests/png.cpp\
 	tests/entities.cpp\

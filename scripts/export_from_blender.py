@@ -57,7 +57,10 @@ def exportMeshes(scene, filepath=""):
                 continue
 
             theMesh.transform(matrix)
-            dumpMesh(theMesh, file, ob_derived)
+            try:
+                dumpMesh(theMesh, file, ob_derived)
+            except Exception:
+                sys.stderr.write("Skipping mesh: '" + theMesh.name + "'\n")
 
         if free:
             free_derived_objects(obj)
@@ -79,6 +82,9 @@ class Triangle(object):
 
 def extractTriangles(mesh):
     mesh.calc_loop_triangles()
+
+    if len(mesh.uv_layers) == 0:
+        sys.stderr.write("Mesh '" + mesh.name + "' has no UV layer\n")
 
     uv_layer = mesh.uv_layers[0]
 
