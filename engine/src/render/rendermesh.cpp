@@ -4,7 +4,6 @@
 // published by the Free Software Foundation, either version 3 of the
 // License, or (at your option) any later version.
 
-#include "3ds.h"
 #include "base/geom.h"
 #include "base/util.h" // setExtension
 #include "misc/file.h"

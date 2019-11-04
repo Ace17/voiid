@@ -23,3 +23,13 @@ $(BIN)/%.glsl.cpp: %.glsl
 	scripts/embed.sh "$<" "$@" "$(NAME)"
 
 $(BIN)/$(ENGINE_ROOT)/src/%: CXXFLAGS+=-I$(ENGINE_ROOT)/src
+
+SRCS_MESHCOOKER:=\
+	$(ENGINE_ROOT)/src/main_meshcooker.cpp\
+	$(ENGINE_ROOT)/src/misc/file.cpp\
+	$(ENGINE_ROOT)/src/render/3ds.cpp\
+
+$(BIN)/meshcooker.exe: $(SRCS_MESHCOOKER:%=$(BIN)/%.o)
+	@mkdir -p $(dir $@)
+	$(CXX) $^ -o '$@' $(LDFLAGS)
+

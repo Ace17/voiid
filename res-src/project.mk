@@ -28,11 +28,10 @@ res/%.mesh: res/%.sa.blend ./scripts/export_from_blender.py
 	@echo "Exporting from blender: $<"
 	@./scripts/export_from_blender "$<" "$@"
 
-res/%.render: res/%.sa.blend ./scripts/import_rendermesh_from_blender.py
+res/%.render: res/%.mesh $(BIN)/meshcooker.exe
 	@mkdir -p $(dir $@)
-	@echo "Convert to rendermesh: $<"
 	@cp res-src/$*.png res/$*.diffuse.png
-	@./scripts/import_rendermesh_from_blender "$<" "$@" "res/$*.lightmap.png"
+	$(BIN)/meshcooker.exe "$<" "$@" "res/$*.lightmap.png"
 
 res/%: res-src/%
 	@mkdir -p $(dir $@)

@@ -62,6 +62,8 @@ def exportMeshes(scene, filepath=""):
             except Exception:
                 sys.stderr.write("Skipping mesh: '" + theMesh.name + "'\n")
 
+            file.write("\n")
+
         if free:
             free_derived_objects(obj)
 
@@ -111,9 +113,9 @@ def extractTriangles(mesh):
     return triangles
 
 def dumpMesh(mesh, file, obj):
-    triangles = extractTriangles(mesh)
 
     file.write("obj: \"" + obj.name + "\"\n")
+    triangles = extractTriangles(mesh)
     for propName in obj.keys():
         if propName == "_RNA_UI":
             continue
@@ -140,8 +142,6 @@ def dumpMesh(mesh, file, obj):
                 line += " "
                 line += str(round(vertex.uv[1], 6)) # v1
                 file.write(line + "\n")
-
-    file.write("\n")
 
 try:
   run()

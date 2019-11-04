@@ -6,7 +6,8 @@
 
 // Loader for the Blender exporter format
 
-#include "3ds.h"
+#include "base/mesh.h"
+#include "base/span.h"
 
 #include <memory>
 #include <stdint.h>
