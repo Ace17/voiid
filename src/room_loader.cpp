@@ -108,11 +108,28 @@ Room loadRoom(const char* filename)
 {
   Room r;
 
+  r.start = Vector3i(0, 0, 2);
+
   auto meshes = loadMesh(filename);
 
   for(auto& mesh : meshes)
   {
-    auto name = mesh.name;
+    auto& name = mesh.name;
+
+    if(mesh.vertices.empty())
+    {
+      fprintf(stderr, "WARNING: object '%s' has no vertices\n", name.c_str());
+      continue;
+    }
+
+    if(startsWith(name, "f.start"))
+    {
+      auto pos = mesh.vertices[mesh.faces[0].i1];
+      r.start.x = pos.x;
+      r.start.y = pos.y;
+      r.start.z = pos.z;
+      continue;
+    }
 
     if(startsWith(name, "f."))
     {
@@ -136,8 +153,6 @@ Room loadRoom(const char* filename)
 
     r.colliders.push_back(brush);
   }
-
-  r.start = Vector3i(0, 0, 5);
 
   return r;
 }
