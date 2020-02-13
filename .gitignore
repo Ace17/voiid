@@ -4,3 +4,4 @@
 .session.vim
 *.blend1
 *.swp
+__pycache__
