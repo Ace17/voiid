@@ -29,6 +29,7 @@
 using namespace std;
 
 auto const TIMESTEP = 10;
+auto const RESOLUTION = Size2i(1024, 1024);
 
 Display* createDisplay(Size2i resolution);
 Audio* createAudio();
@@ -43,7 +44,7 @@ public:
   {
     SDL_Init(0);
 
-    m_display.reset(createDisplay(Size2i(1024, 1024)));
+    m_display.reset(createDisplay(RESOLUTION));
     m_audio.reset(createAudio());
 
     m_scene.reset(createGame(this, m_args));
@@ -51,6 +52,7 @@ public:
     m_display->enableGrab(m_doGrab);
 
     m_lastTime = SDL_GetTicks();
+    m_lastDisplayFrameTime = SDL_GetTicks();
   }
 
   virtual ~App()
@@ -63,8 +65,27 @@ public:
     processInput();
 
     auto const now = (int)SDL_GetTicks();
-    bool dirty = false;
 
+    if(m_fixedDisplayFramePeriod)
+    {
+      while(m_lastDisplayFrameTime + m_fixedDisplayFramePeriod < now)
+      {
+        m_lastDisplayFrameTime += m_fixedDisplayFramePeriod;
+        tickOneDisplayFrame(m_lastDisplayFrameTime);
+      }
+    }
+    else
+    {
+      m_lastDisplayFrameTime = now;
+      tickOneDisplayFrame(now);
+    }
+
+    return m_running;
+  }
+
+private:
+  void tickOneDisplayFrame(int now)
+  {
     auto timestep = m_slowMotion ? TIMESTEP * 10 : TIMESTEP;
 
     while(m_lastTime + timestep < now)
@@ -75,11 +96,8 @@ public:
       {
         m_scene->tick(m_control);
       }
-
-      dirty = true;
     }
 
-    if(dirty)
     {
       m_actors.clear();
       m_scene->draw();
@@ -95,7 +113,25 @@ public:
       m_lastFps = fps;
     }
 
-    return m_running;
+    if(m_captureFile || m_mustScreenshot)
+    {
+      vector<uint8_t> pixels(RESOLUTION.width * RESOLUTION.height * 4);
+      m_display->readPixels({ pixels.data(), (int)pixels.size() });
+
+      if(m_captureFile)
+        fwrite(pixels.data(), 1, pixels.size(), m_captureFile);
+
+      if(m_mustScreenshot)
+      {
+        FILE* fp = fopen("screenshot.rgba", "wb");
+        fwrite(pixels.data(), 1, pixels.size(), fp);
+        fflush(fp);
+        fclose(fp);
+        fprintf(stderr, "Saved screenshot to 'screenshot.rgba'\n");
+
+        m_mustScreenshot = false;
+      }
+    }
   }
 
 private:
@@ -181,6 +217,48 @@ private:
     m_running = 0;
   }
 
+  void toggleVideoCapture()
+  {
+    if(!m_captureFile)
+    {
+      if(m_fullscreen)
+      {
+        fprintf(stderr, "Can't capture video in fullscreen mode\n");
+        return;
+      }
+
+      m_captureFile = fopen("capture.rgba", "wb");
+
+      if(!m_captureFile)
+      {
+        fprintf(stderr, "Can't start video capture!\n");
+        return;
+      }
+
+      m_fixedDisplayFramePeriod = 40;
+      fprintf(stderr, "Capturing video at %d Hz...\n", 1000 / m_fixedDisplayFramePeriod);
+    }
+    else
+    {
+      fprintf(stderr, "Stopped video capture\n");
+      fclose(m_captureFile);
+      m_captureFile = nullptr;
+      m_fixedDisplayFramePeriod = 0;
+    }
+  }
+
+  void toggleFullScreen()
+  {
+    if(m_captureFile)
+    {
+      fprintf(stderr, "Can't toggle full-screen during video capture\n");
+      return;
+    }
+
+    m_fullscreen = !m_fullscreen;
+    m_display->setFullscreen(m_fullscreen);
+  }
+
   void onMouseMotion(SDL_Event* evt)
   {
     auto const speed = 0.001;
@@ -213,14 +291,30 @@ private:
         break;
       }
 
+    case SDLK_PRINTSCREEN:
+      {
+        if(evt->key.repeat == 0)
+        {
+          if(evt->key.keysym.mod & KMOD_CTRL)
+          {
+            toggleVideoCapture();
+          }
+          else
+          {
+            m_mustScreenshot = true;
+          }
+        }
+
+        break;
+      }
+
     case SDLK_RETURN:
       {
         if(evt->key.keysym.mod & KMOD_LALT)
         {
           if(evt->key.repeat == 0)
           {
-            m_fullscreen = !m_fullscreen;
-            m_display->setFullscreen(m_fullscreen);
+            toggleFullScreen();
           }
         }
 
@@ -307,8 +401,12 @@ private:
 
   int keys[SDL_NUM_SCANCODES] {};
   int m_running = 1;
+  int m_fixedDisplayFramePeriod = 0;
+  FILE* m_captureFile = nullptr;
+  bool m_mustScreenshot = false;
 
   int m_lastTime;
+  int m_lastDisplayFrameTime;
   int m_lastFps = -1;
   RateCounter m_fps;
   Control m_control {};

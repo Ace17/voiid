@@ -215,6 +215,9 @@ struct GameState : Scene, IGame
 
   void draw() override
   {
+    if(m_shouldLoadLevel)
+      return;
+
     m_view->sendActor(Actor(Vector(0, 0, 0), MDL_ROOMS));
 
     for(auto& entity : m_entities)

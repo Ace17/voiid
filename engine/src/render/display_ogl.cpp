@@ -505,6 +505,28 @@ struct OpenglDisplay : Display
     SAFE_GL(glDrawArrays(GL_TRIANGLES, 0, model.vertices.size()));
   }
 
+  void readPixels(Span<uint8_t> dstRgbPixels) override
+  {
+    int width, height;
+    SDL_GetWindowSize(m_window, &width, &height);
+    SAFE_GL(glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, dstRgbPixels.data));
+
+    // reverse upside down
+    const auto rowSize = width * 4;
+    vector<uint8_t> rowBuf(rowSize);
+
+    for(int row = 0; row < height / 2; ++row)
+    {
+      const auto rowLo = row;
+      const auto rowHi = height - 1 - row;
+      auto pRowLo = dstRgbPixels.data + rowLo * rowSize;
+      auto pRowHi = dstRgbPixels.data + rowHi * rowSize;
+      memcpy(rowBuf.data(), pRowLo, rowSize);
+      memcpy(pRowLo, pRowHi, rowSize);
+      memcpy(pRowHi, rowBuf.data(), rowSize);
+    }
+  }
+
   void enableGrab(bool enable) override
   {
     SDL_SetRelativeMouseMode(enable ? SDL_TRUE : SDL_FALSE);
