@@ -24,10 +24,10 @@ struct OggSoundPlayer : IAudioSource
   {
     ov_callbacks cbs =
     {
-      & read_func,
-                 nullptr,
-                 nullptr,
-                 nullptr,
+      &read_func,
+      nullptr,
+      nullptr,
+      nullptr,
     };
 
     auto stream = ov_open_callbacks(this, &m_ogg, nullptr, 0, cbs);
