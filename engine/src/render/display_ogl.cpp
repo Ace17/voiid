@@ -14,8 +14,7 @@
 #include <vector>
 using namespace std;
 
-#define GL_GLEXT_PROTOTYPES 1
-#include "GL/gl.h"
+#include "glad.h"
 #include "png.h"
 #include "SDL.h" // SDL_INIT_VIDEO
 
@@ -299,8 +298,9 @@ void printOpenGlVersion()
       return s ? s : "<null>";
     };
 
-  printf("[display] OpenGL version: %s\n", notNull(sVersion));
-  printf("[display] OpenGL shading version: %s\n", notNull(sLangVersion));
+  printf("[display] OpenGL version: %s (shading version: %s)\n",
+         notNull(sVersion),
+         notNull(sLangVersion));
 }
 
 template<typename T>
@@ -314,21 +314,20 @@ struct OpenglDisplay : Display
   OpenglDisplay(Size2i resolution)
   {
     if(SDL_InitSubSystem(SDL_INIT_VIDEO))
-      throw runtime_error("Can't init SDL");
+      throw runtime_error(string("Can't init SDL video: ") + SDL_GetError());
 
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
     // require OpenGL 2.0, ES or Core. No compatibility mode.
     {
-      // SDL_GL_CONTEXT_PROFILE_ES: works in browser, not in native
-      // SDL_GL_CONTEXT_PROFILE_CORE: works in native, not in browser
-      SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE | SDL_GL_CONTEXT_PROFILE_ES);
-      SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+      // SDL_GL_CONTEXT_PROFILE_ES: works in both browser and native
+      SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+      SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
       SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
     }
 
     m_window = SDL_CreateWindow(
-      "My Game",
+      "",
       SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
       resolution.width, resolution.height,
       SDL_WINDOW_OPENGL
@@ -343,11 +342,15 @@ struct OpenglDisplay : Display
     if(!m_context)
       throw runtime_error("Can't create OpenGL context");
 
+    if(!gladLoadGLES2Loader(&SDL_GL_GetProcAddress))
+      throw runtime_error("Can't load OpenGL");
+
     printOpenGlVersion();
 
     // This makes our buffer swap syncronized with the monitor's vertical refresh
     SDL_GL_SetSwapInterval(1);
 
+    // Create our unique vertex array
     GLuint VertexArrayID;
     SAFE_GL(glGenVertexArrays(1, &VertexArrayID));
     SAFE_GL(glBindVertexArray(VertexArrayID));
@@ -365,8 +368,8 @@ struct OpenglDisplay : Display
     for(auto& glyph : m_fontModel)
     {
       glBindTexture(GL_TEXTURE_2D, glyph.diffuse);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     }
 
     for(auto& glyph : m_fontModel)
