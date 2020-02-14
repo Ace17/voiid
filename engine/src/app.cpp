@@ -178,7 +178,8 @@ private:
     m_control.jump = keys[SDL_SCANCODE_SPACE];
 
     m_control.restart = keys[SDL_SCANCODE_R];
-    m_control.debug = keys[SDL_SCANCODE_SCROLLLOCK];
+
+    m_control.debug = m_debugMode;
   }
 
   void draw()
@@ -197,8 +198,13 @@ private:
       m_display->drawText(Vector2f(0, 0), "PAUSE");
     else if(m_slowMotion)
       m_display->drawText(Vector2f(0, 0), "SLOW-MOTION MODE");
-    else if(m_control.debug)
-      m_display->drawText(Vector2f(0, 0), "DEBUG MODE");
+
+    if(m_debugMode)
+    {
+      char debugText[256];
+      sprintf(debugText, "FPS: %d", m_lastFps);
+      m_display->drawText(Vector2f(0, -4), debugText);
+    }
 
     if(m_textboxDelay > 0)
     {
@@ -275,6 +281,11 @@ private:
 
   void onKeyDown(SDL_Event* evt)
   {
+    keys[evt->key.keysym.scancode] = 1;
+
+    if(evt->key.repeat > 0)
+      return;
+
     switch(evt->key.keysym.sym)
     {
     case SDLK_ESCAPE:
@@ -297,16 +308,13 @@ private:
 
     case SDLK_PRINTSCREEN:
       {
-        if(evt->key.repeat == 0)
+        if(evt->key.keysym.mod & KMOD_CTRL)
         {
-          if(evt->key.keysym.mod & KMOD_CTRL)
-          {
-            toggleVideoCapture();
-          }
-          else
-          {
-            m_mustScreenshot = true;
-          }
+          toggleVideoCapture();
+        }
+        else
+        {
+          m_mustScreenshot = true;
         }
 
         break;
@@ -315,12 +323,14 @@ private:
     case SDLK_RETURN:
       {
         if(evt->key.keysym.mod & KMOD_LALT)
-        {
-          if(evt->key.repeat == 0)
-          {
-            toggleFullScreen();
-          }
-        }
+          toggleFullScreen();
+
+        break;
+      }
+
+    case SDLK_SCROLLLOCK:
+      {
+        m_debugMode = !m_debugMode;
 
         break;
       }
@@ -339,8 +349,6 @@ private:
         break;
       }
     }
-
-    keys[evt->key.keysym.scancode] = 1;
   }
 
   void onKeyUp(SDL_Event* evt)
@@ -408,6 +416,8 @@ private:
   int m_fixedDisplayFramePeriod = 0;
   FILE* m_captureFile = nullptr;
   bool m_mustScreenshot = false;
+
+  bool m_debugMode = false;
 
   int m_lastTime;
   int m_lastDisplayFrameTime;
