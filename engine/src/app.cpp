@@ -104,7 +104,6 @@ private:
     draw();
 
     m_fps.tick(now);
-    m_lastFps = m_fps.slope();
 
     captureDisplayFrameIfNeeded();
   }
@@ -195,7 +194,7 @@ private:
     if(m_debugMode)
     {
       char debugText[256];
-      sprintf(debugText, "FPS: %d", m_lastFps);
+      sprintf(debugText, "FPS: %d", m_fps.slope());
       m_display->drawText(Vector2f(0, -4), debugText);
     }
 
@@ -407,7 +406,6 @@ private:
 
   int m_lastTime;
   int m_lastDisplayFrameTime;
-  int m_lastFps = -1;
   RateCounter m_fps;
   Control m_control {};
   vector<string> m_args;
