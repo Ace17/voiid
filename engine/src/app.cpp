@@ -113,6 +113,11 @@ private:
       m_lastFps = fps;
     }
 
+    captureDisplayFrameIfNeeded();
+  }
+
+  void captureDisplayFrameIfNeeded()
+  {
     if(m_captureFile || m_mustScreenshot)
     {
       vector<uint8_t> pixels(RESOLUTION.width * RESOLUTION.height * 4);
@@ -134,7 +139,6 @@ private:
     }
   }
 
-private:
   void processInput()
   {
     SDL_Event event;
