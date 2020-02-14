@@ -98,20 +98,13 @@ private:
       }
     }
 
-    {
-      m_actors.clear();
-      m_scene->draw();
-      draw();
-      m_fps.tick(now);
-    }
+    // draw the frame
+    m_actors.clear();
+    m_scene->draw();
+    draw();
 
-    auto fps = m_fps.slope();
-
-    if(fps != m_lastFps)
-    {
-      fpsChanged(fps);
-      m_lastFps = fps;
-    }
+    m_fps.tick(now);
+    m_lastFps = m_fps.slope();
 
     captureDisplayFrameIfNeeded();
   }
@@ -213,13 +206,6 @@ private:
     }
 
     m_display->endDraw();
-  }
-
-  void fpsChanged(int fps)
-  {
-    char title[128];
-    sprintf(title, "%s (%d FPS)", m_title.c_str(), fps);
-    m_display->setCaption(title);
   }
 
   void onQuit()
@@ -359,7 +345,7 @@ private:
   // View implementation
   void setTitle(char const* gameTitle) override
   {
-    m_title = gameTitle;
+    m_display->setCaption(gameTitle);
   }
 
   void preload(Resource res) override
@@ -434,7 +420,6 @@ private:
   unique_ptr<Display> m_display;
   vector<Actor> m_actors;
 
-  string m_title;
   string m_textbox;
   int m_textboxDelay = 0;
 };
