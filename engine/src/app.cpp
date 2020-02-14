@@ -328,7 +328,7 @@ private:
         break;
       }
 
-    case SDL_SCANCODE_RCTRL:
+    case SDLK_RCTRL:
       {
         m_doGrab = !m_doGrab;
         m_display->enableGrab(m_doGrab);
