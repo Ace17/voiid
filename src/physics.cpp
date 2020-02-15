@@ -20,12 +20,12 @@ using namespace std;
 
 struct Physics : IPhysics
 {
-  void addBody(Body* body)
+  void addBody(Body* body) override
   {
     m_bodies.push_back(body);
   }
 
-  void removeBody(Body* body)
+  void removeBody(Body* body) override
   {
     auto isItTheOne =
       [ = ] (Body* candidate) { return candidate == body; };
@@ -135,7 +135,7 @@ struct Physics : IPhysics
     return r;
   }
 
-  void checkForOverlaps()
+  void checkForOverlaps() override
   {
     for(auto p : allPairs((int)m_bodies.size()))
     {
@@ -164,7 +164,7 @@ struct Physics : IPhysics
     m_traceEdifice = trace;
   }
 
-  Body* getBodiesInBox(Box myBox, int collisionGroup, bool onlySolid, const Body* except) const
+  Body* getBodiesInBox(Box myBox, int collisionGroup, bool onlySolid, const Body* except) const override
   {
     for(auto& body : m_bodies)
     {

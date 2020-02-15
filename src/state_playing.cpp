@@ -301,7 +301,7 @@ struct GameState : Scene, IGame
     spawn(m_player);
   }
 
-  void endLevel()
+  void endLevel() override
   {
     m_shouldLoadLevel = true;
     m_level++;

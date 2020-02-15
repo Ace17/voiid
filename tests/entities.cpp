@@ -46,16 +46,16 @@ unittest("Entity: explosion")
 
 struct NullPlayer : Player
 {
-  virtual void think(Control const&)
+  virtual void think(Control const&) override
   {
   }
 
-  virtual float health()
+  virtual float health() override
   {
     return 0;
   }
 
-  virtual void addUpgrade(int)
+  virtual void addUpgrade(int) override
   {
   }
 
@@ -78,7 +78,7 @@ struct NullGame : IGame
 struct NullPhysicsProbe : IPhysicsProbe
 {
   // called by entities
-  Trace moveBody(Body* body, Vector delta)
+  Trace moveBody(Body* body, Vector delta) override
   {
     Trace tr {};
     auto box = body->getBox();
@@ -111,7 +111,7 @@ struct NullPhysicsProbe : IPhysicsProbe
     return r;
   }
 
-  Body* getBodiesInBox(Box, int, bool, const Body*) const
+  Body* getBodiesInBox(Box, int, bool, const Body*) const override
   {
     return nullptr;
   }

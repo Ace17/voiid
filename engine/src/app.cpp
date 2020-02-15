@@ -380,7 +380,7 @@ private:
     m_audio->playSound(sound);
   }
 
-  void setCameraPos(Vector3f pos, Quaternion orientation)
+  void setCameraPos(Vector3f pos, Quaternion orientation) override
   {
     m_display->setCamera(pos, orientation);
   }

@@ -87,7 +87,7 @@ struct AutoDoor : Entity, Switchable
     solid = true;
   }
 
-  virtual void enter()
+  virtual void enter() override
   {
     basePos = pos;
   }
