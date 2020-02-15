@@ -270,7 +270,6 @@ private:
 
     if(evt->key.repeat > 0)
       return;
-
     switch(evt->key.keysym.sym)
     {
     case SDLK_ESCAPE:
