@@ -10,6 +10,8 @@
 #include "base/view.h"
 #include "state_machine.h"
 
+#include <string>
+
 unique_ptr<Scene> createSplashState(StateMachine* fsm, View* view);
 unique_ptr<Scene> createGameState(StateMachine* fsm, View* view, int level);
 
