@@ -11,7 +11,7 @@
 inline
 ifstream openInput(string path)
 {
-  ifstream fp(path);
+  ifstream fp(path, std::ios::binary);
 
   if(!fp.is_open())
     throw runtime_error("Can't open file '" + path + "'");
