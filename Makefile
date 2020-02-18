@@ -6,6 +6,8 @@ CXX:=$(CROSS_COMPILE)g++
 endif
 
 EXT?=.exe
+BIN_HOST?=bin_host
+TARGETS+=$(BIN_HOST)
 
 all: true_all
 

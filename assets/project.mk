@@ -28,10 +28,10 @@ res/%.mesh: res/%.sa.blend ./scripts/export_from_blender.py
 	@echo "Exporting from blender: $<"
 	@./scripts/export_from_blender "$<" "$@"
 
-res/%.render: res/%.mesh $(BIN)/meshcooker.exe
+res/%.render: res/%.mesh $(BIN_HOST)/meshcooker.exe
 	@mkdir -p $(dir $@)
 	@cp assets/$*.png res/$*.diffuse.png
-	$(BIN)/meshcooker.exe "$<" "$@" "res/$*.lightmap.png"
+	$(BIN_HOST)/meshcooker.exe "$<" "$@" "res/$*.lightmap.png"
 
 res/%: assets/%
 	@mkdir -p $(dir $@)

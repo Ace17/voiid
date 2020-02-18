@@ -30,7 +30,16 @@ SRCS_MESHCOOKER:=\
 	$(ENGINE_ROOT)/src/misc/file.cpp\
 	$(ENGINE_ROOT)/src/render/3ds.cpp\
 
-$(BIN)/meshcooker.exe: $(SRCS_MESHCOOKER:%=$(BIN)/%.o)
+#-----------------------------------
+$(BIN_HOST):
+	@mkdir -p "$@"
+
+$(BIN_HOST)/%.cpp.o: %.cpp
 	@mkdir -p $(dir $@)
-	$(CXX) $^ -o '$@' $(LDFLAGS)
+	@echo [HOST] compile "$@"
+	g++ -Iengine/include -Iengine/src -c "$^" -o "$@"
+
+$(BIN_HOST)/meshcooker.exe: $(SRCS_MESHCOOKER:%=$(BIN_HOST)/%.o)
+	@mkdir -p $(dir $@)
+	g++ $^ -o '$@'
 
