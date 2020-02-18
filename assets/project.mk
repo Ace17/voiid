@@ -13,7 +13,7 @@ TARGETS+=$(ROOMS_SRC:assets/%.blend=res/%.render)
 
 SPRITES_SRC+=$(wildcard assets/sprites/*.blend)
 TARGETS+=$(SPRITES_SRC:assets/%.blend=res/%.render)
-TARGETS+=$(SPRITES_SRC:assets/%.blend=res/%.png)
+TARGETS+=$(SPRITES_SRC:assets/%.blend=res/%.diffuse.png)
 
 TARGETS+=res/font.png
 res/font.png: assets/font.png
@@ -28,10 +28,10 @@ res/%.mesh: res/%.sa.blend ./scripts/export_from_blender.py
 	@echo "Exporting from blender: $<"
 	@./scripts/export_from_blender "$<" "$@"
 
-res/%.render: res/%.mesh $(BIN_HOST)/meshcooker.exe
+res/%.render res/%.diffuse.png: res/%.mesh $(BIN_HOST)/meshcooker.exe
 	@mkdir -p $(dir $@)
 	@cp assets/$*.png res/$*.diffuse.png
-	$(BIN_HOST)/meshcooker.exe "$<" "$@" "res/$*.lightmap.png"
+	$(BIN_HOST)/meshcooker.exe "$<" "res/$*.render" "res/$*.lightmap.png"
 
 res/%: assets/%
 	@mkdir -p $(dir $@)
