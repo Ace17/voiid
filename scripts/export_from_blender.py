@@ -69,8 +69,12 @@ def exportMeshes(scene, filepath=""):
                 theMesh.transform(matrix)
                 try:
                     dumpMesh(theMesh, file, ob_derived)
-                except Exception:
-                    sys.stderr.write("Skipping mesh: '" + theMesh.name + "'\n")
+                except Exception as e:
+                    if hasattr(e, 'message'):
+                        errorMsg = e.message
+                    else:
+                        errorMsg = str(e)
+                    sys.stderr.write(f"Skipping mesh: '{theMesh.name}' ({errorMsg})\n")
 
                 file.write("\n")
             else:
