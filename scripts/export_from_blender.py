@@ -48,21 +48,23 @@ def exportMeshes(scene, filepath=""):
             continue
 
         for ob_derived, matrix in derived:
-            if obj.type not in {'MESH', 'CURVE', 'SURFACE', 'FONT', 'META'}:
-                continue
+            if obj.type == 'EMPTY':
+                pass
+            elif obj.type in {'MESH', 'CURVE', 'SURFACE', 'FONT', 'META'}:
+                theMesh = ob_derived.to_mesh()
 
-            theMesh = ob_derived.to_mesh()
+                if theMesh is None:
+                    continue
 
-            if theMesh is None:
-                continue
+                theMesh.transform(matrix)
+                try:
+                    dumpMesh(theMesh, file, ob_derived)
+                except Exception:
+                    sys.stderr.write("Skipping mesh: '" + theMesh.name + "'\n")
 
-            theMesh.transform(matrix)
-            try:
-                dumpMesh(theMesh, file, ob_derived)
-            except Exception:
-                sys.stderr.write("Skipping mesh: '" + theMesh.name + "'\n")
-
-            file.write("\n")
+                file.write("\n")
+            else:
+                sys.stderr.write("Skipping unknown type: '%s'\n" % str(obj.type))
 
         if free:
             free_derived_objects(obj)
