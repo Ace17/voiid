@@ -19,15 +19,9 @@ TARGETS+=$(SPRITES_SRC:assets/%.blend=res/%.lightmap.png)
 TARGETS+=res/font.png
 res/font.png: assets/font.png
 
-res/%.sa.blend: assets/%.blend ./scripts/preprocess_blender.py
+res/%.mesh: assets/%.blend ./scripts/export_from_blender.py ./scripts/preprocess_blender.py
 	@mkdir -p $(dir $@)
-	@echo "Preprocess blender file: $<"
-	@./scripts/preprocess_blender "$<" "$@"
-
-res/%.mesh: res/%.sa.blend ./scripts/export_from_blender.py
-	@mkdir -p $(dir $@)
-	@echo "Exporting from blender: $<"
-	@./scripts/export_from_blender "$<" "$@"
+	./scripts/export_from_blender "$<" "$@"
 
 res/%.render res/%.diffuse.png res/%.lightmap.png: res/%.mesh $(BIN_HOST)/meshcooker.exe
 	@mkdir -p $(dir $@)
