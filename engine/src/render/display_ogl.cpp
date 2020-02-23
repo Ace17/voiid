@@ -115,55 +115,21 @@ int linkShaders(vector<int> ids)
   return ProgramID;
 }
 
-static
-shared_ptr<SDL_Surface> loadPng(string path)
+struct Picture
 {
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
-  const Uint32 rmask = 0xff000000;
-  const Uint32 gmask = 0x00ff0000;
-  const Uint32 bmask = 0x0000ff00;
-  const Uint32 amask = 0x000000ff;
-#else
-  const Uint32 rmask = 0x000000ff;
-  const Uint32 gmask = 0x0000ff00;
-  const Uint32 bmask = 0x00ff0000;
-  const Uint32 amask = 0xff000000;
-#endif
+  Size2i dim;
+  vector<uint8_t> pixels;
+};
 
-  int width, height;
+static
+Picture loadPng(string path)
+{
+  Picture r;
   auto pngDataBuf = read(path);
   auto pngData = Span<const uint8_t>((uint8_t*)pngDataBuf.data(), (int)pngDataBuf.size());
-  auto pixels = decodePng(pngData, width, height);
+  r.pixels = decodePng(pngData, r.dim.width, r.dim.height);
 
-  auto surface = shared_ptr<SDL_Surface>(
-    SDL_CreateRGBSurface(0, width, height, 32, rmask, gmask, bmask, amask),
-    &SDL_FreeSurface);
-
-  if(!surface)
-    throw runtime_error(string("Can't create SDL surface for texture: ") + SDL_GetError());
-
-  Uint8* pSrc = (Uint8*)pixels.data();
-  Uint8* pDst = (Uint8*)surface->pixels;
-
-  for(int rows = 0; rows < (int)height; ++rows)
-  {
-    memcpy(pDst, pSrc, width * surface->format->BytesPerPixel);
-    pSrc += 4 * width;
-    pDst += surface->pitch;
-  }
-
-  return surface;
-}
-
-static
-shared_ptr<SDL_Surface> loadPicture(string path)
-{
-  auto surface = loadPng(path);
-
-  if(surface->format->BitsPerPixel != 32)
-    throw runtime_error("only 32 bit pictures are supported");
-
-  return surface;
+  return r;
 }
 
 // exported to RenderMesh
@@ -173,19 +139,21 @@ int loadTexture(string path, Rect2i rect)
 
   try
   {
-    auto surface = loadPicture(path);
+    auto surface = loadPng(path);
 
     if(rect.size.width == 0 && rect.size.height == 0)
-      rect = Rect2i(0, 0, surface->w, surface->h);
+      rect = Rect2i(0, 0, surface.dim.width, surface.dim.height);
 
-    if(rect.pos.x < 0 || rect.pos.y < 0 || rect.pos.x + rect.size.width > surface->w || rect.pos.y + rect.size.height > surface->h)
+    if(rect.pos.x < 0 || rect.pos.y < 0 || rect.pos.x + rect.size.width > surface.dim.width || rect.pos.y + rect.size.height > surface.dim.height)
       throw runtime_error("Invalid boundaries for '" + path + "'");
 
-    auto const bpp = surface->format->BytesPerPixel;
+    auto const bpp = 4;
 
     img.resize(rect.size.width * rect.size.height * bpp);
 
-    auto src = (Uint8*)surface->pixels + rect.pos.x * bpp + rect.pos.y * surface->pitch;
+    auto const stride = surface.dim.width * bpp;
+
+    auto src = (Uint8*)surface.pixels.data() + rect.pos.x * bpp + rect.pos.y * stride;
     auto dst = (Uint8*)img.data() + bpp * rect.size.width * rect.size.height;
 
     // from glTexImage2D doc:
@@ -195,7 +163,7 @@ int loadTexture(string path, Rect2i rect)
     {
       dst -= bpp * rect.size.width;
       memcpy(dst, src, bpp * rect.size.width);
-      src += surface->pitch;
+      src += stride;
     }
   }
   catch(std::exception const& e)
