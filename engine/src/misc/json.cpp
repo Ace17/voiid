@@ -7,6 +7,21 @@
 // Simplistic standalone JSON-parser
 
 #include "json.h"
+#include <stdexcept>
+
+namespace json
+{
+Value const& Value::operator [] (const char* name) const
+{
+  enforceType(Type::Object);
+  auto it = members.find(name);
+
+  if(it == members.end())
+    throw runtime_error("Member '" + string(name) + "' was not found");
+
+  return it->second;
+}
+}
 
 struct Token
 {
