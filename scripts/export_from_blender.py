@@ -3,6 +3,7 @@
 import bpy
 import bmesh
 import sys
+import os
 import traceback
 
 from bpy_extras.io_utils import create_derived_objects, free_derived_objects
@@ -145,6 +146,12 @@ def dumpMesh(mesh, file, obj):
 
     for material_index in triangles.keys():
         file.write("material: \"" + mesh.materials[material_index].name + "\"\n")
+        texturePath = ""
+        if mesh.materials[material_index].use_nodes:
+          for node in mesh.materials[material_index].node_tree.nodes:
+              if isinstance(node, bpy.types.ShaderNodeTexImage):
+                  texturePath = os.path.basename(node.image.filepath)
+        file.write("diffuse: \"" + texturePath + "\"\n")
         for tri in triangles[material_index]:
             for vertex in (tri.a, tri.b, tri.c):
                 line = ""

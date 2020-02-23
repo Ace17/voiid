@@ -101,6 +101,11 @@ Mesh parseOneMesh(String& stream)
       line.len--;
       mesh.material.assign(line.begin(), line.end());
     }
+    else if(startsWith(line, stringOf("diffuse: ")))
+    {
+      line += 11;
+      line.len--;
+    }
     else
       throw runtime_error("Invalid line in mesh file: '" + string(line.begin(), line.end()) + "'");
   }
