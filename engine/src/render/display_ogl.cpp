@@ -121,39 +121,29 @@ struct Picture
   vector<uint8_t> pixels;
 };
 
-static
-Picture loadPng(string path)
+Picture loadPicture(string path, Rect2i rect)
 {
-  Picture r;
-  auto pngDataBuf = read(path);
-  auto pngData = Span<const uint8_t>((uint8_t*)pngDataBuf.data(), (int)pngDataBuf.size());
-  r.pixels = decodePng(pngData, r.dim.width, r.dim.height);
-
-  return r;
-}
-
-// exported to RenderMesh
-int loadTexture(string path, Rect2i rect)
-{
-  vector<uint8_t> img;
-
   try
   {
-    auto surface = loadPng(path);
+    auto pngDataBuf = read(path);
+    auto pngData = Span<const uint8_t>((uint8_t*)pngDataBuf.data(), (int)pngDataBuf.size());
+
+    Picture r;
+    r.pixels = decodePng(pngData, r.dim.width, r.dim.height);
 
     if(rect.size.width == 0 && rect.size.height == 0)
-      rect = Rect2i(0, 0, surface.dim.width, surface.dim.height);
+      rect = Rect2i(0, 0, r.dim.width, r.dim.height);
 
-    if(rect.pos.x < 0 || rect.pos.y < 0 || rect.pos.x + rect.size.width > surface.dim.width || rect.pos.y + rect.size.height > surface.dim.height)
+    if(rect.pos.x < 0 || rect.pos.y < 0 || rect.pos.x + rect.size.width > r.dim.width || rect.pos.y + rect.size.height > r.dim.height)
       throw runtime_error("Invalid boundaries for '" + path + "'");
 
     auto const bpp = 4;
 
-    img.resize(rect.size.width * rect.size.height * bpp);
+    vector<uint8_t> img(rect.size.width * rect.size.height * bpp);
 
-    auto const stride = surface.dim.width * bpp;
+    auto const stride = r.dim.width * bpp;
 
-    auto src = (Uint8*)surface.pixels.data() + rect.pos.x * bpp + rect.pos.y * stride;
+    auto src = (Uint8*)r.pixels.data() + rect.pos.x * bpp + rect.pos.y * stride;
     auto dst = (Uint8*)img.data() + bpp * rect.size.width * rect.size.height;
 
     // from glTexImage2D doc:
@@ -165,40 +155,57 @@ int loadTexture(string path, Rect2i rect)
       memcpy(dst, src, bpp * rect.size.width);
       src += stride;
     }
+
+    r.pixels = std::move(img);
+    r.dim = rect.size;
+    return r;
   }
   catch(std::exception const& e)
   {
     printf("[display] can't load texture: %s\n", e.what());
     printf("[display] falling back on generated texture\n");
 
-    rect.size = Size2i(32, 32);
-    img.resize(rect.size.width * rect.size.height * 4);
+    Picture r;
+    r.dim = Size2i(32, 32);
+    r.pixels.resize(rect.size.width * rect.size.height * 4);
 
     for(int y = 0; y < rect.size.height; ++y)
     {
       for(int x = 0; x < rect.size.width; ++x)
       {
-        img[(x + y * rect.size.width) * 4 + 0] = 0xff;
-        img[(x + y * rect.size.width) * 4 + 1] = x < 16 ? 0xff : 0x00;
-        img[(x + y * rect.size.width) * 4 + 2] = y < 16 ? 0xff : 0x00;
-        img[(x + y * rect.size.width) * 4 + 3] = 0xff;
+        r.pixels[(x + y * rect.size.width) * 4 + 0] = 0xff;
+        r.pixels[(x + y * rect.size.width) * 4 + 1] = x < 16 ? 0xff : 0x00;
+        r.pixels[(x + y * rect.size.width) * 4 + 2] = y < 16 ? 0xff : 0x00;
+        r.pixels[(x + y * rect.size.width) * 4 + 3] = 0xff;
       }
     }
-  }
 
+    return r;
+  }
+}
+
+static GLuint sendToOpengl(const Picture& pic)
+{
   GLuint texture;
 
   glGenTextures(1, &texture);
+
   glBindTexture(GL_TEXTURE_2D, texture);
-
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, rect.size.width, rect.size.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, img.data());
-
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, pic.dim.width, pic.dim.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pic.pixels.data());
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  glBindTexture(GL_TEXTURE_2D, 0);
 
   return texture;
+}
+
+// exported to RenderMesh
+int loadTexture(string path, Rect2i rect)
+{
+  const auto pic = loadPicture(path, rect);
+  return sendToOpengl(pic);
 }
 
 extern const Span<uint8_t> VertexShaderCode;
