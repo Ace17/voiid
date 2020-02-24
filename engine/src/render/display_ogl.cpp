@@ -201,7 +201,7 @@ static GLuint sendToOpengl(const Picture& pic)
   return texture;
 }
 
-// exported to RenderMesh
+static
 int loadTexture(string path, Rect2i rect)
 {
   const auto pic = loadPicture(path, rect);
@@ -386,6 +386,8 @@ struct OpenglDisplay : Display
       m_Models.resize(id + 1);
 
     m_Models[id] = ::loadModel(path);
+    m_Models[id].diffuse = loadTexture(setExtension(path, "diffuse.png"), {});
+    m_Models[id].lightmap = loadTexture(setExtension(path, "lightmap.png"), {});
     sendToOpengl(m_Models[id]);
   }
 

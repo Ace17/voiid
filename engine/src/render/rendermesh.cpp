@@ -10,8 +10,6 @@
 #include "rendermesh.h"
 #include <string.h> // strlen
 
-extern int loadTexture(string path, Rect2i rect = Rect2i(0, 0, 0, 0));
-
 RenderMesh boxModel()
 {
   static const RenderMesh::Vertex vertices[] =
@@ -121,8 +119,6 @@ RenderMesh loadModel(string renderPath)
   else
     r = boxModel();
 
-  r.diffuse = loadTexture(setExtension(renderPath, "diffuse.png"));
-  r.lightmap = loadTexture(setExtension(renderPath, "lightmap.png"));
   return r;
 }
 
