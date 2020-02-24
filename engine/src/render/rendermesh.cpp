@@ -112,13 +112,9 @@ RenderMesh loadTxtRenderMesh(string path)
 
 RenderMesh loadModel(string renderPath)
 {
-  RenderMesh r;
+  if(!exists(renderPath))
+    return boxModel();
 
-  if(exists(renderPath))
-    r = loadTxtRenderMesh(renderPath);
-  else
-    r = boxModel();
-
-  return r;
+  return loadTxtRenderMesh(renderPath);
 }
 
