@@ -29,9 +29,10 @@ String substr(String s, int n)
   return s;
 }
 
-String stringOf(const char* s)
+template<size_t N>
+String S(const char (& s)[N])
 {
-  return { s, (int)strlen(s) };
+  return { s, int(N - 1) };
 }
 
 bool startsWith(String s, String prefix)
@@ -59,6 +60,15 @@ String parseLine(String& stream)
   return r;
 }
 
+bool accept(String& line, String word)
+{
+  if(!startsWith(line, word))
+    return false;
+
+  line += word.len;
+  return true;
+}
+
 Mesh parseOneMesh(String& stream)
 {
   Mesh mesh;
@@ -66,10 +76,10 @@ Mesh parseOneMesh(String& stream)
   {
     auto line = parseLine(stream);
 
-    if(!startsWith(line, stringOf("obj: ")))
+    if(!accept(line, S("obj: ")))
       throw runtime_error("invalid mesh header: '" + string(line.begin(), line.end()) + "'");
 
-    line += 6;
+    line += 1;
     line.len--;
     mesh.name.assign(line.begin(), line.end());
   }
@@ -92,18 +102,18 @@ Mesh parseOneMesh(String& stream)
     {
       mesh.vertices.push_back(vertex);
     }
-    else if(startsWith(line, stringOf("prop: ")))
+    else if(accept(line, S("prop: ")))
     {
     }
-    else if(startsWith(line, stringOf("material: ")))
+    else if(accept(line, S("material: ")))
     {
-      line += 11;
+      line += 1;
       line.len--;
       mesh.material.assign(line.begin(), line.end());
     }
-    else if(startsWith(line, stringOf("diffuse: ")))
+    else if(accept(line, S("diffuse: ")))
     {
-      line += 11;
+      line += 1;
       line.len--;
     }
     else
