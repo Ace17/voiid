@@ -26,6 +26,10 @@ using namespace std;
 #include "misc/file.h" // read
 #include "rendermesh.h"
 
+extern const Span<uint8_t> VertexShaderCode;
+extern const Span<uint8_t> FragmentShaderCode;
+extern RenderMesh boxModel();
+
 #ifdef NDEBUG
 #define SAFE_GL(a) a
 #else
@@ -33,7 +37,8 @@ using namespace std;
   do { a; ensureGl(# a, __LINE__); } while (0)
 #endif
 
-static
+namespace
+{
 void ensureGl(char const* expr, int line)
 {
   auto const errorCode = glGetError();
@@ -49,7 +54,6 @@ void ensureGl(char const* expr, int line)
   throw runtime_error(ss);
 }
 
-static
 int compileShader(Span<uint8_t> code, int type)
 {
   auto shaderId = glCreateShader(type);
@@ -83,7 +87,6 @@ int compileShader(Span<uint8_t> code, int type)
   return shaderId;
 }
 
-static
 int linkShaders(vector<int> ids)
 {
   // Link the program
@@ -184,7 +187,7 @@ Picture loadPicture(string path, Rect2i rect)
   }
 }
 
-static GLuint sendToOpengl(const Picture& pic)
+GLuint sendToOpengl(const Picture& pic)
 {
   GLuint texture;
 
@@ -201,17 +204,12 @@ static GLuint sendToOpengl(const Picture& pic)
   return texture;
 }
 
-static
 int loadTexture(string path, Rect2i rect)
 {
   const auto pic = loadPicture(path, rect);
   return sendToOpengl(pic);
 }
 
-extern const Span<uint8_t> VertexShaderCode;
-extern const Span<uint8_t> FragmentShaderCode;
-
-static
 GLuint loadShaders()
 {
   auto const vertexId = compileShader(VertexShaderCode, GL_VERTEX_SHADER);
@@ -225,8 +223,6 @@ GLuint loadShaders()
   return progId;
 }
 
-RenderMesh boxModel();
-
 struct Camera
 {
   Vector3f pos;
@@ -234,7 +230,6 @@ struct Camera
   bool valid = false;
 };
 
-static
 void sendToOpengl(RenderMesh& model)
 {
   SAFE_GL(glGenBuffers(1, &model.buffer));
@@ -243,7 +238,6 @@ void sendToOpengl(RenderMesh& model)
   SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, 0));
 }
 
-static
 std::vector<RenderMesh> loadTiledAnimation(string path, int count, int COLS, int SIZE)
 {
   std::vector<RenderMesh> r;
@@ -262,7 +256,6 @@ std::vector<RenderMesh> loadTiledAnimation(string path, int count, int COLS, int
   return r;
 }
 
-static
 void printOpenGlVersion()
 {
   auto sVersion = (char const*)glGetString(GL_VERSION);
@@ -592,6 +585,7 @@ struct OpenglDisplay : Display
 
   float m_ambientLight = 0;
 };
+}
 
 Display* createDisplay(Size2i resolution)
 {
