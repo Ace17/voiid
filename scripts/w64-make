@@ -21,7 +21,7 @@ if [ ! -d $PKG_CONFIG_LIBDIR ] ; then
 fi
 
 export DBGFLAGS=""
-export CXXFLAGS="-O3 -g0 -DNDEBUG"
+export CXXFLAGS="-w -O3 -g0 -DNDEBUG"
 export LDFLAGS="-g0 -L$PREFIX/lib -lwinmm -lgdi32 -lws2_32 -limm32 -ldxguid -lole32 -luser32 -s -mconsole"
 
 make "$@"
