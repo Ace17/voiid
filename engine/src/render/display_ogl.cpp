@@ -423,8 +423,6 @@ struct OpenglDisplay : Display
     m_ambientLight = ambientLight;
   }
 
-  int m_blinkCounter = 0;
-
   void renderMesh(Rect3f where, Camera const& camera, RenderMesh& model, bool blinking)
   {
     SAFE_GL(glUniform4f(m_colorId, 0, 0, 0, 0));
@@ -584,6 +582,7 @@ struct OpenglDisplay : Display
   vector<RenderMesh> m_fontModel;
 
   float m_ambientLight = 0;
+  int m_blinkCounter = 0;
 };
 }
 
