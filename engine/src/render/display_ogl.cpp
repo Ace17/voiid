@@ -250,6 +250,7 @@ std::vector<RenderMesh> loadTiledAnimation(string path, int count, int COLS, int
     auto row = i / COLS;
 
     m.diffuse = loadTexture(path, Rect2i(col * SIZE, row * SIZE, SIZE, SIZE));
+    m.lightmap = loadTexture("res/white.png", {});
     r.push_back(m);
   }
 
