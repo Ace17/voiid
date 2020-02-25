@@ -69,20 +69,11 @@ bool accept(String& line, String word)
   return true;
 }
 
-Mesh parseOneMesh(String& stream)
+Mesh parseOneMesh(String& stream, String name)
 {
   Mesh mesh;
 
-  {
-    auto line = parseLine(stream);
-
-    if(!accept(line, S("obj: ")))
-      throw runtime_error("invalid mesh header: '" + string(line.begin(), line.end()) + "'");
-
-    line += 1;
-    line.len--;
-    mesh.name.assign(line.begin(), line.end());
-  }
+  mesh.name.assign(name.begin(), name.end());
 
   while(stream.len)
   {
@@ -125,6 +116,19 @@ Mesh parseOneMesh(String& stream)
 
   return mesh;
 }
+
+void parseOneMaterial(String& stream, String name)
+{
+  (void)name;
+
+  while(stream.len)
+  {
+    auto line = parseLine(stream);
+
+    if(line.len == 0)
+      break;
+  }
+}
 }
 
 std::vector<Mesh> loadMesh(char const* path)
@@ -136,7 +140,36 @@ std::vector<Mesh> loadMesh(char const* path)
   auto stream = String { s.data(), (int)s.size() };
 
   while(stream.len > 0)
-    meshes.push_back(parseOneMesh(stream));
+  {
+    auto line = parseLine(stream);
+
+    if(accept(line, S("obj: ")))
+    {
+      // skip quotes
+      line += 1;
+      line.len--;
+      meshes.push_back(parseOneMesh(stream, line));
+    }
+    else if(accept(line, S("material: ")))
+    {
+      // skip quotes
+      line += 1;
+      line.len--;
+      parseOneMaterial(stream, line);
+    }
+    else
+    {
+      fprintf(stderr, "skipping unrecognized item header: '%.*s'\n", line.len, line.data);
+
+      while(stream.len)
+      {
+        auto line = parseLine(stream);
+
+        if(line.len == 0)
+          break;
+      }
+    }
+  }
 
   return meshes;
 }

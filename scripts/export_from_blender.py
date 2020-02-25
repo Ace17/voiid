@@ -39,13 +39,26 @@ def run():
   # apply all transforms
   bpy.ops.object.transform_apply(location=True, scale=True, rotation=True)
 
-  exportMeshes(bpy.context.scene, outputMeshPath)
+  file = open(outputMeshPath, 'w')
+  exportMaterials(file)
+  exportMeshes(bpy.context.scene, file)
+  file.close()
 
-def exportMeshes(scene, filepath=""):
+def exportMaterials(file):
+  for mat in bpy.data.materials:
+      file.write("material: \"" + mat.name + "\"\n")
+      texturePath = ""
+      if mat.use_nodes:
+        for node in mat.node_tree.nodes:
+            if isinstance(node, bpy.types.ShaderNodeTexImage):
+                texturePath = os.path.basename(node.image.filepath)
+      file.write("diffuse: \"" + texturePath + "\"\n")
+      file.write("\n")
+
+def exportMeshes(scene, file):
     if bpy.ops.object.mode_set.poll():
         bpy.ops.object.mode_set(mode='OBJECT')
 
-    file = open(filepath, 'w')
     mesh_objects = []
 
     for obj in scene.objects:
@@ -89,8 +102,6 @@ def exportMeshes(scene, filepath=""):
 
         if free:
             free_derived_objects(obj)
-
-    file.close()
 
 class Vertex(object):
     def __init__(self, pos, normal, uv):
@@ -146,12 +157,6 @@ def dumpMesh(mesh, file, obj):
 
     for material_index in triangles.keys():
         file.write("material: \"" + mesh.materials[material_index].name + "\"\n")
-        texturePath = ""
-        if mesh.materials[material_index].use_nodes:
-          for node in mesh.materials[material_index].node_tree.nodes:
-              if isinstance(node, bpy.types.ShaderNodeTexImage):
-                  texturePath = os.path.basename(node.image.filepath)
-        file.write("diffuse: \"" + texturePath + "\"\n")
         for tri in triangles[material_index]:
             for vertex in (tri.a, tri.b, tri.c):
                 line = ""
