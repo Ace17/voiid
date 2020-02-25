@@ -21,9 +21,6 @@ struct SplashState : Scene
     view->setAmbientLight(10);
   }
 
-  ////////////////////////////////////////////////////////////////
-  // Scene: Game, seen by the engine
-
   void tick(Control const& c) override
   {
     auto const FADE_TIME = 200;
