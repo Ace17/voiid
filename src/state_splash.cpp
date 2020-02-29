@@ -41,7 +41,7 @@ struct SplashState : Scene
 
     if(activated)
     {
-      view->setAmbientLight(- 20 * (1 - delay / float(FADE_TIME)));
+      view->setAmbientLight(-20 * (1 - delay / float(FADE_TIME)));
 
       if(decrement(delay))
       {
