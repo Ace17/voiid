@@ -13,7 +13,7 @@ using namespace std;
 
 #include "base/geom.h"
 
-struct RenderMesh
+struct SingleRenderMesh
 {
   uint32_t buffer = 0;
 
@@ -31,6 +31,11 @@ struct RenderMesh
   };
 
   vector<Vertex> vertices;
+};
+
+struct RenderMesh
+{
+  vector<SingleRenderMesh> singleMeshes;
 };
 
 RenderMesh loadModel(string path);

@@ -230,12 +230,15 @@ struct Camera
   bool valid = false;
 };
 
-void sendToOpengl(RenderMesh& model)
+void sendToOpengl(RenderMesh& renderMesh)
 {
-  SAFE_GL(glGenBuffers(1, &model.buffer));
-  SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, model.buffer));
-  SAFE_GL(glBufferData(GL_ARRAY_BUFFER, sizeof(model.vertices[0]) * model.vertices.size(), model.vertices.data(), GL_STATIC_DRAW));
-  SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, 0));
+  for(auto& model : renderMesh.singleMeshes)
+  {
+    SAFE_GL(glGenBuffers(1, &model.buffer));
+    SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, model.buffer));
+    SAFE_GL(glBufferData(GL_ARRAY_BUFFER, sizeof(model.vertices[0]) * model.vertices.size(), model.vertices.data(), GL_STATIC_DRAW));
+    SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, 0));
+  }
 }
 
 std::vector<RenderMesh> loadTiledAnimation(string path, int count, int COLS, int SIZE)
@@ -249,8 +252,8 @@ std::vector<RenderMesh> loadTiledAnimation(string path, int count, int COLS, int
     auto col = i % COLS;
     auto row = i / COLS;
 
-    m.diffuse = loadTexture(path, Rect2i(col * SIZE, row * SIZE, SIZE, SIZE));
-    m.lightmap = loadTexture("res/white.png", {});
+    m.singleMeshes[0].diffuse = loadTexture(path, Rect2i(col * SIZE, row * SIZE, SIZE, SIZE));
+    m.singleMeshes[0].lightmap = loadTexture("res/white.png", {});
     r.push_back(m);
   }
 
@@ -336,9 +339,12 @@ struct OpenglDisplay : Display
     // don't GL_REPEAT fonts
     for(auto& glyph : m_fontModel)
     {
-      glBindTexture(GL_TEXTURE_2D, glyph.diffuse);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+      for(auto& single : glyph.singleMeshes)
+      {
+        glBindTexture(GL_TEXTURE_2D, single.diffuse);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+      }
     }
 
     for(auto& glyph : m_fontModel)
@@ -380,8 +386,16 @@ struct OpenglDisplay : Display
       m_Models.resize(id + 1);
 
     m_Models[id] = ::loadModel(path);
-    m_Models[id].diffuse = loadTexture(setExtension(path, "diffuse.png"), {});
-    m_Models[id].lightmap = loadTexture(setExtension(path, "lightmap.png"), {});
+
+    int i = 0;
+
+    for(auto& single : m_Models[id].singleMeshes)
+    {
+      single.diffuse = loadTexture(setExtension(path, to_string(i) + ".diffuse.png"), {});
+      single.lightmap = loadTexture(setExtension(path, to_string(i) + ".lightmap.png"), {});
+      ++i;
+    }
+
     sendToOpengl(m_Models[id]);
   }
 
@@ -426,6 +440,12 @@ struct OpenglDisplay : Display
 
   void renderMesh(Rect3f where, Camera const& camera, RenderMesh& model, bool blinking)
   {
+    for(auto& single : model.singleMeshes)
+      renderSingleMesh(where, camera, single, blinking);
+  }
+
+  void renderSingleMesh(Rect3f where, Camera const& camera, SingleRenderMesh& model, bool blinking)
+  {
     SAFE_GL(glUniform4f(m_colorId, 0, 0, 0, 0));
 
     if(blinking)
@@ -466,11 +486,11 @@ struct OpenglDisplay : Display
     SAFE_GL(glEnableVertexAttribArray(m_uvDiffuseLoc));
     SAFE_GL(glEnableVertexAttribArray(m_uvLightmapLoc));
 
-#define OFFSET(a) (void*)(&(((RenderMesh::Vertex*)nullptr)->a))
-    SAFE_GL(glVertexAttribPointer(m_positionLoc, 3, GL_FLOAT, GL_FALSE, sizeof(RenderMesh::Vertex), OFFSET(x)));
-    SAFE_GL(glVertexAttribPointer(m_normalLoc, 3, GL_FLOAT, GL_FALSE, sizeof(RenderMesh::Vertex), OFFSET(nx)));
-    SAFE_GL(glVertexAttribPointer(m_uvDiffuseLoc, 2, GL_FLOAT, GL_FALSE, sizeof(RenderMesh::Vertex), OFFSET(diffuse_u)));
-    SAFE_GL(glVertexAttribPointer(m_uvLightmapLoc, 2, GL_FLOAT, GL_FALSE, sizeof(RenderMesh::Vertex), OFFSET(lightmap_u)));
+#define OFFSET(a) (void*)(&(((SingleRenderMesh::Vertex*)nullptr)->a))
+    SAFE_GL(glVertexAttribPointer(m_positionLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(x)));
+    SAFE_GL(glVertexAttribPointer(m_normalLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(nx)));
+    SAFE_GL(glVertexAttribPointer(m_uvDiffuseLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(diffuse_u)));
+    SAFE_GL(glVertexAttribPointer(m_uvLightmapLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(lightmap_u)));
 #undef OFFSET
 
     SAFE_GL(glDrawArrays(GL_TRIANGLES, 0, model.vertices.size()));

@@ -12,7 +12,7 @@
 
 RenderMesh boxModel()
 {
-  static const RenderMesh::Vertex vertices[] =
+  static const SingleRenderMesh::Vertex vertices[] =
   {
     { -0.5, -0.5, +0.5, /* N */ 0, 0, 1, /* uv diffuse */ 0, 0, /* uv lightmap */ 0, 0, },
     { -0.5, +0.5, +0.5, /* N */ 0, 0, 1, /* uv diffuse */ 0, 1, /* uv lightmap */ 0, 1, },
@@ -62,9 +62,10 @@ RenderMesh boxModel()
   };
 
   RenderMesh model;
+  model.singleMeshes.resize(1);
 
   for(auto idx : faces)
-    model.vertices.push_back(vertices[idx]);
+    model.singleMeshes[0].vertices.push_back(vertices[idx]);
 
   return model;
 }
@@ -81,13 +82,25 @@ RenderMesh loadBinaryRenderMesh(string path)
 
   while(1)
   {
-    RenderMesh::Vertex vertex;
-    int count = fread(&vertex, 1, sizeof vertex, fp);
+    int vertexCount = 0;
+    int n = fread(&vertexCount, 1, 4, fp);
 
-    if(count == 0)
+    if(n == 0)
       break;
 
-    mesh.vertices.push_back(vertex);
+    SingleRenderMesh single;
+
+    for(int i = 0; i < vertexCount; ++i)
+    {
+      SingleRenderMesh::Vertex vertex;
+      fread(&vertex, 1, sizeof vertex, fp);
+
+      single.vertices.push_back(vertex);
+    }
+
+    assert(!single.vertices.empty());
+
+    mesh.singleMeshes.push_back(single);
   }
 
   fclose(fp);

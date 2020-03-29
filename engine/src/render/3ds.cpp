@@ -9,6 +9,7 @@
 #include "base/mesh.h"
 #include "base/span.h"
 
+#include <map>
 #include <memory>
 #include <stdint.h>
 #include <string>
@@ -117,9 +118,9 @@ Mesh parseOneMesh(String& stream, String name)
   return mesh;
 }
 
-void parseOneMaterial(String& stream, String name)
+Material parseOneMaterial(String& stream)
 {
-  (void)name;
+  Material r;
 
   while(stream.len)
   {
@@ -127,13 +128,24 @@ void parseOneMaterial(String& stream, String name)
 
     if(line.len == 0)
       break;
+
+    if(accept(line, S("diffuse: ")))
+    {
+      // skip quotes
+      line += 1;
+      line.len--;
+      r.diffuse.assign(line.begin(), line.end());
+    }
   }
+
+  return r;
 }
 }
 
 std::vector<Mesh> loadMesh(char const* path)
 {
   std::vector<Mesh> meshes;
+  std::map<std::string, Material> materials;
 
   auto s = read(path);
 
@@ -149,13 +161,16 @@ std::vector<Mesh> loadMesh(char const* path)
       line += 1;
       line.len--;
       meshes.push_back(parseOneMesh(stream, line));
+
+      meshes.back().material = materials[meshes.back().material].diffuse;
     }
     else if(accept(line, S("material: ")))
     {
       // skip quotes
       line += 1;
       line.len--;
-      parseOneMaterial(stream, line);
+      std::string matName(line.begin(), line.end());
+      materials[matName] = parseOneMaterial(stream);
     }
     else
     {
