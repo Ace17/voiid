@@ -13,33 +13,47 @@ function main
   echo "Delivering [$NAME]"
   make clean
   ./check
-  deliverWindowsVersion
+  deliverBinaryVersion
   #deliverWebVersion
 }
 
-function deliverWindowsVersion
+function deliverBinaryVersion
 {
+  local N=$NAME
+
   echo "-------------------------------------"
-  echo "Building Windows version"
+  echo "Building binaries"
+
+  # Windows binaries
   BIN=$tmpDir/bin/w64 \
     ./scripts/w64-make -j`nproc` >/dev/null
 
-  cp -a $tmpDir/bin/w64/rel                                        $tmpDir/$NAME
-  cp /usr/x86_64-w64-mingw32/lib/libwinpthread-1.dll               $tmpDir/$NAME
-  cp /usr/lib/gcc/x86_64-w64-mingw32/8.3-posix/libstdc++-6.dll     $tmpDir/$NAME
-  cp /usr/lib/gcc/x86_64-w64-mingw32/8.3-posix/libgcc_s_seh-1.dll  $tmpDir/$NAME
-  cp /opt/envs/win64/bin/SDL2.dll                                  $tmpDir/$NAME
-  strip -s $tmpDir/$NAME/*.{exe,dll}
+  cp -a $tmpDir/bin/w64/rel                                        $tmpDir/$N
+  cp /usr/x86_64-w64-mingw32/lib/libwinpthread-1.dll               $tmpDir/$N
+  cp /usr/lib/gcc/x86_64-w64-mingw32/8.3-posix/libstdc++-6.dll     $tmpDir/$N
+  cp /usr/lib/gcc/x86_64-w64-mingw32/8.3-posix/libgcc_s_seh-1.dll  $tmpDir/$N
+  cp /opt/envs/win64/bin/SDL2.dll                                  $tmpDir/$N
+  mv $tmpDir/$N/game.exe $tmpDir/$N/$N.exe
 
-  cp -a res                                                        $tmpDir/$NAME
+  # GNU/Linux binaries
+  BIN=$tmpDir/bin/gnu \
+    make -j`nproc` >/dev/null
+
+  cp -a $tmpDir/bin/gnu/rel/game.exe                               $tmpDir/$N/$N.x86_64
+
+  # Resources
+  cp -a res                                                        $tmpDir/$N
+
+  # Strip executables
+  strip -s $tmpDir/$N/*.{exe,dll,x86_64}
 
   (
     cd $tmpDir
-    zip -q $NAME.zip -r $NAME
+    zip -q $N.zip -r $N
   )
 
-  du -hs $tmpDir/$NAME.zip
-  cp $tmpDir/$NAME.zip /tmp/
+  cp $tmpDir/$N.zip /tmp/
+  du -hs /tmp/$N.zip
 }
 
 function deliverWebVersion
