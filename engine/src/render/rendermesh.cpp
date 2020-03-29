@@ -70,7 +70,7 @@ RenderMesh boxModel()
 }
 
 static
-RenderMesh loadTxtRenderMesh(string path)
+RenderMesh loadBinaryRenderMesh(string path)
 {
   auto fp = fopen(path.c_str(), "rb");
 
@@ -78,29 +78,14 @@ RenderMesh loadTxtRenderMesh(string path)
     throw runtime_error("Can't open model file: '" + path + "'");
 
   RenderMesh mesh;
-  char line[256];
 
-  while(fgets(line, sizeof line, fp))
+  while(1)
   {
-    auto n = strlen(line);
-
-    if(n > 0 && line[n - 1] == '\n')
-      line[n - 1] = 0;
-
-    if(line[0] == 0 || line[0] == '#')
-      continue;
-
     RenderMesh::Vertex vertex;
-    int count = sscanf(line,
-                       "%f %f %f - %f %f %f - %f %f - %f %f",
-                       &vertex.x, &vertex.y, &vertex.z,
-                       &vertex.nx, &vertex.ny, &vertex.nz,
-                       &vertex.diffuse_u, &vertex.diffuse_v,
-                       &vertex.lightmap_u, &vertex.lightmap_v
-                       );
+    int count = fread(&vertex, 1, sizeof vertex, fp);
 
-    if(count != 10)
-      throw runtime_error("Invalid line in mesh file: '" + string(line) + "'");
+    if(count == 0)
+      break;
 
     mesh.vertices.push_back(vertex);
   }
@@ -115,6 +100,6 @@ RenderMesh loadModel(string renderPath)
   if(!exists(renderPath))
     return boxModel();
 
-  return loadTxtRenderMesh(renderPath);
+  return loadBinaryRenderMesh(renderPath);
 }
 

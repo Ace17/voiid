@@ -62,20 +62,7 @@ int main(int argc, const char* argv[])
     FILE* fp = fopen(outputPathMesh, "wb");
 
     for(auto& vertex : renderMesh.vertices)
-    {
-      fprintf(fp, "%.6f %.6f %.6f - %.6f %.6f %.6f - %.6f %.6f - %.6f %.6f\n",
-              vertex.x,
-              vertex.y,
-              vertex.z,
-              vertex.nx,
-              vertex.ny,
-              vertex.nz,
-              vertex.diffuse_u,
-              vertex.diffuse_v,
-              vertex.lightmap_u,
-              vertex.lightmap_v
-              );
-    }
+      fwrite(&vertex, 1, sizeof vertex, fp);
 
     fclose(fp);
   }
