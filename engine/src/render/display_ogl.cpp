@@ -350,6 +350,9 @@ struct OpenglDisplay : Display
     for(auto& glyph : m_fontModel)
       sendToOpengl(glyph);
 
+    m_M = glGetUniformLocation(m_programId, "M");
+    assert(m_M >= 0);
+
     m_MVP = glGetUniformLocation(m_programId, "MVP");
     assert(m_MVP >= 0);
 
@@ -475,9 +478,11 @@ struct OpenglDisplay : Display
     static const float far_ = 100.0f;
     static const auto perspective = ::perspective(fovy, aspect, near_, far_);
 
-    auto mat = perspective * view * pos * scale;
+    auto MV = pos * scale;
+    auto MVP = perspective * view * MV;
 
-    SAFE_GL(glUniformMatrix4fv(m_MVP, 1, GL_FALSE, &mat[0][0]));
+    SAFE_GL(glUniformMatrix4fv(m_M, 1, GL_FALSE, &MV[0][0]));
+    SAFE_GL(glUniformMatrix4fv(m_MVP, 1, GL_FALSE, &MVP[0][0]));
 
     SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, model.buffer));
 
@@ -588,6 +593,7 @@ struct OpenglDisplay : Display
   Camera m_camera;
 
   // shader attribute/uniform locations
+  GLint m_M;
   GLint m_MVP;
   GLint m_colorId;
   GLint m_ambientLoc;

@@ -5,6 +5,7 @@ precision mediump float;
 // Interpolated values from the vertex shader
 in vec2 UV;
 in vec2 UV_lightmap;
+in vec3 vPos;
 in vec3 vNormal;
 in float fogFactor;
 
@@ -19,13 +20,16 @@ uniform vec3 ambientLight;
 
 void main()
 {
-  vec3 lightDirEyeSpace = normalize(vec3(0.3,0.4,0.1));
-  vec3 receivedLight = vec3(max(0.0, dot(lightDirEyeSpace, vNormal)));
-  vec3 light = receivedLight + ambientLight;
-  light = light * fogFactor;
+  vec3 lightPos = vec3(2, 2, 2);
+  vec3 lightDir = lightPos - vPos.xyz;
+  float lightDist = length(lightDir);
+  float attenuation = 1.0/lightDist;
+  vec3 receivedLight = vec3(max(0.0, dot(normalize(lightDir), vNormal))) * attenuation;
+  vec3 light = receivedLight + ambientLight * 0.2;
+  light *= fogFactor;
   vec4 rawColor = texture2D(DiffuseTex, UV) + fragOffset;
   vec4 lightmapColor = texture2D(LightmapTex, UV_lightmap);
-  color = vec4(rawColor.rgb * (light*0.1 + lightmapColor.rgb), rawColor.a);
+  color = vec4(rawColor.rgb * (light + lightmapColor.rgb*0.01), rawColor.a);
 }
 
 // vim: syntax=glsl

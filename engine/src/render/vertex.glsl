@@ -9,10 +9,12 @@ in vec3 a_normal;
 // Output data; will be interpolated for each fragment
 out vec2 UV;
 out vec2 UV_lightmap;
-out vec3 vNormal;
 out float fogFactor;
+out vec3 vPos;
+out vec3 vNormal;
 
 // Values that stay constant for the whole mesh.
+uniform mat4 M;
 uniform mat4 MVP;
 
 void main()
@@ -20,7 +22,9 @@ void main()
   gl_Position = MVP * vertexPos_model;
   UV = vertexUV;
   UV_lightmap = vertexUV_lightmap;
-  vNormal = normalize(a_normal);
   fogFactor = clamp(1.0/exp(length(gl_Position) * 0.01), 0.0, 1.0);
+
+  vPos = (M * vertexPos_model).xyz;
+  vNormal = (M * vec4(normalize(a_normal), 1)).xyz;
 }
 // vim: syntax=glsl
