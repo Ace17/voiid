@@ -93,9 +93,7 @@ private:
       m_lastTime += timestep;
 
       if(!m_paused)
-      {
-        m_scene->tick(m_control);
-      }
+        tickGameplay();
     }
 
     // draw the frame
@@ -128,6 +126,17 @@ private:
 
         m_mustScreenshot = false;
       }
+    }
+  }
+
+  void tickGameplay()
+  {
+    auto next = m_scene->tick(m_control);
+
+    if(next != m_scene.get())
+    {
+      m_scene.release();
+      m_scene.reset(next);
     }
   }
 

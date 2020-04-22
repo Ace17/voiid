@@ -4,7 +4,7 @@
 // published by the Free Software Foundation, either version 3 of the
 // License, or (at your option) any later version.
 
-// Top-level game logic
+// Game logic
 
 #include <algorithm>
 #include <list>
@@ -165,7 +165,7 @@ void spawnEntities(Room const& room, IGame* game, int levelIdx)
   }
 }
 
-struct GameState : Scene, IGame
+struct GameState : Scene, private IGame
 {
   GameState(View* view) :
     m_view(view)
@@ -183,7 +183,7 @@ struct GameState : Scene, IGame
   ////////////////////////////////////////////////////////////////
   // Scene: Game, seen by the engine
 
-  void tick(Control const& c) override
+  Scene* tick(Control c) override
   {
     if(m_shouldLoadLevel)
     {
@@ -211,6 +211,14 @@ struct GameState : Scene, IGame
     }
 
     m_view->setAmbientLight(1.0 + min(0.0f, 0.02f * m_player->pos.z));
+
+    if(0)
+    {
+      std::unique_ptr<Scene> deleteMeOnReturn(this);
+      return createEndingState(m_view);
+    }
+
+    return this;
   }
 
   void draw() override
@@ -393,11 +401,15 @@ struct GameState : Scene, IGame
   }
 };
 
-unique_ptr<Scene> createGameState(StateMachine* fsm, View* view, int level)
+Scene* createPlayingStateAtLevel(View* view, int level)
 {
-  (void)fsm;
-  auto r = make_unique<GameState>(view);
-  r->m_level = level;
-  return r;
+  auto gameState = make_unique<GameState>(view);
+  gameState->m_level = level;
+  return gameState.release();
+}
+
+Scene* createPlayingState(View* view)
+{
+  return createPlayingStateAtLevel(view, 1);
 }
 

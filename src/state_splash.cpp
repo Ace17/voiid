@@ -8,6 +8,7 @@
 
 #include "base/scene.h"
 #include "base/view.h"
+#include <memory>
 
 #include "models.h" // MDL_SPLASH
 #include "sounds.h" // SND_PAUSE
@@ -16,12 +17,15 @@
 
 struct SplashState : Scene
 {
-  SplashState(View* view_, StateMachine* fsm_) : view(view_), fsm(fsm_)
+  SplashState(View* view_) : view(view_)
   {
     view->setAmbientLight(10);
   }
 
-  void tick(Control const& c) override
+  ////////////////////////////////////////////////////////////////
+  // Scene: Game, seen by the engine
+
+  Scene* tick(Control c) override
   {
     auto const FADE_TIME = 200;
 
@@ -47,9 +51,12 @@ struct SplashState : Scene
       {
         view->textBox("");
         activated = false;
-        fsm->next();
+        std::unique_ptr<Scene> deleteMeOnReturn(this);
+        return createPlayingState(view);
       }
     }
+
+    return this;
   }
 
   void draw() override
@@ -58,13 +65,12 @@ struct SplashState : Scene
 
 private:
   View* const view;
-  StateMachine* const fsm;
   bool activated = false;
   int delay = 0;
 };
 
-unique_ptr<Scene> createSplashState(StateMachine* fsm, View* view)
+Scene* createSplashState(View* view)
 {
-  return make_unique<SplashState>(view, fsm);
+  return new SplashState(view);
 }
 
