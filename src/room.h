@@ -9,8 +9,10 @@
 #pragma once
 
 #include "base/geom.h"
+#include <map>
 #include <string>
 #include <vector>
+
 using namespace std;
 
 #include "base/mesh.h"
@@ -23,7 +25,8 @@ struct Room
   struct Thing
   {
     Vector pos;
-    string formula;
+    string name;
+    map<string, string> config;
   };
 
   vector<Thing> things;

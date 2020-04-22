@@ -104,6 +104,108 @@ void bevelSharpEdges(Mesh& mesh, Convex& brush)
   }
 }
 
+static
+vector<string> parseCall(string content)
+{
+  content += '\0';
+  auto stream = content.c_str();
+
+  auto head = [&] ()
+    {
+      return *stream;
+    };
+
+  auto accept = [&] (char what)
+    {
+      if(!*stream)
+        return false;
+
+      if(head() != what)
+        return false;
+
+      stream++;
+      return true;
+    };
+
+  auto expect = [&] (char what)
+    {
+      if(!accept(what))
+        throw runtime_error(string("Expected '") + what + "'");
+    };
+
+  auto parseString = [&] ()
+    {
+      string r;
+
+      while(!accept('"'))
+      {
+        char c = head();
+        accept(c);
+        r += c;
+      }
+
+      return r;
+    };
+
+  auto parseIdentifier = [&] ()
+    {
+      string r;
+
+      while(isalnum(head()) || head() == '_' || head() == '-')
+      {
+        char c = head();
+        accept(c);
+        r += c;
+      }
+
+      return r;
+    };
+
+  auto parseArgument = [&] ()
+    {
+      if(accept('"'))
+        return parseString();
+      else
+        return parseIdentifier();
+    };
+
+  vector<string> r;
+  r.push_back(parseIdentifier());
+
+  if(accept('('))
+  {
+    bool first = true;
+
+    while(!accept(')'))
+    {
+      if(!first)
+        expect(',');
+
+      r.push_back(parseArgument());
+      first = false;
+    }
+  }
+
+  return r;
+}
+
+static
+map<string, string> parseFormula(string formula, string& name)
+{
+  map<string, string> r;
+
+  auto words = parseCall(formula);
+  name = words[0];
+  words.erase(words.begin());
+
+  int i = 0;
+
+  for(auto& varValue : words)
+    r[to_string(i++)] = varValue;
+
+  return r;
+}
+
 Room loadRoom(const char* filename)
 {
   Room r;
@@ -134,8 +236,9 @@ Room loadRoom(const char* filename)
     if(startsWith(name, "f."))
     {
       auto const pos = toVector3f(mesh.vertices[mesh.faces[0].i1]);
-      auto const formula = name.substr(2);
-      r.things.push_back({ pos, formula });
+      string typeName;
+      auto const config = parseFormula(name.substr(2), typeName);
+      r.things.push_back({ pos, typeName, config });
       continue;
     }
 
