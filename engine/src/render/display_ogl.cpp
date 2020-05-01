@@ -128,7 +128,7 @@ Picture loadPicture(string path, Rect2i rect)
 {
   try
   {
-    auto pngDataBuf = read(path);
+    auto pngDataBuf = File::read(path);
     auto pngData = Span<const uint8_t>((uint8_t*)pngDataBuf.data(), (int)pngDataBuf.size());
 
     Picture r;

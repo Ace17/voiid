@@ -62,14 +62,6 @@ RenderMesh convertToRenderMesh(vector<Mesh> const& meshes, vector<string>& textu
   return r;
 }
 
-void write(string path, Span<const uint8_t> data)
-{
-  FILE* fp = fopen(path.c_str(), "wb");
-  assert(fp);
-  fwrite(data.data, 1, data.len, fp);
-  fclose(fp);
-}
-
 void writeRenderMesh(string path, const RenderMesh& renderMesh)
 {
   FILE* fp = fopen(path.c_str(), "wb");
@@ -110,7 +102,7 @@ int main(int argc, const char* argv[])
 
     {
       auto outputPathLightmap = setExtension(outputPathMesh, to_string(meshIndex) + ".lightmap.png");
-      write(outputPathLightmap, gray_png);
+      File::write(outputPathLightmap, gray_png);
     }
 
     {
@@ -121,14 +113,14 @@ int main(int argc, const char* argv[])
 
       auto const inputPathDiffuse = string(textureDir) + "/" + textureFiles[meshIndex];
 
-      if(exists(inputPathDiffuse.c_str()))
+      if(File::exists(inputPathDiffuse.c_str()))
       {
-        auto diffusePngData = read(inputPathDiffuse);
-        write(outputPathDiffuse, { (uint8_t*)diffusePngData.data(), (int)diffusePngData.size() });
+        auto diffusePngData = File::read(inputPathDiffuse);
+        File::write(outputPathDiffuse, { (uint8_t*)diffusePngData.data(), (int)diffusePngData.size() });
       }
       else
       {
-        write(outputPathDiffuse, gray_png);
+        File::write(outputPathDiffuse, gray_png);
       }
     }
 

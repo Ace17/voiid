@@ -147,7 +147,7 @@ std::vector<Mesh> loadMesh(char const* path)
   std::vector<Mesh> meshes;
   std::map<std::string, Material> materials;
 
-  auto s = read(path);
+  auto s = File::read(path);
 
   auto stream = String { s.data(), (int)s.size() };
 
