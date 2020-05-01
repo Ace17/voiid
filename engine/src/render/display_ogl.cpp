@@ -140,21 +140,19 @@ Picture loadPicture(string path, Rect2i rect)
 {
   try
   {
-    Picture r = loadPng(path);
+    auto surface = loadPng(path);
 
     if(rect.size.width == 0 && rect.size.height == 0)
-      rect = Rect2i(0, 0, r.dim.width, r.dim.height);
+      rect = Rect2i(0, 0, surface.dim.width, surface.dim.height);
 
-    if(rect.pos.x < 0 || rect.pos.y < 0 || rect.pos.x + rect.size.width > r.dim.width || rect.pos.y + rect.size.height > r.dim.height)
+    if(rect.pos.x < 0 || rect.pos.y < 0 || rect.pos.x + rect.size.width > surface.dim.width || rect.pos.y + rect.size.height > surface.dim.height)
       throw runtime_error("Invalid boundaries for '" + path + "'");
 
     auto const bpp = 4;
 
     vector<uint8_t> img(rect.size.width * rect.size.height * bpp);
 
-    auto const stride = r.dim.width * bpp;
-
-    auto src = (Uint8*)r.pixels.data() + rect.pos.x * bpp + rect.pos.y * stride;
+    auto src = (Uint8*)surface.pixels.data() + rect.pos.x * bpp + rect.pos.y * surface.stride;
     auto dst = (Uint8*)img.data() + bpp * rect.size.width * rect.size.height;
 
     // from glTexImage2D doc:
@@ -164,10 +162,12 @@ Picture loadPicture(string path, Rect2i rect)
     {
       dst -= bpp * rect.size.width;
       memcpy(dst, src, bpp * rect.size.width);
-      src += stride;
+      src += surface.stride;
     }
 
+    Picture r;
     r.dim = rect.size;
+    r.stride = rect.size.width;
     r.pixels = std::move(img);
 
     return r;
