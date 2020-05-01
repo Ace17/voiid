@@ -51,7 +51,6 @@ struct SplashState : Scene
       {
         view->textBox("");
         activated = false;
-        std::unique_ptr<Scene> deleteMeOnReturn(this);
         return createPlayingState(view);
       }
     }

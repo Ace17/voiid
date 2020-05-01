@@ -119,7 +119,6 @@ struct GameState : Scene, private IGame
 
     if(0)
     {
-      std::unique_ptr<Scene> deleteMeOnReturn(this);
       return createEndingState(m_view);
     }
 

@@ -134,10 +134,7 @@ private:
     auto next = m_scene->tick(m_control);
 
     if(next != m_scene.get())
-    {
-      m_scene.release();
       m_scene.reset(next);
-    }
   }
 
   void processInput()
