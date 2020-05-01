@@ -121,18 +121,26 @@ int linkShaders(vector<int> ids)
 struct Picture
 {
   Size2i dim;
+  int stride;
   vector<uint8_t> pixels;
 };
+
+Picture loadPng(string path)
+{
+  Picture pic;
+  auto pngDataBuf = File::read(path);
+  auto pngData = Span<const uint8_t>((uint8_t*)pngDataBuf.data(), (int)pngDataBuf.size());
+  pic.pixels = decodePng(pngData, pic.dim.width, pic.dim.height);
+  pic.stride = pic.dim.width * 4;
+
+  return pic;
+}
 
 Picture loadPicture(string path, Rect2i rect)
 {
   try
   {
-    auto pngDataBuf = File::read(path);
-    auto pngData = Span<const uint8_t>((uint8_t*)pngDataBuf.data(), (int)pngDataBuf.size());
-
-    Picture r;
-    r.pixels = decodePng(pngData, r.dim.width, r.dim.height);
+    Picture r = loadPng(path);
 
     if(rect.size.width == 0 && rect.size.height == 0)
       rect = Rect2i(0, 0, r.dim.width, r.dim.height);
@@ -159,8 +167,9 @@ Picture loadPicture(string path, Rect2i rect)
       src += stride;
     }
 
-    r.pixels = std::move(img);
     r.dim = rect.size;
+    r.pixels = std::move(img);
+
     return r;
   }
   catch(std::exception const& e)
