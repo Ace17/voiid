@@ -23,7 +23,7 @@ using namespace std;
 #include "base/span.h"
 #include "base/util.h"
 #include "matrix4.h"
-#include "misc/file.h" // read
+#include "misc/file.h"
 #include "rendermesh.h"
 
 extern const Span<uint8_t> VertexShaderCode;
@@ -170,16 +170,16 @@ Picture loadPicture(string path, Rect2i rect)
 
     Picture r;
     r.dim = Size2i(32, 32);
-    r.pixels.resize(rect.size.width * rect.size.height * 4);
+    r.pixels.resize(r.dim.width * r.dim.height * 4);
 
-    for(int y = 0; y < rect.size.height; ++y)
+    for(int y = 0; y < r.dim.height; ++y)
     {
-      for(int x = 0; x < rect.size.width; ++x)
+      for(int x = 0; x < r.dim.width; ++x)
       {
-        r.pixels[(x + y * rect.size.width) * 4 + 0] = 0xff;
-        r.pixels[(x + y * rect.size.width) * 4 + 1] = x < 16 ? 0xff : 0x00;
-        r.pixels[(x + y * rect.size.width) * 4 + 2] = y < 16 ? 0xff : 0x00;
-        r.pixels[(x + y * rect.size.width) * 4 + 3] = 0xff;
+        r.pixels[(x + y * r.dim.width) * 4 + 0] = 0xff;
+        r.pixels[(x + y * r.dim.width) * 4 + 1] = x < 16 ? 0xff : 0x00;
+        r.pixels[(x + y * r.dim.width) * 4 + 2] = y < 16 ? 0xff : 0x00;
+        r.pixels[(x + y * r.dim.width) * 4 + 3] = 0xff;
       }
     }
 
