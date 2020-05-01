@@ -450,6 +450,32 @@ struct OpenglDisplay : Display
     m_ambientLight = ambientLight;
   }
 
+  void beginDraw() override
+  {
+    m_frameCount++;
+
+    {
+      int w, h;
+      SDL_GL_GetDrawableSize(m_window, &w, &h);
+      auto size = min(w, h);
+      SAFE_GL(glViewport((w - size) / 2, (h - size) / 2, size, size));
+    }
+
+    SAFE_GL(glUseProgram(m_shader.programId));
+
+    glEnable(GL_DEPTH_TEST);
+    SAFE_GL(glClearColor(0, 0, 0, 1));
+    SAFE_GL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+
+    SAFE_GL(glUniform3f(m_shader.ambientLoc, m_ambientLight, m_ambientLight, m_ambientLight));
+  }
+
+  void endDraw() override
+  {
+    SDL_GL_SwapWindow(m_window);
+  }
+
+  // end-of public API
   void renderMesh(Rect3f where, Camera const& camera, RenderMesh& model, bool blinking)
   {
     for(auto& single : model.singleMeshes)
@@ -462,7 +488,7 @@ struct OpenglDisplay : Display
 
     if(blinking)
     {
-      if((m_blinkCounter / 4) % 2)
+      if((m_frameCount / 4) % 2)
         SAFE_GL(glUniform4f(m_shader.colorId, 0.8, 0.4, 0.4, 0));
     }
 
@@ -569,33 +595,7 @@ struct OpenglDisplay : Display
     }
   }
 
-  void beginDraw() override
-  {
-    m_blinkCounter++;
-
-    {
-      int w, h;
-      SDL_GL_GetDrawableSize(m_window, &w, &h);
-      auto size = min(w, h);
-      SAFE_GL(glViewport((w - size) / 2, (h - size) / 2, size, size));
-    }
-
-    SAFE_GL(glUseProgram(m_shader.programId));
-
-    glEnable(GL_DEPTH_TEST);
-    SAFE_GL(glClearColor(0, 0, 0, 1));
-    SAFE_GL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
-
-    SAFE_GL(glUniform3f(m_shader.ambientLoc, m_ambientLight, m_ambientLight, m_ambientLight));
-  }
-
-  void endDraw() override
-  {
-    SDL_GL_SwapWindow(m_window);
-  }
-
-  // end-of public API
-
+private:
   SDL_Window* m_window;
   SDL_GLContext m_context;
 
@@ -623,7 +623,7 @@ struct OpenglDisplay : Display
   vector<RenderMesh> m_fontModel;
 
   float m_ambientLight = 0;
-  int m_blinkCounter = 0;
+  int m_frameCount = 0;
 };
 }
 
