@@ -336,7 +336,7 @@ struct OpenglDisplay : Display
     SAFE_GL(glGenVertexArrays(1, &VertexArrayID));
     SAFE_GL(glBindVertexArray(VertexArrayID));
 
-    m_programId = loadShaders();
+    m_shader.programId = loadShaders();
 
     glEnable(GL_BLEND);
     glEnable(GL_DEPTH_TEST);
@@ -359,35 +359,35 @@ struct OpenglDisplay : Display
     for(auto& glyph : m_fontModel)
       sendToOpengl(glyph);
 
-    m_M = glGetUniformLocation(m_programId, "M");
-    assert(m_M >= 0);
+    m_shader.M = glGetUniformLocation(m_shader.programId, "M");
+    assert(m_shader.M >= 0);
 
-    m_MVP = glGetUniformLocation(m_programId, "MVP");
-    assert(m_MVP >= 0);
+    m_shader.MVP = glGetUniformLocation(m_shader.programId, "MVP");
+    assert(m_shader.MVP >= 0);
 
-    m_DiffuseTex = glGetUniformLocation(m_programId, "DiffuseTex");
-    assert(m_DiffuseTex >= 0);
+    m_shader.DiffuseTex = glGetUniformLocation(m_shader.programId, "DiffuseTex");
+    assert(m_shader.DiffuseTex >= 0);
 
-    m_LightmapTex = glGetUniformLocation(m_programId, "LightmapTex");
-    assert(m_LightmapTex >= 0);
+    m_shader.LightmapTex = glGetUniformLocation(m_shader.programId, "LightmapTex");
+    assert(m_shader.LightmapTex >= 0);
 
-    m_colorId = glGetUniformLocation(m_programId, "fragOffset");
-    assert(m_colorId >= 0);
+    m_shader.colorId = glGetUniformLocation(m_shader.programId, "fragOffset");
+    assert(m_shader.colorId >= 0);
 
-    m_ambientLoc = glGetUniformLocation(m_programId, "ambientLight");
-    assert(m_ambientLoc >= 0);
+    m_shader.ambientLoc = glGetUniformLocation(m_shader.programId, "ambientLight");
+    assert(m_shader.ambientLoc >= 0);
 
-    m_positionLoc = glGetAttribLocation(m_programId, "vertexPos_model");
-    assert(m_positionLoc >= 0);
+    m_shader.positionLoc = glGetAttribLocation(m_shader.programId, "vertexPos_model");
+    assert(m_shader.positionLoc >= 0);
 
-    m_uvDiffuseLoc = glGetAttribLocation(m_programId, "vertexUV");
-    assert(m_uvDiffuseLoc >= 0);
+    m_shader.uvDiffuseLoc = glGetAttribLocation(m_shader.programId, "vertexUV");
+    assert(m_shader.uvDiffuseLoc >= 0);
 
-    m_uvLightmapLoc = glGetAttribLocation(m_programId, "vertexUV_lightmap");
-    assert(m_uvLightmapLoc >= 0);
+    m_shader.uvLightmapLoc = glGetAttribLocation(m_shader.programId, "vertexUV_lightmap");
+    assert(m_shader.uvLightmapLoc >= 0);
 
-    m_normalLoc = glGetAttribLocation(m_programId, "a_normal");
-    assert(m_normalLoc >= 0);
+    m_shader.normalLoc = glGetAttribLocation(m_shader.programId, "a_normal");
+    assert(m_shader.normalLoc >= 0);
 
     printf("[display] init OK\n");
   }
@@ -458,23 +458,23 @@ struct OpenglDisplay : Display
 
   void renderSingleMesh(Rect3f where, Camera const& camera, SingleRenderMesh& model, bool blinking)
   {
-    SAFE_GL(glUniform4f(m_colorId, 0, 0, 0, 0));
+    SAFE_GL(glUniform4f(m_shader.colorId, 0, 0, 0, 0));
 
     if(blinking)
     {
       if((m_blinkCounter / 4) % 2)
-        SAFE_GL(glUniform4f(m_colorId, 0.8, 0.4, 0.4, 0));
+        SAFE_GL(glUniform4f(m_shader.colorId, 0.8, 0.4, 0.4, 0));
     }
 
     // Texture Unit 0: Diffuse
     SAFE_GL(glActiveTexture(GL_TEXTURE0));
     SAFE_GL(glBindTexture(GL_TEXTURE_2D, model.diffuse));
-    SAFE_GL(glUniform1i(m_DiffuseTex, 0));
+    SAFE_GL(glUniform1i(m_shader.DiffuseTex, 0));
 
     // Texture Unit 1: Lightmap
     SAFE_GL(glActiveTexture(GL_TEXTURE1));
     SAFE_GL(glBindTexture(GL_TEXTURE_2D, model.lightmap));
-    SAFE_GL(glUniform1i(m_LightmapTex, 1));
+    SAFE_GL(glUniform1i(m_shader.LightmapTex, 1));
 
     auto const target = camera.pos + camera.dir;
     auto const view = ::lookAt(camera.pos, target, Vector3f(0, 0, 1));
@@ -490,21 +490,21 @@ struct OpenglDisplay : Display
     auto MV = pos * scale;
     auto MVP = perspective * view * MV;
 
-    SAFE_GL(glUniformMatrix4fv(m_M, 1, GL_FALSE, &MV[0][0]));
-    SAFE_GL(glUniformMatrix4fv(m_MVP, 1, GL_FALSE, &MVP[0][0]));
+    SAFE_GL(glUniformMatrix4fv(m_shader.M, 1, GL_FALSE, &MV[0][0]));
+    SAFE_GL(glUniformMatrix4fv(m_shader.MVP, 1, GL_FALSE, &MVP[0][0]));
 
     SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, model.buffer));
 
-    SAFE_GL(glEnableVertexAttribArray(m_positionLoc));
-    SAFE_GL(glEnableVertexAttribArray(m_normalLoc));
-    SAFE_GL(glEnableVertexAttribArray(m_uvDiffuseLoc));
-    SAFE_GL(glEnableVertexAttribArray(m_uvLightmapLoc));
+    SAFE_GL(glEnableVertexAttribArray(m_shader.positionLoc));
+    SAFE_GL(glEnableVertexAttribArray(m_shader.normalLoc));
+    SAFE_GL(glEnableVertexAttribArray(m_shader.uvDiffuseLoc));
+    SAFE_GL(glEnableVertexAttribArray(m_shader.uvLightmapLoc));
 
 #define OFFSET(a) (void*)(&(((SingleRenderMesh::Vertex*)nullptr)->a))
-    SAFE_GL(glVertexAttribPointer(m_positionLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(x)));
-    SAFE_GL(glVertexAttribPointer(m_normalLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(nx)));
-    SAFE_GL(glVertexAttribPointer(m_uvDiffuseLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(diffuse_u)));
-    SAFE_GL(glVertexAttribPointer(m_uvLightmapLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(lightmap_u)));
+    SAFE_GL(glVertexAttribPointer(m_shader.positionLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(x)));
+    SAFE_GL(glVertexAttribPointer(m_shader.normalLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(nx)));
+    SAFE_GL(glVertexAttribPointer(m_shader.uvDiffuseLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(diffuse_u)));
+    SAFE_GL(glVertexAttribPointer(m_shader.uvLightmapLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(lightmap_u)));
 #undef OFFSET
 
     SAFE_GL(glDrawArrays(GL_TRIANGLES, 0, model.vertices.size()));
@@ -580,13 +580,13 @@ struct OpenglDisplay : Display
       SAFE_GL(glViewport((w - size) / 2, (h - size) / 2, size, size));
     }
 
-    SAFE_GL(glUseProgram(m_programId));
+    SAFE_GL(glUseProgram(m_shader.programId));
 
     glEnable(GL_DEPTH_TEST);
     SAFE_GL(glClearColor(0, 0, 0, 1));
     SAFE_GL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
-    SAFE_GL(glUniform3f(m_ambientLoc, m_ambientLight, m_ambientLight, m_ambientLight));
+    SAFE_GL(glUniform3f(m_shader.ambientLoc, m_ambientLight, m_ambientLight, m_ambientLight));
   }
 
   void endDraw() override
@@ -602,18 +602,23 @@ struct OpenglDisplay : Display
   Camera m_camera;
 
   // shader attribute/uniform locations
-  GLint m_M;
-  GLint m_MVP;
-  GLint m_colorId;
-  GLint m_ambientLoc;
-  GLint m_DiffuseTex;
-  GLint m_LightmapTex;
-  GLint m_positionLoc;
-  GLint m_uvDiffuseLoc;
-  GLint m_uvLightmapLoc;
-  GLint m_normalLoc;
+  struct Shader
+  {
+    GLuint programId;
+    GLint M;
+    GLint MVP;
+    GLint colorId;
+    GLint ambientLoc;
+    GLint DiffuseTex;
+    GLint LightmapTex;
+    GLint positionLoc;
+    GLint uvDiffuseLoc;
+    GLint uvLightmapLoc;
+    GLint normalLoc;
+  };
 
-  GLuint m_programId;
+  Shader m_shader;
+
   vector<RenderMesh> m_Models;
   vector<RenderMesh> m_fontModel;
 
