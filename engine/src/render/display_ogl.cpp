@@ -301,7 +301,7 @@ struct OpenglDisplay : Display
 
     // require OpenGL 2.0, ES or Core. No compatibility mode.
     {
-      // SDL_GL_CONTEXT_PROFILE_ES: works in both browser and native GNU/Linux
+      // SDL_GL_CONTEXT_PROFILE_ES: works in both browser and native
       SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
       SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
       SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
@@ -339,7 +339,6 @@ struct OpenglDisplay : Display
     m_shader.programId = loadShaders();
 
     glEnable(GL_BLEND);
-    glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
