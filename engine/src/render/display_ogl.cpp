@@ -136,19 +136,25 @@ Picture loadPng(string path)
   return pic;
 }
 
-Picture loadPicture(string path, Rect2i rect)
+Picture loadPicture(const char* path, Rect2f frect)
 {
   try
   {
     auto surface = loadPng(path);
 
-    if(rect.size.width == 0 && rect.size.height == 0)
-      rect = Rect2i(0, 0, surface.dim.width, surface.dim.height);
+    if(frect.size.width == 0 && frect.size.height == 0)
+      frect = Rect2f(0, 0, 1, 1);
 
-    if(rect.pos.x < 0 || rect.pos.y < 0 || rect.pos.x + rect.size.width > surface.dim.width || rect.pos.y + rect.size.height > surface.dim.height)
-      throw runtime_error("Invalid boundaries for '" + path + "'");
+    if(frect.pos.x < 0 || frect.pos.y < 0 || frect.pos.x + frect.size.width > 1 || frect.pos.y + frect.size.height > 1)
+      throw runtime_error("Invalid boundaries for '" + string(path) + "'");
 
     auto const bpp = 4;
+
+    Rect2i rect;
+    rect.pos.x = frect.pos.x * surface.dim.width;
+    rect.pos.y = frect.pos.y * surface.dim.height;
+    rect.size.width = frect.size.width * surface.dim.width;
+    rect.size.height = frect.size.height * surface.dim.height;
 
     vector<uint8_t> img(rect.size.width * rect.size.height * bpp);
 
@@ -213,9 +219,9 @@ GLuint sendToOpengl(const Picture& pic)
   return texture;
 }
 
-int loadTexture(string path, Rect2i rect)
+int loadTexture(const char* path, Rect2f frect)
 {
-  const auto pic = loadPicture(path, rect);
+  const auto pic = loadPicture(path, frect);
   return sendToOpengl(pic);
 }
 
@@ -250,18 +256,24 @@ void sendToOpengl(RenderMesh& renderMesh)
   }
 }
 
-std::vector<RenderMesh> loadTiledAnimation(string path, int count, int COLS, int SIZE)
+std::vector<RenderMesh> loadTiledAnimation(const char* path, int COLS, int ROWS)
 {
   std::vector<RenderMesh> r;
 
-  for(int i = 0; i < count; ++i)
+  for(int i = 0; i < COLS * ROWS; ++i)
   {
     auto m = boxModel();
 
     auto col = i % COLS;
     auto row = i / COLS;
 
-    m.singleMeshes[0].diffuse = loadTexture(path, Rect2i(col * SIZE, row * SIZE, SIZE, SIZE));
+    Rect2f rect;
+    rect.size.width = 1.0 / COLS;
+    rect.size.height = 1.0 / ROWS;
+    rect.pos.x = col * rect.size.width;
+    rect.pos.y = row * rect.size.height;
+
+    m.singleMeshes[0].diffuse = loadTexture(path, rect);
     m.singleMeshes[0].lightmap = loadTexture("res/white.png", {});
     r.push_back(m);
   }
@@ -342,7 +354,7 @@ struct OpenglDisplay : Display
     glEnable(GL_CULL_FACE);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    m_fontModel = loadTiledAnimation("res/font.png", 256, 16, 16);
+    m_fontModel = loadTiledAnimation("res/font.png", 16, 16);
 
     // don't GL_REPEAT fonts
     for(auto& glyph : m_fontModel)
@@ -402,8 +414,8 @@ struct OpenglDisplay : Display
 
     for(auto& single : m_Models[id].singleMeshes)
     {
-      single.diffuse = loadTexture(setExtension(path, to_string(i) + ".diffuse.png"), {});
-      single.lightmap = loadTexture(setExtension(path, to_string(i) + ".lightmap.png"), {});
+      single.diffuse = loadTexture(setExtension(path, to_string(i) + ".diffuse.png").c_str(), {});
+      single.lightmap = loadTexture(setExtension(path, to_string(i) + ".lightmap.png").c_str(), {});
       ++i;
     }
 
