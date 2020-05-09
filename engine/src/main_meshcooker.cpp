@@ -88,7 +88,7 @@ int main(int argc, const char* argv[])
   const auto textureDir = argv[2];
   const auto outputPathMesh = argv[3];
 
-  auto mesh = loadMesh(input);
+  auto mesh = importMesh(input);
 
   std::vector<string> textureFiles;
   auto renderMesh = convertToRenderMesh(mesh, textureFiles);

@@ -33,5 +33,5 @@ struct Mesh
   std::vector<Face> faces;
 };
 
-std::vector<Mesh> loadMesh(char const* path);
+std::vector<Mesh> importMesh(char const* path);
 

@@ -212,7 +212,7 @@ Room loadRoom(const char* filename)
 
   r.start = Vector3i(0, 0, 2);
 
-  auto meshes = loadMesh(filename);
+  auto meshes = importMesh(filename);
 
   for(auto& mesh : meshes)
   {

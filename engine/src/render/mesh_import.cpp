@@ -142,7 +142,7 @@ Material parseOneMaterial(String& stream)
 }
 }
 
-std::vector<Mesh> loadMesh(char const* path)
+std::vector<Mesh> importMesh(char const* path)
 {
   std::vector<Mesh> meshes;
   std::map<std::string, Material> materials;

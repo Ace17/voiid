@@ -14,7 +14,7 @@ SRCS_ENGINE:=\
 	$(ENGINE_ROOT)/src/render/glad.cpp\
 	$(ENGINE_ROOT)/src/render/rendermesh.cpp\
 	$(ENGINE_ROOT)/src/render/png.cpp\
-	$(ENGINE_ROOT)/src/render/3ds.cpp\
+	$(ENGINE_ROOT)/src/render/mesh_import.cpp\
 
 $(BIN)/$(ENGINE_ROOT)/src/render/vertex.glsl.cpp: NAME=VertexShaderCode
 $(BIN)/$(ENGINE_ROOT)/src/render/fragment.glsl.cpp: NAME=FragmentShaderCode
@@ -28,7 +28,7 @@ $(BIN)/$(ENGINE_ROOT)/src/%: CXXFLAGS+=-I$(ENGINE_ROOT)/src
 SRCS_MESHCOOKER:=\
 	$(ENGINE_ROOT)/src/main_meshcooker.cpp\
 	$(ENGINE_ROOT)/src/misc/file.cpp\
-	$(ENGINE_ROOT)/src/render/3ds.cpp\
+	$(ENGINE_ROOT)/src/render/mesh_import.cpp\
 
 #-----------------------------------
 $(BIN_HOST):
