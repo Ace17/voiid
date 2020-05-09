@@ -38,7 +38,7 @@ struct SdlAudioBackend : IAudioBackend
     desired.freq = 22050;
     desired.format = AUDIO_F32SYS;
     desired.channels = 2;
-    desired.samples = 4096; // workaround slowness on chrome causing dropouts
+    desired.samples = 512;
     desired.callback = &staticMixAudio;
     desired.userdata = this;
 
