@@ -412,6 +412,17 @@ struct OpenglDisplay : Display
     printf("[display] shutdown OK\n");
   }
 
+  void setFullscreen(bool fs) override
+  {
+    auto flags = fs ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0;
+    SDL_SetWindowFullscreen(m_window, flags);
+  }
+
+  void setCaption(const char* caption) override
+  {
+    SDL_SetWindowTitle(m_window, caption);
+  }
+
   void loadModel(int id, const char* path) override
   {
     if((int)m_Models.size() <= id)
@@ -452,17 +463,6 @@ struct OpenglDisplay : Display
 
     m_camera.pos = blend(m_camera.pos, cam.pos, 0.3);
     m_camera.dir = cam.dir;
-  }
-
-  void setFullscreen(bool fs) override
-  {
-    auto flags = fs ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0;
-    SDL_SetWindowFullscreen(m_window, flags);
-  }
-
-  void setCaption(const char* caption) override
-  {
-    SDL_SetWindowTitle(m_window, caption);
   }
 
   void setAmbientLight(float ambientLight) override
