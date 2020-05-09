@@ -79,7 +79,7 @@ struct HighLevelAudio : Audio
 
     if(!File::exists(path))
     {
-      printf("music '%s' was not found, fallback on default music\n", path);
+      printf("[audio] music '%s' was not found, fallback on default music\n", path);
       strcpy(path, "res/music/default.ogg");
       id = 0;
     }
@@ -88,6 +88,7 @@ struct HighLevelAudio : Audio
       return;
 
     currMusic = id;
+    printf("[audio] playing music: %s\n", path);
 
     musicChannel = m_backend->playLoop(loadSoundFile(path).release());
   }
