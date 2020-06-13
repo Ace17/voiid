@@ -21,31 +21,39 @@ function deliverBinaryVersion
 {
   local N=$NAME
 
+  mkdir $tmpDir/$N
+
   echo "-------------------------------------"
   echo "Building binaries"
 
   # Windows binaries
-  BIN=$tmpDir/bin/w64 \
+  BIN_WIN=$tmpDir/bin/w64
+  BIN=$BIN_WIN \
     ./scripts/w64-make -j`nproc` >/dev/null
 
-  cp -a $tmpDir/bin/w64/rel                                        $tmpDir/$N
-  cp /usr/x86_64-w64-mingw32/lib/libwinpthread-1.dll               $tmpDir/$N
-  cp /usr/lib/gcc/x86_64-w64-mingw32/8.3-posix/libstdc++-6.dll     $tmpDir/$N
-  cp /usr/lib/gcc/x86_64-w64-mingw32/8.3-posix/libgcc_s_seh-1.dll  $tmpDir/$N
-  cp /opt/envs/win64/bin/SDL2.dll                                  $tmpDir/$N
-  mv $tmpDir/$N/game.exe $tmpDir/$N/$N.exe
+  gccVersion=$(x86_64-w64-mingw32-g++ -dumpversion)
+
+  cp $BIN_WIN/rel/game.exe                                           $tmpDir/$N/$N.exe
+  cp /usr/x86_64-w64-mingw32/lib/libwinpthread-1.dll                 $tmpDir/$N
+  cp /usr/lib/gcc/x86_64-w64-mingw32/$gccVersion/libstdc++-6.dll     $tmpDir/$N
+  cp /usr/lib/gcc/x86_64-w64-mingw32/$gccVersion/libgcc_s_seh-1.dll  $tmpDir/$N
+  cp /opt/envs/win64/bin/SDL2.dll                                    $tmpDir/$N
 
   # GNU/Linux binaries
+  CXXFLAGS="-include extra/glibc_version.h" \
   BIN=$tmpDir/bin/gnu \
     make -j`nproc` >/dev/null
 
-  cp -a $tmpDir/bin/gnu/rel/game.exe                               $tmpDir/$N/$N.x86_64
-
-  # Resources
-  cp -a res                                                        $tmpDir/$N
+  cp -a $tmpDir/bin/gnu/rel/game.exe                                 $tmpDir/$N/$N.x86_64
 
   # Strip executables
   strip -s $tmpDir/$N/*.{exe,dll,x86_64}
+
+  # Compress executables
+  upx $tmpDir/$N/*.{exe,dll,x86_64}
+
+  # Copy data
+  cp -a res                                                        $tmpDir/$N/res
 
   (
     cd $tmpDir
