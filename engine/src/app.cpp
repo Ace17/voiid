@@ -30,7 +30,7 @@
 using namespace std;
 
 auto const TIMESTEP = 10;
-auto const RESOLUTION = Size2i(1024, 1024);
+auto const RESOLUTION = Size2i(1280, 720);
 
 Display* createDisplay(Size2i resolution);
 Audio* createAudio();

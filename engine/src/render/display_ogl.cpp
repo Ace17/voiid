@@ -477,8 +477,7 @@ struct OpenglDisplay : Display
     {
       int w, h;
       SDL_GL_GetDrawableSize(m_window, &w, &h);
-      auto size = min(w, h);
-      SAFE_GL(glViewport((w - size) / 2, (h - size) / 2, size, size));
+      SAFE_GL(glViewport(0, 0, w, h));
     }
 
     SAFE_GL(glUseProgram(m_shader.programId));
@@ -528,7 +527,7 @@ struct OpenglDisplay : Display
     auto const scale = ::scale(Vector3f(where.size.cx, where.size.cy, where.size.cz));
 
     static const float fovy = (float)((60.0f / 180) * PI);
-    static const float aspect = 1.0f;
+    static const float aspect = 16.0f / 9.0;
     static const float near_ = 0.1f;
     static const float far_ = 100.0f;
     static const auto perspective = ::perspective(fovy, aspect, near_, far_);
