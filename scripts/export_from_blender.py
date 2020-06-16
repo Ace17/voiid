@@ -135,6 +135,16 @@ def extractTriangles(mesh):
         n0 = mesh.vertices[tri.vertices[0]].normal
         n1 = mesh.vertices[tri.vertices[1]].normal
         n2 = mesh.vertices[tri.vertices[2]].normal
+
+        # HACK: recompute flat-shading normals
+        p1 = xyz1 - xyz0
+        p2 = xyz2 - xyz0
+        N = p1.cross(p2)
+        N.normalize()
+        n0 = N
+        n1 = N
+        n2 = N
+
         if not tri.material_index in triangles:
             triangles[tri.material_index] = []
         triangles[tri.material_index].append(Triangle(

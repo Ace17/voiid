@@ -25,6 +25,6 @@ void main()
   fogFactor = clamp(1.0/exp(length(gl_Position) * 0.01), 0.0, 1.0);
 
   vPos = (M * vertexPos_model).xyz;
-  vNormal = (M * vec4(normalize(a_normal), 1)).xyz;
+  vNormal = (M * vec4(a_normal, 0)).xyz;
 }
 // vim: syntax=glsl

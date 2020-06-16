@@ -30,6 +30,12 @@ void main()
   vec4 rawColor = texture2D(DiffuseTex, UV) + fragOffset;
   vec4 lightmapColor = texture2D(LightmapTex, UV_lightmap);
   color = vec4(rawColor.rgb * (light + lightmapColor.rgb*0.01), rawColor.a);
+
+  if(false)
+  {
+    color.rgb = (vNormal+vec3(1))*0.5 + 0.0001 * color.rgb;
+    color.a = 1.0;
+  }
 }
 
 // vim: syntax=glsl
