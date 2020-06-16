@@ -11,6 +11,7 @@
 
 #include <map>
 #include <memory>
+#include <stdexcept>
 #include <stdint.h>
 #include <string>
 #include <string.h>

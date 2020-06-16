@@ -10,6 +10,7 @@
 #include "room.h"
 #include <algorithm>
 #include <map>
+#include <stdexcept>
 
 static Vector3f toVector3f(Mesh::Vertex v)
 {

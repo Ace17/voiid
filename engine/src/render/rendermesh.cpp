@@ -8,6 +8,7 @@
 #include "base/util.h" // setExtension
 #include "misc/file.h"
 #include "rendermesh.h"
+#include <stdexcept>
 #include <string.h> // strlen
 
 RenderMesh boxModel()
