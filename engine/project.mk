@@ -1,6 +1,8 @@
 SRCS_ENGINE:=\
 	$(BIN)/$(ENGINE_ROOT)/src/render/fragment.glsl.cpp\
 	$(BIN)/$(ENGINE_ROOT)/src/render/vertex.glsl.cpp\
+	$(BIN)/$(ENGINE_ROOT)/src/render/hdr_fragment.glsl.cpp\
+	$(BIN)/$(ENGINE_ROOT)/src/render/hdr_vertex.glsl.cpp\
 	$(ENGINE_ROOT)/src/app.cpp\
 	$(ENGINE_ROOT)/src/main.cpp\
 	$(ENGINE_ROOT)/src/audio/audio.cpp\
@@ -18,6 +20,9 @@ SRCS_ENGINE:=\
 
 $(BIN)/$(ENGINE_ROOT)/src/render/vertex.glsl.cpp: NAME=VertexShaderCode
 $(BIN)/$(ENGINE_ROOT)/src/render/fragment.glsl.cpp: NAME=FragmentShaderCode
+
+$(BIN)/$(ENGINE_ROOT)/src/render/hdr_vertex.glsl.cpp: NAME=HdrVertexShaderCode
+$(BIN)/$(ENGINE_ROOT)/src/render/hdr_fragment.glsl.cpp: NAME=HdrFragmentShaderCode
 
 $(BIN)/%.glsl.cpp: %.glsl
 	@mkdir -p $(dir $@)

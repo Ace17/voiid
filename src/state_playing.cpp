@@ -115,7 +115,7 @@ struct GameState : Scene, private IGame
       m_player->addUpgrade(-1);
     }
 
-    m_view->setAmbientLight(0.02 + min(0.0f, 0.02f * m_player->pos.z));
+    m_view->setAmbientLight(0.02);
 
     if(0)
     {

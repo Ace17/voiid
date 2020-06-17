@@ -24,7 +24,7 @@ void main()
   vec3 lightPos = vec3(2, 2, 2);
   vec3 lightDir = lightPos - vPos;
   float lightDist = length(lightDir);
-  float attenuation = 10.0/(lightDist*lightDist);
+  float attenuation = 100.0/(lightDist*lightDist*lightDist);
   vec3 receivedLight = vec3(max(0.0, dot(normalize(lightDir), vNormal))) * attenuation;
 
   // ambient

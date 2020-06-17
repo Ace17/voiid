@@ -28,6 +28,8 @@ using namespace std;
 
 extern const Span<uint8_t> VertexShaderCode;
 extern const Span<uint8_t> FragmentShaderCode;
+extern const Span<uint8_t> HdrVertexShaderCode;
+extern const Span<uint8_t> HdrFragmentShaderCode;
 extern RenderMesh boxModel();
 
 #ifdef NDEBUG
@@ -225,10 +227,10 @@ int loadTexture(const char* path, Rect2f frect)
   return sendToOpengl(pic);
 }
 
-GLuint loadShaders()
+GLuint loadShaders(Span<uint8_t> vsCode, Span<uint8_t> fsCode)
 {
-  auto const vertexId = compileShader(VertexShaderCode, GL_VERTEX_SHADER);
-  auto const fragmentId = compileShader(FragmentShaderCode, GL_FRAGMENT_SHADER);
+  auto const vertexId = compileShader(vsCode, GL_VERTEX_SHADER);
+  auto const fragmentId = compileShader(fsCode, GL_FRAGMENT_SHADER);
 
   auto const progId = linkShaders(vector<int>({ vertexId, fragmentId }));
 
@@ -348,8 +350,6 @@ struct OpenglDisplay : Display
     SAFE_GL(glGenVertexArrays(1, &VertexArrayID));
     SAFE_GL(glBindVertexArray(VertexArrayID));
 
-    m_shader.programId = loadShaders();
-
     glEnable(GL_BLEND);
     glEnable(GL_CULL_FACE);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -370,41 +370,87 @@ struct OpenglDisplay : Display
     for(auto& glyph : m_fontModel)
       sendToOpengl(glyph);
 
-    m_shader.M = glGetUniformLocation(m_shader.programId, "M");
-    assert(m_shader.M >= 0);
+    {
+      m_shader.programId = loadShaders(VertexShaderCode, FragmentShaderCode);
 
-    m_shader.MVP = glGetUniformLocation(m_shader.programId, "MVP");
-    assert(m_shader.MVP >= 0);
+      m_shader.M = glGetUniformLocation(m_shader.programId, "M");
+      assert(m_shader.M >= 0);
 
-    m_shader.DiffuseTex = glGetUniformLocation(m_shader.programId, "DiffuseTex");
-    assert(m_shader.DiffuseTex >= 0);
+      m_shader.MVP = glGetUniformLocation(m_shader.programId, "MVP");
+      assert(m_shader.MVP >= 0);
 
-    m_shader.LightmapTex = glGetUniformLocation(m_shader.programId, "LightmapTex");
-    assert(m_shader.LightmapTex >= 0);
+      m_shader.DiffuseTex = glGetUniformLocation(m_shader.programId, "DiffuseTex");
+      assert(m_shader.DiffuseTex >= 0);
 
-    m_shader.colorId = glGetUniformLocation(m_shader.programId, "fragOffset");
-    assert(m_shader.colorId >= 0);
+      m_shader.LightmapTex = glGetUniformLocation(m_shader.programId, "LightmapTex");
+      assert(m_shader.LightmapTex >= 0);
 
-    m_shader.ambientLoc = glGetUniformLocation(m_shader.programId, "ambientLight");
-    assert(m_shader.ambientLoc >= 0);
+      m_shader.colorId = glGetUniformLocation(m_shader.programId, "fragOffset");
+      assert(m_shader.colorId >= 0);
 
-    m_shader.positionLoc = glGetAttribLocation(m_shader.programId, "vertexPos_model");
-    assert(m_shader.positionLoc >= 0);
+      m_shader.ambientLoc = glGetUniformLocation(m_shader.programId, "ambientLight");
+      assert(m_shader.ambientLoc >= 0);
 
-    m_shader.uvDiffuseLoc = glGetAttribLocation(m_shader.programId, "vertexUV");
-    assert(m_shader.uvDiffuseLoc >= 0);
+      m_shader.positionLoc = glGetAttribLocation(m_shader.programId, "vertexPos_model");
+      assert(m_shader.positionLoc >= 0);
 
-    m_shader.uvLightmapLoc = glGetAttribLocation(m_shader.programId, "vertexUV_lightmap");
-    assert(m_shader.uvLightmapLoc >= 0);
+      m_shader.uvDiffuseLoc = glGetAttribLocation(m_shader.programId, "vertexUV");
+      assert(m_shader.uvDiffuseLoc >= 0);
 
-    m_shader.normalLoc = glGetAttribLocation(m_shader.programId, "a_normal");
-    assert(m_shader.normalLoc >= 0);
+      m_shader.uvLightmapLoc = glGetAttribLocation(m_shader.programId, "vertexUV_lightmap");
+      assert(m_shader.uvLightmapLoc >= 0);
+
+      m_shader.normalLoc = glGetAttribLocation(m_shader.programId, "a_normal");
+      assert(m_shader.normalLoc >= 0);
+    }
+
+    {
+      m_hdrShader.programId = loadShaders(HdrVertexShaderCode, HdrFragmentShaderCode);
+
+      m_hdrShader.HdrTex = glGetUniformLocation(m_hdrShader.programId, "HdrTex");
+      assert(m_hdrShader.HdrTex >= 0);
+
+      m_hdrShader.positionLoc = glGetAttribLocation(m_hdrShader.programId, "vertexPos_model");
+      assert(m_hdrShader.positionLoc >= 0);
+
+      m_hdrShader.uvLoc = glGetAttribLocation(m_hdrShader.programId, "vertexUV");
+      assert(m_hdrShader.uvLoc >= 0);
+    }
+
+    {
+      SAFE_GL(glGenFramebuffers(1, &m_fbo));
+      SAFE_GL(glBindFramebuffer(GL_FRAMEBUFFER, m_fbo));
+
+      // color buffer
+      {
+        SAFE_GL(glGenTextures(1, &m_hdrTexture));
+        SAFE_GL(glBindTexture(GL_TEXTURE_2D, m_hdrTexture));
+        SAFE_GL(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, resolution.width, resolution.height, 0, GL_RGBA, GL_FLOAT, nullptr));
+        SAFE_GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+        SAFE_GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+        SAFE_GL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_hdrTexture, 0));
+      }
+
+      // depth buffer
+      {
+        SAFE_GL(glGenTextures(1, &m_hdrDepthTexture));
+        SAFE_GL(glBindTexture(GL_TEXTURE_2D, m_hdrDepthTexture));
+        SAFE_GL(glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, resolution.width, resolution.height, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL));
+        SAFE_GL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, m_hdrDepthTexture, 0));
+      }
+
+      SAFE_GL(glGenBuffers(1, &m_hdrVbo));
+    }
 
     printf("[display] init OK\n");
   }
 
   ~OpenglDisplay()
   {
+    SAFE_GL(glDeleteBuffers(1, &m_hdrVbo));
+    SAFE_GL(glBindFramebuffer(GL_FRAMEBUFFER, 0));
+    SAFE_GL(glDeleteFramebuffers(1, &m_fbo));
+
     SDL_GL_DeleteContext(m_context);
     SDL_DestroyWindow(m_window);
     SDL_QuitSubSystem(SDL_INIT_VIDEO);
@@ -480,6 +526,9 @@ struct OpenglDisplay : Display
       SAFE_GL(glViewport(0, 0, w, h));
     }
 
+    // draw to the HDR buffer
+    SAFE_GL(glBindFramebuffer(GL_FRAMEBUFFER, m_fbo));
+
     SAFE_GL(glUseProgram(m_shader.programId));
 
     glEnable(GL_DEPTH_TEST);
@@ -491,10 +540,56 @@ struct OpenglDisplay : Display
 
   void endDraw() override
   {
+    drawHdrBufferToScreen();
+
     SDL_GL_SwapWindow(m_window);
   }
 
   // end-of public API
+  void drawHdrBufferToScreen()
+  {
+    // draw to screen
+    SAFE_GL(glBindFramebuffer(GL_FRAMEBUFFER, 0));
+
+    SAFE_GL(glUseProgram(m_hdrShader.programId));
+    SAFE_GL(glDisable(GL_DEPTH_TEST));
+
+    // Texture Unit 0
+    SAFE_GL(glActiveTexture(GL_TEXTURE0));
+    SAFE_GL(glBindTexture(GL_TEXTURE_2D, m_hdrTexture));
+    SAFE_GL(glUniform1i(m_hdrShader.HdrTex, 0));
+
+    struct QuadVertex
+    {
+      float x, y, u, v;
+    };
+
+    static const QuadVertex screenQuad[] =
+    {
+      { -1, -1, 0, 0 },
+      { +1, +1, 1, 1 },
+      { -1, +1, 0, 1 },
+
+      { -1, -1, 0, 0 },
+      { +1, -1, 1, 0 },
+      { +1, +1, 1, 1 },
+    };
+
+    SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, m_hdrVbo));
+    SAFE_GL(glBufferData(GL_ARRAY_BUFFER, sizeof screenQuad, screenQuad, GL_STATIC_DRAW));
+
+    SAFE_GL(glEnableVertexAttribArray(m_hdrShader.positionLoc));
+    SAFE_GL(glEnableVertexAttribArray(m_hdrShader.uvLoc));
+
+#define OFFSET(a) (void*)(&(((QuadVertex*)nullptr)->a))
+    SAFE_GL(glVertexAttribPointer(m_hdrShader.positionLoc, 2, GL_FLOAT, GL_FALSE, sizeof(QuadVertex), OFFSET(x)));
+    SAFE_GL(glVertexAttribPointer(m_hdrShader.uvLoc, 2, GL_FLOAT, GL_FALSE, sizeof(QuadVertex), OFFSET(u)));
+#undef OFFSET
+
+    SAFE_GL(glDrawArrays(GL_TRIANGLES, 0, 6));
+    SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, 0));
+  }
+
   void renderMesh(Rect3f where, Camera const& camera, RenderMesh& model, bool blinking)
   {
     for(auto& single : model.singleMeshes)
@@ -636,13 +731,26 @@ private:
     GLint normalLoc;
   };
 
+  struct HdrShader
+  {
+    GLuint programId;
+    GLint HdrTex;
+    GLint positionLoc;
+    GLint uvLoc;
+  };
+
   Shader m_shader;
+  HdrShader m_hdrShader;
 
   vector<RenderMesh> m_Models;
   vector<RenderMesh> m_fontModel;
 
   float m_ambientLight = 0;
   int m_frameCount = 0;
+  GLuint m_fbo = 0;
+  GLuint m_hdrTexture = 0;
+  GLuint m_hdrDepthTexture = 0;
+  GLuint m_hdrVbo = 0;
 };
 }
 
