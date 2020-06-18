@@ -56,6 +56,26 @@ void ensureGl(char const* expr, int line)
   throw runtime_error(ss);
 }
 
+GLuint safeGetUniformLocation(GLuint programId, const char* name)
+{
+  auto uniformLocation = glGetUniformLocation(programId, name);
+
+  if(uniformLocation < 0)
+    throw runtime_error("Can't get location for uniform '" + string(name) + "'");
+
+  return uniformLocation;
+}
+
+GLuint safeGetAttributeLocation(GLuint programId, const char* name)
+{
+  auto attribLocation = glGetAttribLocation(programId, name);
+
+  if(attribLocation < 0)
+    throw runtime_error("Can't get location for attribute '" + string(name) + "'");
+
+  return attribLocation;
+}
+
 int compileShader(Span<uint8_t> code, int type)
 {
   auto shaderId = glCreateShader(type);
@@ -373,48 +393,24 @@ struct OpenglDisplay : Display
     {
       m_shader.programId = loadShaders(VertexShaderCode, FragmentShaderCode);
 
-      m_shader.M = glGetUniformLocation(m_shader.programId, "M");
-      assert(m_shader.M >= 0);
-
-      m_shader.MVP = glGetUniformLocation(m_shader.programId, "MVP");
-      assert(m_shader.MVP >= 0);
-
-      m_shader.DiffuseTex = glGetUniformLocation(m_shader.programId, "DiffuseTex");
-      assert(m_shader.DiffuseTex >= 0);
-
-      m_shader.LightmapTex = glGetUniformLocation(m_shader.programId, "LightmapTex");
-      assert(m_shader.LightmapTex >= 0);
-
-      m_shader.colorId = glGetUniformLocation(m_shader.programId, "fragOffset");
-      assert(m_shader.colorId >= 0);
-
-      m_shader.ambientLoc = glGetUniformLocation(m_shader.programId, "ambientLight");
-      assert(m_shader.ambientLoc >= 0);
-
-      m_shader.positionLoc = glGetAttribLocation(m_shader.programId, "vertexPos_model");
-      assert(m_shader.positionLoc >= 0);
-
-      m_shader.uvDiffuseLoc = glGetAttribLocation(m_shader.programId, "vertexUV");
-      assert(m_shader.uvDiffuseLoc >= 0);
-
-      m_shader.uvLightmapLoc = glGetAttribLocation(m_shader.programId, "vertexUV_lightmap");
-      assert(m_shader.uvLightmapLoc >= 0);
-
-      m_shader.normalLoc = glGetAttribLocation(m_shader.programId, "a_normal");
-      assert(m_shader.normalLoc >= 0);
+      m_shader.M = safeGetUniformLocation(m_shader.programId, "M");
+      m_shader.MVP = safeGetUniformLocation(m_shader.programId, "MVP");
+      m_shader.DiffuseTex = safeGetUniformLocation(m_shader.programId, "DiffuseTex");
+      m_shader.LightmapTex = safeGetUniformLocation(m_shader.programId, "LightmapTex");
+      m_shader.colorId = safeGetUniformLocation(m_shader.programId, "fragOffset");
+      m_shader.ambientLoc = safeGetUniformLocation(m_shader.programId, "ambientLight");
+      m_shader.positionLoc = safeGetAttributeLocation(m_shader.programId, "vertexPos_model");
+      m_shader.uvDiffuseLoc = safeGetAttributeLocation(m_shader.programId, "vertexUV");
+      m_shader.uvLightmapLoc = safeGetAttributeLocation(m_shader.programId, "vertexUV_lightmap");
+      m_shader.normalLoc = safeGetAttributeLocation(m_shader.programId, "a_normal");
     }
 
     {
       m_hdrShader.programId = loadShaders(HdrVertexShaderCode, HdrFragmentShaderCode);
 
-      m_hdrShader.HdrTex = glGetUniformLocation(m_hdrShader.programId, "HdrTex");
-      assert(m_hdrShader.HdrTex >= 0);
-
-      m_hdrShader.positionLoc = glGetAttribLocation(m_hdrShader.programId, "vertexPos_model");
-      assert(m_hdrShader.positionLoc >= 0);
-
-      m_hdrShader.uvLoc = glGetAttribLocation(m_hdrShader.programId, "vertexUV");
-      assert(m_hdrShader.uvLoc >= 0);
+      m_hdrShader.HdrTex = safeGetUniformLocation(m_hdrShader.programId, "HdrTex");
+      m_hdrShader.positionLoc = safeGetAttributeLocation(m_hdrShader.programId, "vertexPos_model");
+      m_hdrShader.uvLoc = safeGetAttributeLocation(m_hdrShader.programId, "vertexUV");
     }
 
     {
