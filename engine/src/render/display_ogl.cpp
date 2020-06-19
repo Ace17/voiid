@@ -26,8 +26,8 @@ using namespace std;
 #include "misc/file.h"
 #include "rendermesh.h"
 
-extern const Span<uint8_t> VertexShaderCode;
-extern const Span<uint8_t> FragmentShaderCode;
+extern const Span<uint8_t> BasicVertexShaderCode;
+extern const Span<uint8_t> BasicFragmentShaderCode;
 extern const Span<uint8_t> HdrVertexShaderCode;
 extern const Span<uint8_t> HdrFragmentShaderCode;
 extern RenderMesh boxModel();
@@ -399,7 +399,7 @@ struct OpenglDisplay : Display
     }
 
     {
-      m_shader.programId = loadShaders(VertexShaderCode, FragmentShaderCode);
+      m_shader.programId = loadShaders(BasicVertexShaderCode, BasicFragmentShaderCode);
 
       m_shader.M = safeGetUniformLocation(m_shader.programId, "M");
       m_shader.MVP = safeGetUniformLocation(m_shader.programId, "MVP");

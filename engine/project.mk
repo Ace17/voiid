@@ -1,8 +1,8 @@
 SRCS_ENGINE:=\
-	$(BIN)/$(ENGINE_ROOT)/src/render/fragment.glsl.cpp\
-	$(BIN)/$(ENGINE_ROOT)/src/render/vertex.glsl.cpp\
-	$(BIN)/$(ENGINE_ROOT)/src/render/hdr_fragment.glsl.cpp\
-	$(BIN)/$(ENGINE_ROOT)/src/render/hdr_vertex.glsl.cpp\
+	$(BIN)/$(ENGINE_ROOT)/src/render/shaders/basic/fragment.glsl.cpp\
+	$(BIN)/$(ENGINE_ROOT)/src/render/shaders/basic/vertex.glsl.cpp\
+	$(BIN)/$(ENGINE_ROOT)/src/render/shaders/hdr/fragment.glsl.cpp\
+	$(BIN)/$(ENGINE_ROOT)/src/render/shaders/hdr/vertex.glsl.cpp\
 	$(ENGINE_ROOT)/src/app.cpp\
 	$(ENGINE_ROOT)/src/main.cpp\
 	$(ENGINE_ROOT)/src/audio/audio.cpp\
@@ -18,11 +18,11 @@ SRCS_ENGINE:=\
 	$(ENGINE_ROOT)/src/render/png.cpp\
 	$(ENGINE_ROOT)/src/render/mesh_import.cpp\
 
-$(BIN)/$(ENGINE_ROOT)/src/render/vertex.glsl.cpp: NAME=VertexShaderCode
-$(BIN)/$(ENGINE_ROOT)/src/render/fragment.glsl.cpp: NAME=FragmentShaderCode
+$(BIN)/$(ENGINE_ROOT)/src/render/shaders/basic/vertex.glsl.cpp: NAME=BasicVertexShaderCode
+$(BIN)/$(ENGINE_ROOT)/src/render/shaders/basic/fragment.glsl.cpp: NAME=BasicFragmentShaderCode
 
-$(BIN)/$(ENGINE_ROOT)/src/render/hdr_vertex.glsl.cpp: NAME=HdrVertexShaderCode
-$(BIN)/$(ENGINE_ROOT)/src/render/hdr_fragment.glsl.cpp: NAME=HdrFragmentShaderCode
+$(BIN)/$(ENGINE_ROOT)/src/render/shaders/hdr/vertex.glsl.cpp: NAME=HdrVertexShaderCode
+$(BIN)/$(ENGINE_ROOT)/src/render/shaders/hdr/fragment.glsl.cpp: NAME=HdrFragmentShaderCode
 
 $(BIN)/%.glsl.cpp: %.glsl
 	@mkdir -p $(dir $@)
