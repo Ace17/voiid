@@ -224,7 +224,7 @@ Picture loadPicture(const char* path, Rect2f frect)
   }
 }
 
-GLuint sendToOpengl(const Picture& pic)
+GLuint uploadTextureToGPU(const Picture& pic)
 {
   GLuint texture;
 
@@ -244,7 +244,7 @@ GLuint sendToOpengl(const Picture& pic)
 int loadTexture(const char* path, Rect2f frect)
 {
   const auto pic = loadPicture(path, frect);
-  return sendToOpengl(pic);
+  return uploadTextureToGPU(pic);
 }
 
 GLuint loadShaders(Span<uint8_t> vsCode, Span<uint8_t> fsCode)
@@ -267,7 +267,7 @@ struct Camera
   bool valid = false;
 };
 
-void sendToOpengl(RenderMesh& mesh)
+void uploadVerticesToGPU(RenderMesh& mesh)
 {
   for(auto& model : mesh.singleMeshes)
   {
@@ -388,7 +388,7 @@ struct OpenglDisplay : Display
     }
 
     for(auto& glyph : m_fontModel)
-      sendToOpengl(glyph);
+      uploadVerticesToGPU(glyph);
 
     {
       m_shader.programId = loadShaders(VertexShaderCode, FragmentShaderCode);
@@ -481,7 +481,7 @@ struct OpenglDisplay : Display
       ++i;
     }
 
-    sendToOpengl(m_Models[id]);
+    uploadVerticesToGPU(m_Models[id]);
   }
 
   void setCamera(Vector3f pos, Quaternion dir) override
