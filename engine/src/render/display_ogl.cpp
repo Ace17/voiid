@@ -267,6 +267,15 @@ struct Camera
   bool valid = false;
 };
 
+struct DrawCommand
+{
+  SingleRenderMesh* pMesh;
+  Rect3f where;
+  Camera camera;
+  bool blinking;
+  bool depthtest;
+};
+
 void uploadVerticesToGPU(RenderMesh& mesh)
 {
   for(auto& model : mesh.singleMeshes)
@@ -515,7 +524,19 @@ struct OpenglDisplay : Display
   void beginDraw() override
   {
     m_frameCount++;
+    m_drawCommands.clear();
+  }
 
+  void endDraw() override
+  {
+    executeAllDrawCommands();
+    drawHdrBufferToScreen();
+    SDL_GL_SwapWindow(m_window);
+  }
+
+  // end-of public API
+  void executeAllDrawCommands()
+  {
     {
       int w, h;
       SDL_GL_GetDrawableSize(m_window, &w, &h);
@@ -527,21 +548,17 @@ struct OpenglDisplay : Display
 
     SAFE_GL(glUseProgram(m_shader.programId));
 
-    glEnable(GL_DEPTH_TEST);
     SAFE_GL(glClearColor(0, 0, 0, 1));
     SAFE_GL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
     SAFE_GL(glUniform3f(m_shader.ambientLoc, m_ambientLight, m_ambientLight, m_ambientLight));
+
+    for(auto& cmd : m_drawCommands)
+      executeDrawCommand(cmd);
+
+    m_drawCommands.clear();
   }
 
-  void endDraw() override
-  {
-    drawHdrBufferToScreen();
-
-    SDL_GL_SwapWindow(m_window);
-  }
-
-  // end-of public API
   void drawHdrBufferToScreen()
   {
     // draw to screen
@@ -586,17 +603,24 @@ struct OpenglDisplay : Display
     SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, 0));
   }
 
-  void renderMesh(Rect3f where, Camera const& camera, RenderMesh& model, bool blinking)
+  void pushMesh(Rect3f where, Camera const& camera, RenderMesh& model, bool blinking, bool depthtest)
   {
     for(auto& single : model.singleMeshes)
-      renderSingleMesh(where, camera, single, blinking);
+      m_drawCommands.push_back({ &single, where, camera, blinking, depthtest });
   }
 
-  void renderSingleMesh(Rect3f where, Camera const& camera, SingleRenderMesh& model, bool blinking)
+  void executeDrawCommand(const DrawCommand& cmd)
   {
+    auto& model = *cmd.pMesh;
+    auto& where = cmd.where;
     SAFE_GL(glUniform4f(m_shader.colorId, 0, 0, 0, 0));
 
-    if(blinking)
+    if(cmd.depthtest)
+      glEnable(GL_DEPTH_TEST);
+    else
+      glDisable(GL_DEPTH_TEST);
+
+    if(cmd.blinking)
     {
       if((m_frameCount / 4) % 2)
         SAFE_GL(glUniform4f(m_shader.colorId, 0.8, 0.4, 0.4, 0));
@@ -612,8 +636,8 @@ struct OpenglDisplay : Display
     SAFE_GL(glBindTexture(GL_TEXTURE_2D, model.lightmap));
     SAFE_GL(glUniform1i(m_shader.LightmapTex, 1));
 
-    auto const target = camera.pos + camera.dir;
-    auto const view = ::lookAt(camera.pos, target, Vector3f(0, 0, 1));
+    auto const target = cmd.camera.pos + cmd.camera.dir;
+    auto const view = ::lookAt(cmd.camera.pos, target, Vector3f(0, 0, 1));
     auto const pos = ::translate(where.pos);
     auto const scale = ::scale(Vector3f(where.size.cx, where.size.cy, where.size.cz));
 
@@ -680,7 +704,7 @@ struct OpenglDisplay : Display
     (void)actionIdx;
     (void)ratio;
     auto& model = m_Models.at(modelId);
-    renderMesh(where, m_camera, model, blinking);
+    pushMesh(where, m_camera, model, blinking, true);
   }
 
   void drawText(Vector2f pos, char const* text) override
@@ -695,11 +719,9 @@ struct OpenglDisplay : Display
 
     auto cam = (Camera { Vector3f(0, -10, 0), Vector3f(0, 1, 0) });
 
-    glDisable(GL_DEPTH_TEST);
-
     while(*text)
     {
-      renderMesh(rect, cam, m_fontModel[*text], false);
+      pushMesh(rect, cam, m_fontModel[*text], false, false);
       rect.pos.x += rect.size.cx;
       ++text;
     }
@@ -747,6 +769,8 @@ private:
   GLuint m_hdrTexture = 0;
   GLuint m_hdrDepthTexture = 0;
   GLuint m_hdrVbo = 0;
+
+  std::vector<DrawCommand> m_drawCommands;
 };
 }
 
