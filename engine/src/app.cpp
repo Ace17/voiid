@@ -316,6 +316,13 @@ private:
         break;
       }
 
+    case SDLK_BACKSPACE:
+      {
+        m_enableHdr = !m_enableHdr;
+        m_display->setHdr(m_enableHdr);
+        break;
+      }
+
     case SDLK_SCROLLLOCK:
       {
         m_debugMode = !m_debugMode;
@@ -406,6 +413,7 @@ private:
   bool m_mustScreenshot = false;
 
   bool m_debugMode = false;
+  bool m_enableHdr = true;
 
   int m_lastTime;
   int m_lastDisplayFrameTime;

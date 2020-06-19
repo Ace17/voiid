@@ -469,6 +469,11 @@ struct OpenglDisplay : Display
     SDL_SetWindowFullscreen(m_window, flags);
   }
 
+  void setHdr(bool enable) override
+  {
+    m_enableHdr = enable;
+  }
+
   void setCaption(const char* caption) override
   {
     SDL_SetWindowTitle(m_window, caption);
@@ -529,8 +534,22 @@ struct OpenglDisplay : Display
 
   void endDraw() override
   {
-    executeAllDrawCommands();
-    drawHdrBufferToScreen();
+    if(m_enableHdr)
+    {
+      // draw to the HDR buffer
+      SAFE_GL(glBindFramebuffer(GL_FRAMEBUFFER, m_hdrFramebuffer));
+      executeAllDrawCommands();
+
+      // draw to screen
+      SAFE_GL(glBindFramebuffer(GL_FRAMEBUFFER, 0));
+      drawHdrBuffer();
+    }
+    else
+    {
+      SAFE_GL(glBindFramebuffer(GL_FRAMEBUFFER, 0));
+      executeAllDrawCommands();
+    }
+
     SDL_GL_SwapWindow(m_window);
   }
 
@@ -542,9 +561,6 @@ struct OpenglDisplay : Display
       SDL_GL_GetDrawableSize(m_window, &w, &h);
       SAFE_GL(glViewport(0, 0, w, h));
     }
-
-    // draw to the HDR buffer
-    SAFE_GL(glBindFramebuffer(GL_FRAMEBUFFER, m_hdrFramebuffer));
 
     SAFE_GL(glUseProgram(m_shader.programId));
 
@@ -559,11 +575,8 @@ struct OpenglDisplay : Display
     m_drawCommands.clear();
   }
 
-  void drawHdrBufferToScreen()
+  void drawHdrBuffer()
   {
-    // draw to screen
-    SAFE_GL(glBindFramebuffer(GL_FRAMEBUFFER, 0));
-
     SAFE_GL(glUseProgram(m_hdrShader.programId));
     SAFE_GL(glDisable(GL_DEPTH_TEST));
 
@@ -765,6 +778,8 @@ private:
 
   float m_ambientLight = 0;
   int m_frameCount = 0;
+
+  bool m_enableHdr = true;
   GLuint m_hdrFramebuffer = 0;
   GLuint m_hdrTexture = 0;
   GLuint m_hdrDepthTexture = 0;

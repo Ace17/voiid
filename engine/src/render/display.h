@@ -16,6 +16,7 @@ struct Display
   virtual ~Display() = default;
 
   virtual void setFullscreen(bool fs) = 0;
+  virtual void setHdr(bool enable) = 0;
   virtual void setCaption(const char* caption) = 0;
   virtual void loadModel(int id, const char* imagePath) = 0;
   virtual void beginDraw() = 0;
