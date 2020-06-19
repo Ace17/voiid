@@ -267,9 +267,9 @@ struct Camera
   bool valid = false;
 };
 
-void sendToOpengl(RenderMesh& renderMesh)
+void sendToOpengl(RenderMesh& mesh)
 {
-  for(auto& model : renderMesh.singleMeshes)
+  for(auto& model : mesh.singleMeshes)
   {
     SAFE_GL(glGenBuffers(1, &model.buffer));
     SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, model.buffer));
