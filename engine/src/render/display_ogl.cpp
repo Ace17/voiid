@@ -385,9 +385,11 @@ struct OpenglDisplay : Display
 
     m_fontModel = loadTiledAnimation("res/font.png", 16, 16);
 
-    // don't GL_REPEAT fonts
     for(auto& glyph : m_fontModel)
     {
+      uploadVerticesToGPU(glyph);
+
+      // don't GL_REPEAT fonts
       for(auto& single : glyph.singleMeshes)
       {
         glBindTexture(GL_TEXTURE_2D, single.diffuse);
@@ -395,9 +397,6 @@ struct OpenglDisplay : Display
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
       }
     }
-
-    for(auto& glyph : m_fontModel)
-      uploadVerticesToGPU(glyph);
 
     {
       m_shader.programId = loadShaders(VertexShaderCode, FragmentShaderCode);
