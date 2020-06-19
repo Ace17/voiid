@@ -414,8 +414,8 @@ struct OpenglDisplay : Display
     }
 
     {
-      SAFE_GL(glGenFramebuffers(1, &m_fbo));
-      SAFE_GL(glBindFramebuffer(GL_FRAMEBUFFER, m_fbo));
+      SAFE_GL(glGenFramebuffers(1, &m_hdrFramebuffer));
+      SAFE_GL(glBindFramebuffer(GL_FRAMEBUFFER, m_hdrFramebuffer));
 
       // color buffer
       {
@@ -445,7 +445,7 @@ struct OpenglDisplay : Display
   {
     SAFE_GL(glDeleteBuffers(1, &m_hdrVbo));
     SAFE_GL(glBindFramebuffer(GL_FRAMEBUFFER, 0));
-    SAFE_GL(glDeleteFramebuffers(1, &m_fbo));
+    SAFE_GL(glDeleteFramebuffers(1, &m_hdrFramebuffer));
 
     SDL_GL_DeleteContext(m_context);
     SDL_DestroyWindow(m_window);
@@ -523,7 +523,7 @@ struct OpenglDisplay : Display
     }
 
     // draw to the HDR buffer
-    SAFE_GL(glBindFramebuffer(GL_FRAMEBUFFER, m_fbo));
+    SAFE_GL(glBindFramebuffer(GL_FRAMEBUFFER, m_hdrFramebuffer));
 
     SAFE_GL(glUseProgram(m_shader.programId));
 
@@ -743,7 +743,7 @@ private:
 
   float m_ambientLight = 0;
   int m_frameCount = 0;
-  GLuint m_fbo = 0;
+  GLuint m_hdrFramebuffer = 0;
   GLuint m_hdrTexture = 0;
   GLuint m_hdrDepthTexture = 0;
   GLuint m_hdrVbo = 0;
