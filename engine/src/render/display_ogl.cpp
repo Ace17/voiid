@@ -30,6 +30,8 @@ extern const Span<uint8_t> BasicVertexShaderCode;
 extern const Span<uint8_t> BasicFragmentShaderCode;
 extern const Span<uint8_t> HdrVertexShaderCode;
 extern const Span<uint8_t> HdrFragmentShaderCode;
+extern const Span<uint8_t> BloomVertexShaderCode;
+extern const Span<uint8_t> BloomFragmentShaderCode;
 extern RenderMesh boxModel();
 
 #ifdef NDEBUG
@@ -416,10 +418,21 @@ struct OpenglDisplay : Display
     {
       m_hdrShader.programId = loadShaders(HdrVertexShaderCode, HdrFragmentShaderCode);
 
-      m_hdrShader.HdrTex = safeGetUniformLocation(m_hdrShader.programId, "HdrTex");
+      m_hdrShader.InputTex1 = safeGetUniformLocation(m_hdrShader.programId, "InputTex1");
+      m_hdrShader.InputTex2 = safeGetUniformLocation(m_hdrShader.programId, "InputTex2");
       m_hdrShader.positionLoc = safeGetAttributeLocation(m_hdrShader.programId, "vertexPos_model");
       m_hdrShader.uvLoc = safeGetAttributeLocation(m_hdrShader.programId, "vertexUV");
     }
+
+    {
+      m_bloomShader.programId = loadShaders(BloomVertexShaderCode, BloomFragmentShaderCode);
+
+      m_bloomShader.InputTex = safeGetUniformLocation(m_bloomShader.programId, "InputTex");
+      m_bloomShader.positionLoc = safeGetAttributeLocation(m_bloomShader.programId, "vertexPos_model");
+      m_bloomShader.uvLoc = safeGetAttributeLocation(m_bloomShader.programId, "vertexUV");
+    }
+
+    SAFE_GL(glGenBuffers(1, &m_hdrQuadVbo));
 
     {
       SAFE_GL(glGenFramebuffers(1, &m_hdrFramebuffer));
@@ -442,8 +455,21 @@ struct OpenglDisplay : Display
         SAFE_GL(glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, resolution.width, resolution.height, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL));
         SAFE_GL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, m_hdrDepthTexture, 0));
       }
+    }
 
-      SAFE_GL(glGenBuffers(1, &m_hdrVbo));
+    {
+      SAFE_GL(glGenFramebuffers(1, &m_bloomFramebuffer));
+      SAFE_GL(glBindFramebuffer(GL_FRAMEBUFFER, m_bloomFramebuffer));
+
+      // color buffer
+      {
+        SAFE_GL(glGenTextures(1, &m_bloomTexture));
+        SAFE_GL(glBindTexture(GL_TEXTURE_2D, m_bloomTexture));
+        SAFE_GL(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, resolution.width, resolution.height, 0, GL_RGBA, GL_FLOAT, nullptr));
+        SAFE_GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+        SAFE_GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+        SAFE_GL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_bloomTexture, 0));
+      }
     }
 
     printf("[display] init OK\n");
@@ -451,7 +477,7 @@ struct OpenglDisplay : Display
 
   ~OpenglDisplay()
   {
-    SAFE_GL(glDeleteBuffers(1, &m_hdrVbo));
+    SAFE_GL(glDeleteBuffers(1, &m_hdrQuadVbo));
     SAFE_GL(glBindFramebuffer(GL_FRAMEBUFFER, 0));
     SAFE_GL(glDeleteFramebuffers(1, &m_hdrFramebuffer));
 
@@ -539,6 +565,10 @@ struct OpenglDisplay : Display
       SAFE_GL(glBindFramebuffer(GL_FRAMEBUFFER, m_hdrFramebuffer));
       executeAllDrawCommands();
 
+      // draw to the bloom buffer
+      SAFE_GL(glBindFramebuffer(GL_FRAMEBUFFER, m_bloomFramebuffer));
+      applyBloomFilter();
+
       // draw to screen
       SAFE_GL(glBindFramebuffer(GL_FRAMEBUFFER, 0));
       drawHdrBuffer();
@@ -574,15 +604,21 @@ struct OpenglDisplay : Display
     m_drawCommands.clear();
   }
 
-  void drawHdrBuffer()
+  void applyBloomFilter()
   {
-    SAFE_GL(glUseProgram(m_hdrShader.programId));
+    {
+      int w, h;
+      SDL_GL_GetDrawableSize(m_window, &w, &h);
+      SAFE_GL(glViewport(0, 0, w, h));
+    }
+
+    SAFE_GL(glUseProgram(m_bloomShader.programId));
     SAFE_GL(glDisable(GL_DEPTH_TEST));
 
     // Texture Unit 0
     SAFE_GL(glActiveTexture(GL_TEXTURE0));
     SAFE_GL(glBindTexture(GL_TEXTURE_2D, m_hdrTexture));
-    SAFE_GL(glUniform1i(m_hdrShader.HdrTex, 0));
+    SAFE_GL(glUniform1i(m_bloomShader.InputTex, 0));
 
     struct QuadVertex
     {
@@ -600,7 +636,59 @@ struct OpenglDisplay : Display
       { +1, +1, 1, 1 },
     };
 
-    SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, m_hdrVbo));
+    SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, m_hdrQuadVbo));
+    SAFE_GL(glBufferData(GL_ARRAY_BUFFER, sizeof screenQuad, screenQuad, GL_STATIC_DRAW));
+
+    SAFE_GL(glEnableVertexAttribArray(m_bloomShader.positionLoc));
+    SAFE_GL(glEnableVertexAttribArray(m_bloomShader.uvLoc));
+
+#define OFFSET(a) (void*)(&(((QuadVertex*)nullptr)->a))
+    SAFE_GL(glVertexAttribPointer(m_bloomShader.positionLoc, 2, GL_FLOAT, GL_FALSE, sizeof(QuadVertex), OFFSET(x)));
+    SAFE_GL(glVertexAttribPointer(m_bloomShader.uvLoc, 2, GL_FLOAT, GL_FALSE, sizeof(QuadVertex), OFFSET(u)));
+#undef OFFSET
+
+    SAFE_GL(glDrawArrays(GL_TRIANGLES, 0, 6));
+    SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, 0));
+  }
+
+  void drawHdrBuffer()
+  {
+    {
+      int w, h;
+      SDL_GL_GetDrawableSize(m_window, &w, &h);
+      SAFE_GL(glViewport(0, 0, w, h));
+    }
+
+    SAFE_GL(glUseProgram(m_hdrShader.programId));
+    SAFE_GL(glDisable(GL_DEPTH_TEST));
+
+    // Texture Unit 0
+    SAFE_GL(glActiveTexture(GL_TEXTURE0));
+    SAFE_GL(glBindTexture(GL_TEXTURE_2D, m_hdrTexture));
+    SAFE_GL(glUniform1i(m_hdrShader.InputTex1, 0));
+
+    // Texture Unit 1
+    SAFE_GL(glActiveTexture(GL_TEXTURE1));
+    SAFE_GL(glBindTexture(GL_TEXTURE_2D, m_bloomTexture));
+    SAFE_GL(glUniform1i(m_hdrShader.InputTex2, 1));
+
+    struct QuadVertex
+    {
+      float x, y, u, v;
+    };
+
+    static const QuadVertex screenQuad[] =
+    {
+      { -1, -1, 0, 0 },
+      { +1, +1, 1, 1 },
+      { -1, +1, 0, 1 },
+
+      { -1, -1, 0, 0 },
+      { +1, -1, 1, 0 },
+      { +1, +1, 1, 1 },
+    };
+
+    SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, m_hdrQuadVbo));
     SAFE_GL(glBufferData(GL_ARRAY_BUFFER, sizeof screenQuad, screenQuad, GL_STATIC_DRAW));
 
     SAFE_GL(glEnableVertexAttribArray(m_hdrShader.positionLoc));
@@ -764,13 +852,23 @@ private:
   struct HdrShader
   {
     GLuint programId;
-    GLint HdrTex;
+    GLint InputTex1;
+    GLint InputTex2;
+    GLint positionLoc;
+    GLint uvLoc;
+  };
+
+  struct BloomShader
+  {
+    GLuint programId;
+    GLint InputTex;
     GLint positionLoc;
     GLint uvLoc;
   };
 
   Shader m_shader;
   HdrShader m_hdrShader;
+  BloomShader m_bloomShader;
 
   vector<RenderMesh> m_Models;
   vector<RenderMesh> m_fontModel;
@@ -779,10 +877,15 @@ private:
   int m_frameCount = 0;
 
   bool m_enableHdr = true;
+
   GLuint m_hdrFramebuffer = 0;
   GLuint m_hdrTexture = 0;
   GLuint m_hdrDepthTexture = 0;
-  GLuint m_hdrVbo = 0;
+
+  GLuint m_bloomFramebuffer = 0;
+  GLuint m_bloomTexture = 0;
+
+  GLuint m_hdrQuadVbo = 0;
 
   std::vector<DrawCommand> m_drawCommands;
 };

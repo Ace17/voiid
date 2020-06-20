@@ -9,12 +9,13 @@ in vec2 UV;
 out vec4 color;
 
 // Values that stay constant for the whole mesh
-uniform sampler2D HdrTex;
+uniform sampler2D InputTex1;
+uniform sampler2D InputTex2;
 
 void main()
 {
   const float gamma = 1.2;
-  vec3 hdrColor = texture(HdrTex, UV).rgb;
+  vec3 hdrColor = texture(InputTex1, UV).rgb + texture(InputTex2, UV).rgb;
 
   // reinhard tone mapping
   vec3 mapped = hdrColor / (hdrColor + vec3(1.0));

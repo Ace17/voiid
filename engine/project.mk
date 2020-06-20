@@ -3,6 +3,8 @@ SRCS_ENGINE:=\
 	$(BIN)/$(ENGINE_ROOT)/src/render/shaders/basic/vertex.glsl.cpp\
 	$(BIN)/$(ENGINE_ROOT)/src/render/shaders/hdr/fragment.glsl.cpp\
 	$(BIN)/$(ENGINE_ROOT)/src/render/shaders/hdr/vertex.glsl.cpp\
+	$(BIN)/$(ENGINE_ROOT)/src/render/shaders/bloom/fragment.glsl.cpp\
+	$(BIN)/$(ENGINE_ROOT)/src/render/shaders/bloom/vertex.glsl.cpp\
 	$(ENGINE_ROOT)/src/app.cpp\
 	$(ENGINE_ROOT)/src/main.cpp\
 	$(ENGINE_ROOT)/src/audio/audio.cpp\
@@ -23,6 +25,9 @@ $(BIN)/$(ENGINE_ROOT)/src/render/shaders/basic/fragment.glsl.cpp: NAME=BasicFrag
 
 $(BIN)/$(ENGINE_ROOT)/src/render/shaders/hdr/vertex.glsl.cpp: NAME=HdrVertexShaderCode
 $(BIN)/$(ENGINE_ROOT)/src/render/shaders/hdr/fragment.glsl.cpp: NAME=HdrFragmentShaderCode
+
+$(BIN)/$(ENGINE_ROOT)/src/render/shaders/bloom/vertex.glsl.cpp: NAME=BloomVertexShaderCode
+$(BIN)/$(ENGINE_ROOT)/src/render/shaders/bloom/fragment.glsl.cpp: NAME=BloomFragmentShaderCode
 
 $(BIN)/%.glsl.cpp: %.glsl
 	@mkdir -p $(dir $@)
