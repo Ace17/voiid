@@ -635,6 +635,21 @@ struct OpenglDisplay : Display
     m_enablePostProcessing = enable;
   }
 
+  void setFsaa(bool enable) override
+  {
+    if(enable != m_enableFsaa)
+    {
+      Size2i size = getCurrentScreenSize();
+
+      if(enable)
+        size = size * 2;
+
+      m_postProcessing = make_unique<PostProcessing>(size);
+    }
+
+    m_enableFsaa = enable;
+  }
+
   void setCaption(const char* caption) override
   {
     SDL_SetWindowTitle(m_window, caption);
@@ -695,8 +710,7 @@ struct OpenglDisplay : Display
 
   void endDraw() override
   {
-    Size2i screenSize {};
-    SDL_GL_GetDrawableSize(m_window, &screenSize.width, &screenSize.height);
+    auto screenSize = getCurrentScreenSize();
 
     if(m_enablePostProcessing)
     {
@@ -722,6 +736,13 @@ struct OpenglDisplay : Display
   }
 
   // end-of public API
+
+  Size2i getCurrentScreenSize()
+  {
+    Size2i screenSize {};
+    SDL_GL_GetDrawableSize(m_window, &screenSize.width, &screenSize.height);
+    return screenSize;
+  }
 
   void executeAllDrawCommands(Size2i screenSize)
   {
@@ -895,6 +916,7 @@ private:
   int m_frameCount = 0;
 
   bool m_enablePostProcessing = true;
+  bool m_enableFsaa = false;
 
   std::unique_ptr<PostProcessing> m_postProcessing;
 

@@ -318,8 +318,17 @@ private:
 
     case SDLK_BACKSPACE:
       {
-        m_enableHdr = !m_enableHdr;
-        m_display->setHdr(m_enableHdr);
+        if(evt->key.keysym.mod & KMOD_LALT)
+        {
+          m_enableFsaa = !m_enableFsaa;
+          m_display->setFsaa(m_enableFsaa);
+        }
+        else
+        {
+          m_enableHdr = !m_enableHdr;
+          m_display->setHdr(m_enableHdr);
+        }
+
         break;
       }
 
@@ -414,6 +423,7 @@ private:
 
   bool m_debugMode = false;
   bool m_enableHdr = true;
+  bool m_enableFsaa = false;
 
   int m_lastTime;
   int m_lastDisplayFrameTime;
