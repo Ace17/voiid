@@ -353,6 +353,7 @@ struct PostProcessing
       m_bloomShader.programId = loadShaders(BloomVertexShaderCode, BloomFragmentShaderCode);
 
       m_bloomShader.InputTex = safeGetUniformLocation(m_bloomShader.programId, "InputTex");
+      m_bloomShader.IsThreshold = safeGetUniformLocation(m_bloomShader.programId, "IsThreshold");
       m_bloomShader.positionLoc = safeGetAttributeLocation(m_bloomShader.programId, "vertexPos_model");
       m_bloomShader.uvLoc = safeGetAttributeLocation(m_bloomShader.programId, "vertexUV");
     }
@@ -384,20 +385,21 @@ struct PostProcessing
       }
     }
 
+    for(int k = 0; k < 2; ++k)
     {
-      SAFE_GL(glGenFramebuffers(1, &m_bloomFramebuffer));
-      SAFE_GL(glBindFramebuffer(GL_FRAMEBUFFER, m_bloomFramebuffer));
+      SAFE_GL(glGenFramebuffers(1, &m_bloomFramebuffer[k]));
+      SAFE_GL(glBindFramebuffer(GL_FRAMEBUFFER, m_bloomFramebuffer[k]));
 
       // color buffer
       {
-        SAFE_GL(glGenTextures(1, &m_bloomTexture));
-        SAFE_GL(glBindTexture(GL_TEXTURE_2D, m_bloomTexture));
+        SAFE_GL(glGenTextures(1, &m_bloomTexture[k]));
+        SAFE_GL(glBindTexture(GL_TEXTURE_2D, m_bloomTexture[k]));
         SAFE_GL(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, resolution.width, resolution.height, 0, GL_RGBA, GL_FLOAT, nullptr));
         SAFE_GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
         SAFE_GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
         SAFE_GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
         SAFE_GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
-        SAFE_GL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_bloomTexture, 0));
+        SAFE_GL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_bloomTexture[k], 0));
       }
     }
   }
@@ -414,11 +416,6 @@ struct PostProcessing
 
     SAFE_GL(glUseProgram(m_bloomShader.programId));
     SAFE_GL(glDisable(GL_DEPTH_TEST));
-
-    // Texture Unit 0
-    SAFE_GL(glActiveTexture(GL_TEXTURE0));
-    SAFE_GL(glBindTexture(GL_TEXTURE_2D, m_hdrTexture));
-    SAFE_GL(glUniform1i(m_bloomShader.InputTex, 0));
 
     struct QuadVertex
     {
@@ -446,8 +443,27 @@ struct PostProcessing
     SAFE_GL(glVertexAttribPointer(m_bloomShader.positionLoc, 2, GL_FLOAT, GL_FALSE, sizeof(QuadVertex), OFFSET(x)));
     SAFE_GL(glVertexAttribPointer(m_bloomShader.uvLoc, 2, GL_FLOAT, GL_FALSE, sizeof(QuadVertex), OFFSET(u)));
 #undef OFFSET
+    auto oneBlurringPass = [&] (GLuint inputTex, GLuint outputFramebuffer, bool isThreshold = false)
+      {
+        SAFE_GL(glUniform1i(m_bloomShader.IsThreshold, isThreshold));
 
-    SAFE_GL(glDrawArrays(GL_TRIANGLES, 0, 6));
+        // Texture Unit 0
+        SAFE_GL(glActiveTexture(GL_TEXTURE0));
+        SAFE_GL(glBindTexture(GL_TEXTURE_2D, inputTex));
+        SAFE_GL(glUniform1i(m_bloomShader.InputTex, 0));
+
+        SAFE_GL(glBindFramebuffer(GL_FRAMEBUFFER, outputFramebuffer));
+        SAFE_GL(glDrawArrays(GL_TRIANGLES, 0, 6));
+      };
+
+    oneBlurringPass(m_hdrTexture, m_bloomFramebuffer[0], true);
+    oneBlurringPass(m_bloomTexture[0], m_bloomFramebuffer[1]);
+    oneBlurringPass(m_bloomTexture[1], m_bloomFramebuffer[0]);
+    oneBlurringPass(m_bloomTexture[0], m_bloomFramebuffer[1]);
+    oneBlurringPass(m_bloomTexture[1], m_bloomFramebuffer[0]);
+    oneBlurringPass(m_bloomTexture[0], m_bloomFramebuffer[1]);
+    oneBlurringPass(m_bloomTexture[1], m_bloomFramebuffer[0]);
+
     SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, 0));
   }
 
@@ -465,7 +481,7 @@ struct PostProcessing
 
     // Texture Unit 1
     SAFE_GL(glActiveTexture(GL_TEXTURE1));
-    SAFE_GL(glBindTexture(GL_TEXTURE_2D, m_bloomTexture));
+    SAFE_GL(glBindTexture(GL_TEXTURE_2D, m_bloomTexture[0]));
     SAFE_GL(glUniform1i(m_hdrShader.InputTex2, 1));
 
     struct QuadVertex
@@ -514,6 +530,7 @@ struct PostProcessing
     GLint InputTex;
     GLint positionLoc;
     GLint uvLoc;
+    GLint IsThreshold;
   };
 
   const Size2i m_resolution;
@@ -524,8 +541,8 @@ struct PostProcessing
   GLuint m_hdrTexture = 0;
   GLuint m_hdrDepthTexture = 0;
 
-  GLuint m_bloomFramebuffer = 0;
-  GLuint m_bloomTexture = 0;
+  GLuint m_bloomFramebuffer[2] {};
+  GLuint m_bloomTexture[2] {};
 
   GLuint m_hdrQuadVbo = 0;
 };
@@ -723,7 +740,6 @@ struct OpenglDisplay : Display
       executeAllDrawCommands(m_postProcessing->m_resolution);
 
       // draw to the bloom buffer
-      SAFE_GL(glBindFramebuffer(GL_FRAMEBUFFER, m_postProcessing->m_bloomFramebuffer));
       m_postProcessing->applyBloomFilter();
 
       // draw to screen
