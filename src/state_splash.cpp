@@ -15,11 +15,20 @@
 #include "state_machine.h"
 #include "toggle.h"
 
+static const float LIGHT_ON = 10;
+static const float LIGHT_OFF = 0;
+
+template<typename T>
+T blend(T a, T b, float alpha)
+{
+  return a * (1 - alpha) + b * alpha;
+}
+
 struct SplashState : Scene
 {
   SplashState(View* view_) : view(view_)
   {
-    view->setAmbientLight(10);
+    view->setAmbientLight(LIGHT_ON);
   }
 
   ////////////////////////////////////////////////////////////////
@@ -31,10 +40,10 @@ struct SplashState : Scene
 
     view->playMusic(1);
 
+    view->textBox("V O I I D");
+
     if(!activated)
     {
-      view->textBox("V O I I D");
-
       if(c.fire || c.jump || c.dash)
       {
         activated = true;
@@ -45,7 +54,8 @@ struct SplashState : Scene
 
     if(activated)
     {
-      view->setAmbientLight(-20 * (1 - delay / float(FADE_TIME)));
+      const float alpha = 1.0 - delay / float(FADE_TIME);
+      view->setAmbientLight(blend(LIGHT_ON, LIGHT_OFF, alpha));
 
       if(decrement(delay))
       {
