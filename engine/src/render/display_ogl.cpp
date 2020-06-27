@@ -78,7 +78,7 @@ GLuint safeGetAttributeLocation(GLuint programId, const char* name)
   return attribLocation;
 }
 
-int compileShader(Span<uint8_t> code, int type)
+GLuint compileShader(Span<uint8_t> code, int type)
 {
   auto shaderId = glCreateShader(type);
 
@@ -111,7 +111,7 @@ int compileShader(Span<uint8_t> code, int type)
   return shaderId;
 }
 
-int linkShaders(vector<int> ids)
+GLuint linkShaders(vector<GLuint> ids)
 {
   // Link the program
   printf("[display] Linking shaders ... ");
@@ -662,23 +662,23 @@ struct OpenglDisplay : Display
     SDL_SetWindowTitle(m_window, caption);
   }
 
-  void loadModel(int id, const char* path) override
+  void loadModel(int modelId, const char* path) override
   {
-    if((int)m_Models.size() <= id)
-      m_Models.resize(id + 1);
+    if((int)m_Models.size() <= modelId)
+      m_Models.resize(modelId + 1);
 
-    m_Models[id] = loadRenderMesh(path);
+    m_Models[modelId] = loadRenderMesh(path);
 
     int i = 0;
 
-    for(auto& single : m_Models[id].singleMeshes)
+    for(auto& single : m_Models[modelId].singleMeshes)
     {
       single.diffuse = loadTexture(setExtension(path, to_string(i) + ".diffuse.png").c_str());
       single.lightmap = loadTexture(setExtension(path, to_string(i) + ".lightmap.png").c_str());
       ++i;
     }
 
-    uploadVerticesToGPU(m_Models[id]);
+    uploadVerticesToGPU(m_Models[modelId]);
   }
 
   void setCamera(Vector3f pos, Quaternion dir) override
@@ -741,8 +741,64 @@ struct OpenglDisplay : Display
     SDL_GL_SwapWindow(m_window);
   }
 
-  // end-of public API
+  void drawActor(Rect3f where, int modelId, bool blinking, int actionIdx, float ratio) override
+  {
+    (void)actionIdx;
+    (void)ratio;
+    auto& model = m_Models.at(modelId);
+    pushMesh(where, m_camera, model, blinking, true);
+  }
 
+  void drawText(Vector2f pos, char const* text) override
+  {
+    Rect3f rect;
+    rect.size.cx = 0.5;
+    rect.size.cy = 0;
+    rect.size.cz = 0.5;
+    rect.pos.x = pos.x - strlen(text) * rect.size.cx / 2;
+    rect.pos.y = 0;
+    rect.pos.z = pos.y;
+
+    auto cam = (Camera { Vector3f(0, -10, 0), Vector3f(0, 1, 0) });
+
+    while(*text)
+    {
+      pushMesh(rect, cam, m_fontModel[*text], false, false);
+      rect.pos.x += rect.size.cx;
+      ++text;
+    }
+  }
+
+  void readPixels(Span<uint8_t> dstRgbPixels) override
+  {
+    int width, height;
+    SDL_GetWindowSize(m_window, &width, &height);
+    SAFE_GL(glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, dstRgbPixels.data));
+
+    // reverse upside down
+    const auto rowSize = width * 4;
+    vector<uint8_t> rowBuf(rowSize);
+
+    for(int row = 0; row < height / 2; ++row)
+    {
+      const auto rowLo = row;
+      const auto rowHi = height - 1 - row;
+      auto pRowLo = dstRgbPixels.data + rowLo * rowSize;
+      auto pRowHi = dstRgbPixels.data + rowHi * rowSize;
+      memcpy(rowBuf.data(), pRowLo, rowSize);
+      memcpy(pRowLo, pRowHi, rowSize);
+      memcpy(pRowHi, rowBuf.data(), rowSize);
+    }
+  }
+
+  void enableGrab(bool enable) override
+  {
+    SDL_SetRelativeMouseMode(enable ? SDL_TRUE : SDL_FALSE);
+    SDL_SetWindowGrab(m_window, enable ? SDL_TRUE : SDL_FALSE);
+    SDL_ShowCursor(enable ? 0 : 1);
+  }
+
+private:
   Size2i getCurrentScreenSize()
   {
     Size2i screenSize {};
@@ -832,63 +888,6 @@ struct OpenglDisplay : Display
 #undef OFFSET
 
     SAFE_GL(glDrawArrays(GL_TRIANGLES, 0, model.vertices.size()));
-  }
-
-  void readPixels(Span<uint8_t> dstRgbPixels) override
-  {
-    int width, height;
-    SDL_GetWindowSize(m_window, &width, &height);
-    SAFE_GL(glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, dstRgbPixels.data));
-
-    // reverse upside down
-    const auto rowSize = width * 4;
-    vector<uint8_t> rowBuf(rowSize);
-
-    for(int row = 0; row < height / 2; ++row)
-    {
-      const auto rowLo = row;
-      const auto rowHi = height - 1 - row;
-      auto pRowLo = dstRgbPixels.data + rowLo * rowSize;
-      auto pRowHi = dstRgbPixels.data + rowHi * rowSize;
-      memcpy(rowBuf.data(), pRowLo, rowSize);
-      memcpy(pRowLo, pRowHi, rowSize);
-      memcpy(pRowHi, rowBuf.data(), rowSize);
-    }
-  }
-
-  void enableGrab(bool enable) override
-  {
-    SDL_SetRelativeMouseMode(enable ? SDL_TRUE : SDL_FALSE);
-    SDL_SetWindowGrab(m_window, enable ? SDL_TRUE : SDL_FALSE);
-    SDL_ShowCursor(enable ? 0 : 1);
-  }
-
-  void drawActor(Rect3f where, int modelId, bool blinking, int actionIdx, float ratio) override
-  {
-    (void)actionIdx;
-    (void)ratio;
-    auto& model = m_Models.at(modelId);
-    pushMesh(where, m_camera, model, blinking, true);
-  }
-
-  void drawText(Vector2f pos, char const* text) override
-  {
-    Rect3f rect;
-    rect.size.cx = 0.5;
-    rect.size.cy = 0;
-    rect.size.cz = 0.5;
-    rect.pos.x = pos.x - strlen(text) * rect.size.cx / 2;
-    rect.pos.y = 0;
-    rect.pos.z = pos.y;
-
-    auto cam = (Camera { Vector3f(0, -10, 0), Vector3f(0, 1, 0) });
-
-    while(*text)
-    {
-      pushMesh(rect, cam, m_fontModel[*text], false, false);
-      rect.pos.x += rect.size.cx;
-      ++text;
-    }
   }
 
 private:

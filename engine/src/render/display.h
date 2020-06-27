@@ -19,14 +19,16 @@ struct Display
   virtual void setHdr(bool enable) = 0;
   virtual void setFsaa(bool enable) = 0;
   virtual void setCaption(const char* caption) = 0;
-  virtual void loadModel(int id, const char* imagePath) = 0;
-  virtual void beginDraw() = 0;
-  virtual void endDraw() = 0;
-  virtual void drawActor(Rect3f where, int modelId, bool blinking, int actionIdx, float frame) = 0;
-  virtual void drawText(Vector2f pos, char const* text) = 0;
+  virtual void loadModel(int modelId, const char* path) = 0;
   virtual void setCamera(Vector3f pos, Quaternion dir) = 0;
   virtual void setAmbientLight(float ambientLight) = 0;
   virtual void readPixels(Span<uint8_t> dstRgbPixels) = 0;
   virtual void enableGrab(bool enable) = 0;
+
+  // draw functions
+  virtual void beginDraw() = 0;
+  virtual void endDraw() = 0;
+  virtual void drawActor(Rect3f where, int modelId, bool blinking, int actionIdx, float frame) = 0;
+  virtual void drawText(Vector2f pos, char const* text) = 0;
 };
 
