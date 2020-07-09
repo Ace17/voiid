@@ -681,7 +681,7 @@ struct OpenglDisplay : Display
     if((int)m_Models.size() <= id)
       m_Models.resize(id + 1);
 
-    m_Models[id] = ::loadModel(path);
+    m_Models[id] = loadRenderMesh(path);
 
     int i = 0;
 

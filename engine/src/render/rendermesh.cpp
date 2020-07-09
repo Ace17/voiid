@@ -109,7 +109,7 @@ RenderMesh loadBinaryRenderMesh(string path)
   return mesh;
 }
 
-RenderMesh loadModel(string renderPath)
+RenderMesh loadRenderMesh(string renderPath)
 {
   if(!File::exists(renderPath))
     return boxModel();

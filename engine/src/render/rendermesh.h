@@ -38,5 +38,5 @@ struct RenderMesh
   vector<SingleRenderMesh> singleMeshes;
 };
 
-RenderMesh loadModel(string path);
+RenderMesh loadRenderMesh(string path);
 
