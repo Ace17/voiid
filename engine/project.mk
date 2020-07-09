@@ -1,6 +1,6 @@
 SRCS_ENGINE:=\
-	$(BIN)/$(ENGINE_ROOT)/src/render/shaders/basic/fragment.glsl.cpp\
-	$(BIN)/$(ENGINE_ROOT)/src/render/shaders/basic/vertex.glsl.cpp\
+	$(BIN)/$(ENGINE_ROOT)/src/render/shaders/mesh/fragment.glsl.cpp\
+	$(BIN)/$(ENGINE_ROOT)/src/render/shaders/mesh/vertex.glsl.cpp\
 	$(BIN)/$(ENGINE_ROOT)/src/render/shaders/hdr/fragment.glsl.cpp\
 	$(BIN)/$(ENGINE_ROOT)/src/render/shaders/hdr/vertex.glsl.cpp\
 	$(BIN)/$(ENGINE_ROOT)/src/render/shaders/bloom/fragment.glsl.cpp\
@@ -20,8 +20,8 @@ SRCS_ENGINE:=\
 	$(ENGINE_ROOT)/src/render/png.cpp\
 	$(ENGINE_ROOT)/src/render/mesh_import.cpp\
 
-$(BIN)/$(ENGINE_ROOT)/src/render/shaders/basic/vertex.glsl.cpp: NAME=BasicVertexShaderCode
-$(BIN)/$(ENGINE_ROOT)/src/render/shaders/basic/fragment.glsl.cpp: NAME=BasicFragmentShaderCode
+$(BIN)/$(ENGINE_ROOT)/src/render/shaders/mesh/vertex.glsl.cpp: NAME=MeshVertexShaderCode
+$(BIN)/$(ENGINE_ROOT)/src/render/shaders/mesh/fragment.glsl.cpp: NAME=MeshFragmentShaderCode
 
 $(BIN)/$(ENGINE_ROOT)/src/render/shaders/hdr/vertex.glsl.cpp: NAME=HdrVertexShaderCode
 $(BIN)/$(ENGINE_ROOT)/src/render/shaders/hdr/fragment.glsl.cpp: NAME=HdrFragmentShaderCode

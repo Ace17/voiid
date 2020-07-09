@@ -26,8 +26,8 @@ using namespace std;
 #include "misc/file.h"
 #include "rendermesh.h"
 
-extern const Span<uint8_t> BasicVertexShaderCode;
-extern const Span<uint8_t> BasicFragmentShaderCode;
+extern const Span<uint8_t> MeshVertexShaderCode;
+extern const Span<uint8_t> MeshFragmentShaderCode;
 extern const Span<uint8_t> HdrVertexShaderCode;
 extern const Span<uint8_t> HdrFragmentShaderCode;
 extern const Span<uint8_t> BloomVertexShaderCode;
@@ -613,18 +613,18 @@ struct OpenglDisplay : Display
     }
 
     {
-      m_basicShader.programId = loadShaders(BasicVertexShaderCode, BasicFragmentShaderCode);
+      m_meshShader.programId = loadShaders(MeshVertexShaderCode, MeshFragmentShaderCode);
 
-      m_basicShader.M = safeGetUniformLocation(m_basicShader.programId, "M");
-      m_basicShader.MVP = safeGetUniformLocation(m_basicShader.programId, "MVP");
-      m_basicShader.DiffuseTex = safeGetUniformLocation(m_basicShader.programId, "DiffuseTex");
-      m_basicShader.LightmapTex = safeGetUniformLocation(m_basicShader.programId, "LightmapTex");
-      m_basicShader.colorId = safeGetUniformLocation(m_basicShader.programId, "fragOffset");
-      m_basicShader.ambientLoc = safeGetUniformLocation(m_basicShader.programId, "ambientLight");
-      m_basicShader.positionLoc = safeGetAttributeLocation(m_basicShader.programId, "vertexPos_model");
-      m_basicShader.uvDiffuseLoc = safeGetAttributeLocation(m_basicShader.programId, "vertexUV");
-      m_basicShader.uvLightmapLoc = safeGetAttributeLocation(m_basicShader.programId, "vertexUV_lightmap");
-      m_basicShader.normalLoc = safeGetAttributeLocation(m_basicShader.programId, "a_normal");
+      m_meshShader.M = safeGetUniformLocation(m_meshShader.programId, "M");
+      m_meshShader.MVP = safeGetUniformLocation(m_meshShader.programId, "MVP");
+      m_meshShader.DiffuseTex = safeGetUniformLocation(m_meshShader.programId, "DiffuseTex");
+      m_meshShader.LightmapTex = safeGetUniformLocation(m_meshShader.programId, "LightmapTex");
+      m_meshShader.colorId = safeGetUniformLocation(m_meshShader.programId, "fragOffset");
+      m_meshShader.ambientLoc = safeGetUniformLocation(m_meshShader.programId, "ambientLight");
+      m_meshShader.positionLoc = safeGetAttributeLocation(m_meshShader.programId, "vertexPos_model");
+      m_meshShader.uvDiffuseLoc = safeGetAttributeLocation(m_meshShader.programId, "vertexUV");
+      m_meshShader.uvLightmapLoc = safeGetAttributeLocation(m_meshShader.programId, "vertexUV_lightmap");
+      m_meshShader.normalLoc = safeGetAttributeLocation(m_meshShader.programId, "a_normal");
     }
 
     m_postProcessing = make_unique<PostProcessing>(resolution);
@@ -768,12 +768,12 @@ struct OpenglDisplay : Display
   {
     SAFE_GL(glViewport(0, 0, screenSize.width, screenSize.height));
 
-    SAFE_GL(glUseProgram(m_basicShader.programId));
+    SAFE_GL(glUseProgram(m_meshShader.programId));
 
     SAFE_GL(glClearColor(0, 0, 0, 1));
     SAFE_GL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
-    SAFE_GL(glUniform3f(m_basicShader.ambientLoc, m_ambientLight, m_ambientLight, m_ambientLight));
+    SAFE_GL(glUniform3f(m_meshShader.ambientLoc, m_ambientLight, m_ambientLight, m_ambientLight));
 
     for(auto& cmd : m_drawCommands)
       executeDrawCommand(cmd);
@@ -791,7 +791,7 @@ struct OpenglDisplay : Display
   {
     auto& model = *cmd.pMesh;
     auto& where = cmd.where;
-    SAFE_GL(glUniform4f(m_basicShader.colorId, 0, 0, 0, 0));
+    SAFE_GL(glUniform4f(m_meshShader.colorId, 0, 0, 0, 0));
 
     if(cmd.depthtest)
       glEnable(GL_DEPTH_TEST);
@@ -801,18 +801,18 @@ struct OpenglDisplay : Display
     if(cmd.blinking)
     {
       if((m_frameCount / 4) % 2)
-        SAFE_GL(glUniform4f(m_basicShader.colorId, 0.8, 0.4, 0.4, 0));
+        SAFE_GL(glUniform4f(m_meshShader.colorId, 0.8, 0.4, 0.4, 0));
     }
 
     // Texture Unit 0: Diffuse
     SAFE_GL(glActiveTexture(GL_TEXTURE0));
     SAFE_GL(glBindTexture(GL_TEXTURE_2D, model.diffuse));
-    SAFE_GL(glUniform1i(m_basicShader.DiffuseTex, 0));
+    SAFE_GL(glUniform1i(m_meshShader.DiffuseTex, 0));
 
     // Texture Unit 1: Lightmap
     SAFE_GL(glActiveTexture(GL_TEXTURE1));
     SAFE_GL(glBindTexture(GL_TEXTURE_2D, model.lightmap));
-    SAFE_GL(glUniform1i(m_basicShader.LightmapTex, 1));
+    SAFE_GL(glUniform1i(m_meshShader.LightmapTex, 1));
 
     auto const target = cmd.camera.pos + cmd.camera.dir;
     auto const view = ::lookAt(cmd.camera.pos, target, Vector3f(0, 0, 1));
@@ -828,21 +828,21 @@ struct OpenglDisplay : Display
     auto MV = pos * scale;
     auto MVP = perspective * view * MV;
 
-    SAFE_GL(glUniformMatrix4fv(m_basicShader.M, 1, GL_FALSE, &MV[0][0]));
-    SAFE_GL(glUniformMatrix4fv(m_basicShader.MVP, 1, GL_FALSE, &MVP[0][0]));
+    SAFE_GL(glUniformMatrix4fv(m_meshShader.M, 1, GL_FALSE, &MV[0][0]));
+    SAFE_GL(glUniformMatrix4fv(m_meshShader.MVP, 1, GL_FALSE, &MVP[0][0]));
 
     SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, model.buffer));
 
-    SAFE_GL(glEnableVertexAttribArray(m_basicShader.positionLoc));
-    SAFE_GL(glEnableVertexAttribArray(m_basicShader.normalLoc));
-    SAFE_GL(glEnableVertexAttribArray(m_basicShader.uvDiffuseLoc));
-    SAFE_GL(glEnableVertexAttribArray(m_basicShader.uvLightmapLoc));
+    SAFE_GL(glEnableVertexAttribArray(m_meshShader.positionLoc));
+    SAFE_GL(glEnableVertexAttribArray(m_meshShader.normalLoc));
+    SAFE_GL(glEnableVertexAttribArray(m_meshShader.uvDiffuseLoc));
+    SAFE_GL(glEnableVertexAttribArray(m_meshShader.uvLightmapLoc));
 
 #define OFFSET(a) (void*)(&(((SingleRenderMesh::Vertex*)nullptr)->a))
-    SAFE_GL(glVertexAttribPointer(m_basicShader.positionLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(x)));
-    SAFE_GL(glVertexAttribPointer(m_basicShader.normalLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(nx)));
-    SAFE_GL(glVertexAttribPointer(m_basicShader.uvDiffuseLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(diffuse_u)));
-    SAFE_GL(glVertexAttribPointer(m_basicShader.uvLightmapLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(lightmap_u)));
+    SAFE_GL(glVertexAttribPointer(m_meshShader.positionLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(x)));
+    SAFE_GL(glVertexAttribPointer(m_meshShader.normalLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(nx)));
+    SAFE_GL(glVertexAttribPointer(m_meshShader.uvDiffuseLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(diffuse_u)));
+    SAFE_GL(glVertexAttribPointer(m_meshShader.uvLightmapLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(lightmap_u)));
 #undef OFFSET
 
     SAFE_GL(glDrawArrays(GL_TRIANGLES, 0, model.vertices.size()));
@@ -912,7 +912,7 @@ private:
   Camera m_camera;
 
   // shader attribute/uniform locations
-  struct BasicShader
+  struct MeshShader
   {
     GLuint programId;
     GLint M;
@@ -927,7 +927,7 @@ private:
     GLint normalLoc;
   };
 
-  BasicShader m_basicShader;
+  MeshShader m_meshShader;
 
   vector<RenderMesh> m_Models;
   vector<RenderMesh> m_fontModel;
