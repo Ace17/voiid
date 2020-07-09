@@ -254,7 +254,7 @@ GLuint loadShaders(Span<uint8_t> vsCode, Span<uint8_t> fsCode)
   auto const vertexId = compileShader(vsCode, GL_VERTEX_SHADER);
   auto const fragmentId = compileShader(fsCode, GL_FRAGMENT_SHADER);
 
-  auto const progId = linkShaders(vector<int>({ vertexId, fragmentId }));
+  auto const progId = linkShaders({ vertexId, fragmentId });
 
   SAFE_GL(glDeleteShader(vertexId));
   SAFE_GL(glDeleteShader(fragmentId));
