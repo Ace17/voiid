@@ -149,55 +149,36 @@ struct Picture
   vector<uint8_t> pixels;
 };
 
-Picture loadPng(string path)
-{
-  Picture pic;
-  auto pngDataBuf = File::read(path);
-  auto pngData = Span<const uint8_t>((uint8_t*)pngDataBuf.data(), (int)pngDataBuf.size());
-  pic.pixels = decodePng(pngData, pic.dim.width, pic.dim.height);
-  pic.stride = pic.dim.width * 4;
-
-  return pic;
-}
-
-Picture loadPicture(const char* path, Rect2f frect)
+Picture loadPicture(const char* path)
 {
   try
   {
-    auto surface = loadPng(path);
-
-    if(frect.size.width == 0 && frect.size.height == 0)
-      frect = Rect2f(0, 0, 1, 1);
-
-    if(frect.pos.x < 0 || frect.pos.y < 0 || frect.pos.x + frect.size.width > 1 || frect.pos.y + frect.size.height > 1)
-      throw runtime_error("Invalid boundaries for '" + string(path) + "'");
+    Picture pic;
+    auto pngDataBuf = File::read(path);
+    auto pngData = Span<const uint8_t>((uint8_t*)pngDataBuf.data(), (int)pngDataBuf.size());
+    pic.pixels = decodePng(pngData, pic.dim.width, pic.dim.height);
+    pic.stride = pic.dim.width * 4;
 
     auto const bpp = 4;
 
-    Rect2i rect;
-    rect.pos.x = frect.pos.x * surface.dim.width;
-    rect.pos.y = frect.pos.y * surface.dim.height;
-    rect.size.width = frect.size.width * surface.dim.width;
-    rect.size.height = frect.size.height * surface.dim.height;
+    vector<uint8_t> img(pic.dim.width * pic.dim.height * bpp);
 
-    vector<uint8_t> img(rect.size.width * rect.size.height * bpp);
-
-    auto src = (Uint8*)surface.pixels.data() + rect.pos.x * bpp + rect.pos.y * surface.stride;
-    auto dst = (Uint8*)img.data() + bpp * rect.size.width * rect.size.height;
+    auto src = (Uint8*)pic.pixels.data();
+    auto dst = (Uint8*)img.data() + bpp * pic.dim.width * pic.dim.height;
 
     // from glTexImage2D doc:
     // "The first element corresponds to the lower left corner of the texture image",
     // (e.g (u,v) = (0,0))
-    for(int y = 0; y < rect.size.height; ++y)
+    for(int y = 0; y < pic.dim.height; ++y)
     {
-      dst -= bpp * rect.size.width;
-      memcpy(dst, src, bpp * rect.size.width);
-      src += surface.stride;
+      dst -= bpp * pic.dim.width;
+      memcpy(dst, src, bpp * pic.dim.width);
+      src += pic.stride;
     }
 
     Picture r;
-    r.dim = rect.size;
-    r.stride = rect.size.width;
+    r.dim = pic.dim;
+    r.stride = pic.dim.width;
     r.pixels = std::move(img);
 
     return r;
@@ -243,9 +224,9 @@ GLuint uploadTextureToGPU(const Picture& pic)
   return texture;
 }
 
-int loadTexture(const char* path, Rect2f frect)
+int loadTexture(const char* path)
 {
-  const auto pic = loadPicture(path, frect);
+  const auto pic = loadPicture(path);
   return uploadTextureToGPU(pic);
 }
 
@@ -293,21 +274,26 @@ std::vector<RenderMesh> loadTiledAnimation(const char* path, int COLS, int ROWS)
 {
   std::vector<RenderMesh> r;
 
+  const int diffuse = loadTexture(path);
+  const int lightmap = loadTexture("res/white.png");
+
   for(int i = 0; i < COLS * ROWS; ++i)
   {
     auto m = boxModel();
 
-    auto col = i % COLS;
-    auto row = i / COLS;
+    const float col = i % COLS;
+    const float row = i / COLS;
 
-    Rect2f rect;
-    rect.size.width = 1.0 / COLS;
-    rect.size.height = 1.0 / ROWS;
-    rect.pos.x = col * rect.size.width;
-    rect.pos.y = row * rect.size.height;
+    for(auto& vertex : m.singleMeshes[0].vertices)
+    {
+      const auto u0 = vertex.diffuse_u;
+      const auto v0 = vertex.diffuse_v;
+      vertex.diffuse_u = (u0 + col) / COLS;
+      vertex.diffuse_v = 1.0 - ((1.0 - v0) + row) / ROWS;
+    }
 
-    m.singleMeshes[0].diffuse = loadTexture(path, rect);
-    m.singleMeshes[0].lightmap = loadTexture("res/white.png", {});
+    m.singleMeshes[0].diffuse = diffuse;
+    m.singleMeshes[0].lightmap = lightmap;
     r.push_back(m);
   }
 
@@ -687,8 +673,8 @@ struct OpenglDisplay : Display
 
     for(auto& single : m_Models[id].singleMeshes)
     {
-      single.diffuse = loadTexture(setExtension(path, to_string(i) + ".diffuse.png").c_str(), {});
-      single.lightmap = loadTexture(setExtension(path, to_string(i) + ".lightmap.png").c_str(), {});
+      single.diffuse = loadTexture(setExtension(path, to_string(i) + ".diffuse.png").c_str());
+      single.lightmap = loadTexture(setExtension(path, to_string(i) + ".lightmap.png").c_str());
       ++i;
     }
 
