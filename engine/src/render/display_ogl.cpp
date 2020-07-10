@@ -270,7 +270,7 @@ void uploadVerticesToGPU(RenderMesh& mesh)
   }
 }
 
-std::vector<RenderMesh> loadTiledAnimation(const char* path, int COLS, int ROWS)
+std::vector<RenderMesh> loadFontModels(const char* path, int COLS, int ROWS)
 {
   std::vector<RenderMesh> r;
 
@@ -583,7 +583,7 @@ struct OpenglDisplay : Display
     glEnable(GL_CULL_FACE);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    m_fontModel = loadTiledAnimation("res/font.png", 16, 16);
+    m_fontModel = loadFontModels("res/font.png", 16, 16);
 
     for(auto& glyph : m_fontModel)
     {
