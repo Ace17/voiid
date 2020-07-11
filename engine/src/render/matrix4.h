@@ -131,3 +131,36 @@ Matrix4f perspective(float fovy, float aspect, float zNear, float zFar)
   return r;
 }
 
+inline
+Matrix4f quaternionToMatrix(const Quaternion& q)
+{
+  const auto qx = q.v.x;
+  const auto qy = q.v.y;
+  const auto qz = q.v.z;
+  const auto qw = q.s;
+
+  Matrix4f r(0);
+
+  r[0][0] = 1.0f - 2.0f * qy * qy - 2.0f * qz * qz;
+  r[0][1] = 2.0f * qx * qy - 2.0f * qz * qw;
+  r[0][2] = 2.0f * qx * qz + 2.0f * qy * qw;
+  r[0][3] = 0;
+
+  r[1][0] = 2.0f * qx * qy + 2.0f * qz * qw;
+  r[1][1] = 1.0f - 2.0f * qx * qx - 2.0f * qz * qz;
+  r[1][2] = 2.0f * qy * qz - 2.0f * qx * qw;
+  r[1][3] = 0;
+
+  r[2][0] = 2.0f * qx * qz - 2.0f * qy * qw;
+  r[2][1] = 2.0f * qy * qz + 2.0f * qx * qw;
+  r[2][2] = 1.0f - 2.0f * qx * qx - 2.0f * qy * qy;
+  r[2][3] = 0;
+
+  r[3][0] = 0;
+  r[3][1] = 0;
+  r[3][2] = 0;
+  r[3][3] = 1;
+
+  return r;
+}
+

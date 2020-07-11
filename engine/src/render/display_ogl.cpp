@@ -254,6 +254,7 @@ struct DrawCommand
 {
   SingleRenderMesh* pMesh;
   Rect3f where;
+  Quaternion orientation;
   Camera camera;
   bool blinking;
   bool depthtest;
@@ -741,12 +742,12 @@ struct OpenglDisplay : Display
     SDL_GL_SwapWindow(m_window);
   }
 
-  void drawActor(Rect3f where, int modelId, bool blinking, int actionIdx, float ratio) override
+  void drawActor(Rect3f where, Quaternion orientation, int modelId, bool blinking, int actionIdx, float ratio) override
   {
     (void)actionIdx;
     (void)ratio;
     auto& model = m_Models.at(modelId);
-    pushMesh(where, m_camera, model, blinking, true);
+    pushMesh(where, orientation, m_camera, model, blinking, true);
   }
 
   void drawText(Vector2f pos, char const* text) override
@@ -760,10 +761,11 @@ struct OpenglDisplay : Display
     rect.pos.z = pos.y;
 
     auto cam = (Camera { Vector3f(0, -10, 0), Vector3f(0, 1, 0) });
+    auto orientation = Quaternion::fromEuler(0, 0, 0);
 
     while(*text)
     {
-      pushMesh(rect, cam, m_fontModel[*text], false, false);
+      pushMesh(rect, orientation, cam, m_fontModel[*text], false, false);
       rect.pos.x += rect.size.cx;
       ++text;
     }
@@ -823,10 +825,10 @@ private:
     m_drawCommands.clear();
   }
 
-  void pushMesh(Rect3f where, Camera const& camera, RenderMesh& model, bool blinking, bool depthtest)
+  void pushMesh(Rect3f where, Quaternion orientation, Camera const& camera, RenderMesh& model, bool blinking, bool depthtest)
   {
     for(auto& single : model.singleMeshes)
-      m_drawCommands.push_back({ &single, where, camera, blinking, depthtest });
+      m_drawCommands.push_back({ &single, where, orientation, camera, blinking, depthtest });
   }
 
   void executeDrawCommand(const DrawCommand& cmd)
@@ -860,6 +862,7 @@ private:
     auto const view = ::lookAt(cmd.camera.pos, target, Vector3f(0, 0, 1));
     auto const pos = ::translate(where.pos);
     auto const scale = ::scale(Vector3f(where.size.cx, where.size.cy, where.size.cz));
+    auto const rotate = quaternionToMatrix(cmd.orientation);
 
     static const float fovy = (float)((60.0f / 180) * PI);
     static const float aspect = 16.0f / 9.0;
@@ -867,7 +870,7 @@ private:
     static const float far_ = 100.0f;
     static const auto perspective = ::perspective(fovy, aspect, near_, far_);
 
-    auto MV = pos * scale;
+    auto MV = pos * rotate * scale;
     auto MVP = perspective * view * MV;
 
     SAFE_GL(glUniformMatrix4fv(m_meshShader.M, 1, GL_FALSE, &MV[0][0]));

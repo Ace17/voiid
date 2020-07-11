@@ -45,6 +45,7 @@ include $(ENGINE_ROOT)/project.mk
 
 SRCS_GAME:=\
 	src/entities/all.cpp\
+	src/entities/amulet.cpp\
 	src/entities/bonus.cpp\
 	src/entities/door.cpp\
 	src/entities/editor.cpp\
