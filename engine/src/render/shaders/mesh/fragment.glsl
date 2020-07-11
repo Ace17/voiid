@@ -7,7 +7,6 @@ in vec2 UV;
 in vec2 UV_lightmap;
 in vec3 vPos;
 in vec3 vNormal;
-in float fogFactor;
 
 // Ouput data
 out vec4 color;
@@ -33,7 +32,6 @@ void main()
   // diffuse
   float diff = max(0.0, dot(normalize(lightDir), vNormal))*attenuation;
   diff += length(texture2D(LightmapTex, UV_lightmap)) * 0.01;
-  diff *= fogFactor;
   vec3 diffuse = lightColor * (diff * (texture2D(DiffuseTex, UV).rgb + fragOffset.rgb));
 
   // specular
