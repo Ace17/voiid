@@ -19,7 +19,7 @@ void main()
     if(IsThreshold)
     {
       color = texture(InputTex, UV.xy);
-      if(length(color.rgb) < 1.5)
+      if(length(color.rgb) < 3.5)
         color = vec4(0, 0, 0, 1);
       return;
     }

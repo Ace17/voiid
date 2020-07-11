@@ -602,6 +602,7 @@ struct OpenglDisplay : Display
     {
       m_meshShader.programId = loadShaders(MeshVertexShaderCode, MeshFragmentShaderCode);
 
+      m_meshShader.CameraPos = safeGetUniformLocation(m_meshShader.programId, "CameraPos");
       m_meshShader.M = safeGetUniformLocation(m_meshShader.programId, "M");
       m_meshShader.MVP = safeGetUniformLocation(m_meshShader.programId, "MVP");
       m_meshShader.DiffuseTex = safeGetUniformLocation(m_meshShader.programId, "DiffuseTex");
@@ -867,7 +868,7 @@ private:
     static const float fovy = (float)((60.0f / 180) * PI);
     static const float aspect = 16.0f / 9.0;
     static const float near_ = 0.1f;
-    static const float far_ = 100.0f;
+    static const float far_ = 1000.0f;
     static const auto perspective = ::perspective(fovy, aspect, near_, far_);
 
     auto MV = pos * rotate * scale;
@@ -875,6 +876,7 @@ private:
 
     SAFE_GL(glUniformMatrix4fv(m_meshShader.M, 1, GL_FALSE, &MV[0][0]));
     SAFE_GL(glUniformMatrix4fv(m_meshShader.MVP, 1, GL_FALSE, &MVP[0][0]));
+    SAFE_GL(glUniform3f(m_meshShader.CameraPos, cmd.camera.pos.x, cmd.camera.pos.y, cmd.camera.pos.z));
 
     SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, model.buffer));
 
@@ -903,6 +905,7 @@ private:
   struct MeshShader
   {
     GLuint programId;
+    GLint CameraPos;
     GLint M;
     GLint MVP;
     GLint colorId;

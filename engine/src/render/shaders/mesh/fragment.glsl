@@ -12,6 +12,7 @@ in vec3 vNormal;
 out vec4 color;
 
 // Values that stay constant for the whole mesh
+uniform vec3 CameraPos;
 uniform vec4 fragOffset;
 uniform sampler2D DiffuseTex;
 uniform sampler2D LightmapTex;
@@ -21,25 +22,26 @@ void main()
 {
   vec3 lightColor = vec3(1,1,1);
   vec3 lightPos = vec3(2, 2, 2);
-  vec3 lightDir = lightPos - vPos;
-  float lightDist = length(lightDir);
+  vec3 lightDir = normalize(lightPos - vPos);
+  float lightDist = length(lightPos - vPos);
   float attenuation = 100.0/(lightDist*lightDist*lightDist);
-  vec3 receivedLight = vec3(max(0.0, dot(normalize(lightDir), vNormal))) * attenuation;
 
   // ambient
-  vec3 ambient = lightColor * ambientLight;
+  vec3 ambient = texture2D(DiffuseTex, UV).rgb * ambientLight;
 
   // diffuse
-  float diff = max(0.0, dot(normalize(lightDir), vNormal))*attenuation;
+  float diff = max(0.0, dot(lightDir, vNormal))*attenuation;
   diff += length(texture2D(LightmapTex, UV_lightmap)) * 0.01;
   vec3 diffuse = lightColor * (diff * (texture2D(DiffuseTex, UV).rgb + fragOffset.rgb));
 
   // specular
-  // vec3 viewDir = normalize(viewPos - vPos);
-  // vec3 reflectDir = reflect(-normalize(lightDir), vNormal);
-  // float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-  // vec3 specular = lightColor * (spec * material.specular);
-  vec3 specular = vec3(0);
+  const float material_shininess = 1024.0;
+  const float material_specular = 0.4;
+  vec3 viewDir = normalize(CameraPos - vPos);
+  vec3 halfwayDir = normalize((viewDir + lightDir) * 0.5);
+  float angle = max(dot(vNormal, halfwayDir), 0.0);
+  float spec = pow(angle, material_shininess);
+  vec3 specular = lightColor * (spec * material_specular);
 
   vec3 result = ambient + diffuse + specular;
   color = vec4(result, texture2D(DiffuseTex, UV).a);
