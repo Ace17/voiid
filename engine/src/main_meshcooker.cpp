@@ -39,6 +39,9 @@ RenderMesh convertToRenderMesh(vector<Mesh> const& meshes, vector<string>& textu
     if(startsWith(mesh.name, "f."))
       continue;
 
+    if(mesh.material == "invisible" || mesh.material.empty())
+      continue;
+
     SingleRenderMesh& single = singlesByMaterial[mesh.material];
 
     for(auto& face : mesh.faces)
