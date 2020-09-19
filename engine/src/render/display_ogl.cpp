@@ -281,22 +281,36 @@ std::vector<RenderMesh> loadFontModels(const char* path, int COLS, int ROWS)
 
   for(int i = 0; i < COLS * ROWS; ++i)
   {
-    auto m = boxModel();
+    const float col = (i % COLS);
+    const float row = (i / COLS);
 
-    const float col = i % COLS;
-    const float row = i / COLS;
+    const float u0 = (col + 0) / COLS;
+    const float u1 = (col + 1) / COLS;
 
-    for(auto& vertex : m.singleMeshes[0].vertices)
+    const float v0 = 1.0f - (row + 1) / ROWS;
+    const float v1 = 1.0f - (row + 0) / ROWS;
+
+    const SingleRenderMesh::Vertex vertices[] =
     {
-      const auto u0 = vertex.diffuse_u;
-      const auto v0 = vertex.diffuse_v;
-      vertex.diffuse_u = (u0 + col) / COLS;
-      vertex.diffuse_v = 1.0 - ((1.0 - v0) + row) / ROWS;
-    }
+      { 0, 0, 0, /* N */ 0, 1, 0, /* uv diffuse */ u0, v0, /* uv lightmap */ u0, v0, },
+      { 1, 0, 1, /* N */ 0, 1, 0, /* uv diffuse */ u1, v1, /* uv lightmap */ u1, v1, },
+      { 0, 0, 1, /* N */ 0, 1, 0, /* uv diffuse */ u0, v1, /* uv lightmap */ u0, v1, },
 
-    m.singleMeshes[0].diffuse = diffuse;
-    m.singleMeshes[0].lightmap = lightmap;
-    r.push_back(m);
+      { 0, 0, 0, /* N */ 0, 1, 0, /* uv diffuse */ u0, v0, /* uv lightmap */ u0, v0, },
+      { 1, 0, 0, /* N */ 0, 1, 0, /* uv diffuse */ u1, v0, /* uv lightmap */ u0, v1, },
+      { 1, 0, 1, /* N */ 0, 1, 0, /* uv diffuse */ u1, v1, /* uv lightmap */ u1, v1, },
+    };
+
+    SingleRenderMesh sm;
+    sm.diffuse = diffuse;
+    sm.lightmap = lightmap;
+
+    for(auto& v : vertices)
+      sm.vertices.push_back(v);
+
+    RenderMesh rm {};
+    rm.singleMeshes.push_back(sm);
+    r.push_back(rm);
   }
 
   return r;
