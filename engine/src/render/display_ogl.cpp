@@ -149,6 +149,49 @@ struct Picture
   vector<uint8_t> pixels;
 };
 
+void blit(Picture& dst, Vector2i dstPos, const Picture& src, Vector2i srcPos, Size2i size)
+{
+  const auto bpp = 4;
+  const uint8_t* srcPels = src.pixels.data() + srcPos.y * src.stride * bpp + srcPos.x * bpp;
+  uint8_t* dstPels = dst.pixels.data() + dstPos.y * dst.stride * bpp + dstPos.x * bpp;
+
+  for(int y = 0; y < size.height; ++y)
+  {
+    memcpy(dstPels, srcPels, size.width * bpp);
+    srcPels += src.stride * bpp;
+    dstPels += dst.stride * bpp;
+  }
+}
+
+Picture addBorderToTiles(const Picture& src, int cols, int rows)
+{
+  const int border = 1;
+
+  const int srcTileWidth = src.dim.width / cols;
+  const int srcTileHeight = src.dim.height / rows;
+  const int dstTileWidth = srcTileWidth + border * 2;
+  const int dstTileHeight = srcTileHeight + border * 2;
+
+  Picture dst {};
+  dst.dim.width = dstTileWidth * cols;
+  dst.dim.height = dstTileHeight * rows;
+  dst.stride = dst.dim.width;
+  dst.pixels.resize(dst.dim.width * dst.dim.height * 4);
+
+  for(int row = 0; row < rows; ++row)
+  {
+    for(int col = 0; col < cols; ++col)
+    {
+      const auto srcTileSize = Size2i(srcTileWidth, srcTileHeight);
+      const auto srcPos = Vector2i(col * srcTileWidth, row * srcTileHeight);
+      const auto dstPos = Vector2i(col * dstTileWidth, row * dstTileHeight) + Vector2i(border, border);
+      blit(dst, dstPos, src, srcPos, srcTileSize);
+    }
+  }
+
+  return dst;
+}
+
 Picture loadPicture(const char* path)
 {
   try
@@ -276,7 +319,7 @@ std::vector<RenderMesh> loadFontModels(const char* path, int COLS, int ROWS)
 {
   std::vector<RenderMesh> r;
 
-  const int diffuse = loadTexture(path);
+  const int diffuse = uploadTextureToGPU(addBorderToTiles(loadPicture(path), COLS, ROWS));
   const int lightmap = loadTexture("res/white.png");
 
   for(int i = 0; i < COLS * ROWS; ++i)
