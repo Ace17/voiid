@@ -23,6 +23,6 @@ void main()
   UV_lightmap = vertexUV_lightmap;
 
   vPos = (M * vertexPos_model).xyz;
-  vNormal = (M * vec4(a_normal, 0)).xyz;
+  vNormal = normalize((M * vec4(a_normal, 0)).xyz);
 }
 // vim: syntax=glsl
