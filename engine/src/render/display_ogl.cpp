@@ -188,7 +188,7 @@ Picture loadPicture(const char* path)
     printf("[display] can't load texture: %s\n", e.what());
     printf("[display] falling back on generated texture\n");
 
-    Picture r;
+    Picture r {};
     r.dim = Size2i(32, 32);
     r.pixels.resize(r.dim.width * r.dim.height * 4);
 
