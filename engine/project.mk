@@ -17,6 +17,7 @@ SRCS_ENGINE:=\
 	$(ENGINE_ROOT)/src/render/display_ogl.cpp\
 	$(ENGINE_ROOT)/src/render/glad.cpp\
 	$(ENGINE_ROOT)/src/render/rendermesh.cpp\
+	$(ENGINE_ROOT)/src/render/picture.cpp\
 	$(ENGINE_ROOT)/src/render/png.cpp\
 	$(ENGINE_ROOT)/src/render/mesh_import.cpp\
 
