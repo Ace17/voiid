@@ -141,14 +141,14 @@ GLuint linkShaders(vector<GLuint> ids)
   return ProgramID;
 }
 
-GLuint uploadTextureToGPU(const Picture& pic)
+GLuint uploadTextureToGPU(PictureView pic)
 {
   GLuint texture;
 
   glGenTextures(1, &texture);
 
   glBindTexture(GL_TEXTURE_2D, texture);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, pic.dim.width, pic.dim.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pic.pixels.data());
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, pic.dim.width, pic.dim.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pic.pixels);
   SAFE_GL(glGenerateMipmap(GL_TEXTURE_2D));
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -161,7 +161,7 @@ GLuint uploadTextureToGPU(const Picture& pic)
 
 int loadTexture(const char* path)
 {
-  const auto pic = loadPicture(path);
+  auto pic = loadPicture(path);
   return uploadTextureToGPU(pic);
 }
 
