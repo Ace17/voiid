@@ -17,13 +17,13 @@ uniform vec4 fragOffset;
 uniform sampler2D DiffuseTex;
 uniform sampler2D LightmapTex;
 uniform vec3 ambientLight;
+uniform vec3 LightPos;
 
 void main()
 {
   vec3 lightColor = vec3(1,1,1);
-  vec3 lightPos = vec3(2, 2, 2);
-  vec3 lightDir = normalize(lightPos - vPos);
-  float lightDist = length(lightPos - vPos);
+  vec3 lightDir = normalize(LightPos - vPos);
+  float lightDist = length(LightPos - vPos);
   float attenuation = 100.0/(lightDist*lightDist*lightDist);
 
   // ambient

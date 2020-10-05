@@ -558,6 +558,7 @@ struct OpenglDisplay : Display
       m_meshShader.LightmapTex = safeGetUniformLocation(m_meshShader.programId, "LightmapTex");
       m_meshShader.colorId = safeGetUniformLocation(m_meshShader.programId, "fragOffset");
       m_meshShader.ambientLoc = safeGetUniformLocation(m_meshShader.programId, "ambientLight");
+      m_meshShader.LightPosLoc = safeGetUniformLocation(m_meshShader.programId, "LightPos");
       m_meshShader.positionLoc = safeGetAttributeLocation(m_meshShader.programId, "vertexPos_model");
       m_meshShader.uvDiffuseLoc = safeGetAttributeLocation(m_meshShader.programId, "vertexUV");
       m_meshShader.uvLightmapLoc = safeGetAttributeLocation(m_meshShader.programId, "vertexUV_lightmap");
@@ -787,6 +788,7 @@ private:
     auto& model = *cmd.pMesh;
     auto& where = cmd.where;
     SAFE_GL(glUniform4f(m_meshShader.colorId, 0, 0, 0, 0));
+    SAFE_GL(glUniform3f(m_meshShader.LightPosLoc, cmd.camera.pos.x, cmd.camera.pos.y, cmd.camera.pos.z));
 
     if(cmd.depthtest)
       glEnable(GL_DEPTH_TEST);
@@ -868,6 +870,7 @@ private:
     GLint uvDiffuseLoc;
     GLint uvLightmapLoc;
     GLint normalLoc;
+    GLint LightPosLoc;
   };
 
   MeshShader m_meshShader;
