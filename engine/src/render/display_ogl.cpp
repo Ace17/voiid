@@ -181,7 +181,7 @@ GLuint loadShaders(Span<uint8_t> vsCode, Span<uint8_t> fsCode)
 struct Camera
 {
   Vector3f pos;
-  Vector3f dir;
+  Quaternion dir;
   bool valid = false;
 };
 
@@ -634,8 +634,7 @@ struct OpenglDisplay : Display
 
   void setCamera(Vector3f pos, Quaternion dir) override
   {
-    Vector3f v(1, 0, 0);
-    auto cam = (Camera { pos, dir.rotate(v) });
+    auto cam = (Camera { pos, dir });
 
     if(!m_camera.valid)
     {
@@ -712,7 +711,7 @@ struct OpenglDisplay : Display
     rect.pos.y = 0;
     rect.pos.z = pos.y;
 
-    auto cam = (Camera { Vector3f(0, -10, 0), Vector3f(0, 1, 0) });
+    auto cam = (Camera { Vector3f(0, -10, 0), Quaternion::fromEuler(PI / 2, 0, 0) });
     auto orientation = Quaternion::fromEuler(0, 0, 0);
 
     while(*text)
@@ -810,8 +809,11 @@ private:
     SAFE_GL(glBindTexture(GL_TEXTURE_2D, model.lightmap));
     SAFE_GL(glUniform1i(m_meshShader.LightmapTex, 1));
 
-    auto const target = cmd.camera.pos + cmd.camera.dir;
-    auto const view = ::lookAt(cmd.camera.pos, target, Vector3f(0, 0, 1));
+    auto const forward = cmd.camera.dir.rotate(Vector3f(1, 0, 0));
+    auto const up = cmd.camera.dir.rotate(Vector3f(0, 0, 1));
+
+    auto const target = cmd.camera.pos + forward;
+    auto const view = ::lookAt(cmd.camera.pos, target, up);
     auto const pos = ::translate(where.pos);
     auto const scale = ::scale(Vector3f(where.size.cx, where.size.cy, where.size.cz));
     auto const rotate = quaternionToMatrix(cmd.orientation);
