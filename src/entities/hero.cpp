@@ -136,8 +136,11 @@ struct Hero : Player, Damageable
     if(hurtDelay || life <= 0)
       control = Control {};
 
-    lookAngleVert = control.look_vert;
-    lookAngleHorz = control.look_horz;
+    lookAngleVert -= control.look_vert * 0.1;
+    lookAngleHorz -= control.look_horz * 0.1;
+
+    lookAngleHorz = fmod(lookAngleHorz, PI * 2.0);
+    lookAngleVert = clamp<float>(lookAngleVert, -PI * 0.4, PI * 0.4);
 
     if(decrement(respawnDelay))
     {
