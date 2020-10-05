@@ -670,6 +670,8 @@ struct OpenglDisplay : Display
   {
     auto screenSize = getCurrentScreenSize();
 
+    m_aspectRatio = float(screenSize.width) / screenSize.height;
+
     if(m_enablePostProcessing)
     {
       // draw to the HDR buffer
@@ -815,10 +817,9 @@ private:
     auto const rotate = quaternionToMatrix(cmd.orientation);
 
     static const float fovy = (float)((60.0f / 180) * PI);
-    static const float aspect = 16.0f / 9.0;
     static const float near_ = 0.1f;
     static const float far_ = 1000.0f;
-    static const auto perspective = ::perspective(fovy, aspect, near_, far_);
+    const auto perspective = ::perspective(fovy, m_aspectRatio, near_, far_);
 
     auto MV = pos * rotate * scale;
     auto MVP = perspective * view * MV;
@@ -872,6 +873,7 @@ private:
   vector<RenderMesh> m_Models;
   vector<RenderMesh> m_fontModel;
 
+  float m_aspectRatio = 1.0;
   float m_ambientLight = 0;
   int m_frameCount = 0;
 
