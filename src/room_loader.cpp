@@ -92,6 +92,13 @@ void bevelSharpEdges(Mesh& mesh, Convex& brush)
   for(auto& e : edges)
   {
     auto& info = e.second;
+
+    if(info.normals.size() != 2)
+    {
+      fprintf(stderr, "BevelSharpEdges: issue with mesh '%s' : %d faces are incident to the same edge\n", mesh.name.c_str(), (int)info.normals.size());
+      continue;
+    }
+
     assert(info.normals.size() == 2);
     auto N1 = info.normals[0];
     auto N2 = info.normals[1];
