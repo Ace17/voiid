@@ -252,6 +252,9 @@ Room loadRoom(const char* filename)
       continue;
     }
 
+    if(startsWith(name, "nocollide."))
+      continue;
+
     if(startsWith(name, "f."))
     {
       auto const pos = average(mesh.vertices);
