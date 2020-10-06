@@ -89,6 +89,7 @@ struct AutoDoor : Entity, Switchable
 
   virtual void enter() override
   {
+    pos -= size * 0.5;
     basePos = pos;
   }
 

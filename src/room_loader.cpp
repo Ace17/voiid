@@ -7,6 +7,7 @@
 // Loader for rooms (levels)
 
 #include "base/mesh.h"
+#include "base/span.h"
 #include "room.h"
 #include <algorithm>
 #include <map>
@@ -214,6 +215,16 @@ map<string, string> parseFormula(string formula, string& name)
   return r;
 }
 
+Vector3f average(Span<const Mesh::Vertex> values)
+{
+  Vector3f result {};
+
+  for(auto v : values)
+    result += toVector3f(v);
+
+  return result * (1.0 / values.len);
+}
+
 Room loadRoom(const char* filename)
 {
   Room r;
@@ -243,7 +254,7 @@ Room loadRoom(const char* filename)
 
     if(startsWith(name, "f."))
     {
-      auto const pos = toVector3f(mesh.vertices[mesh.faces[0].i1]);
+      auto const pos = average(mesh.vertices);
       string typeName;
       auto const config = parseFormula(name.substr(2), typeName);
       r.things.push_back({ pos, typeName, config });
