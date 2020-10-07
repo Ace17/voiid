@@ -1,10 +1,10 @@
 SRCS_ENGINE:=\
-	$(BIN)/$(ENGINE_ROOT)/src/render/shaders/mesh/fragment.glsl.cpp\
-	$(BIN)/$(ENGINE_ROOT)/src/render/shaders/mesh/vertex.glsl.cpp\
-	$(BIN)/$(ENGINE_ROOT)/src/render/shaders/hdr/fragment.glsl.cpp\
-	$(BIN)/$(ENGINE_ROOT)/src/render/shaders/hdr/vertex.glsl.cpp\
-	$(BIN)/$(ENGINE_ROOT)/src/render/shaders/bloom/fragment.glsl.cpp\
-	$(BIN)/$(ENGINE_ROOT)/src/render/shaders/bloom/vertex.glsl.cpp\
+	$(BIN)/$(ENGINE_ROOT)/src/render/shaders/mesh.frag.cpp\
+	$(BIN)/$(ENGINE_ROOT)/src/render/shaders/mesh.vert.cpp\
+	$(BIN)/$(ENGINE_ROOT)/src/render/shaders/hdr.frag.cpp\
+	$(BIN)/$(ENGINE_ROOT)/src/render/shaders/hdr.vert.cpp\
+	$(BIN)/$(ENGINE_ROOT)/src/render/shaders/bloom.frag.cpp\
+	$(BIN)/$(ENGINE_ROOT)/src/render/shaders/bloom.vert.cpp\
 	$(ENGINE_ROOT)/src/app.cpp\
 	$(ENGINE_ROOT)/src/main.cpp\
 	$(ENGINE_ROOT)/src/audio/audio.cpp\
@@ -21,16 +21,20 @@ SRCS_ENGINE:=\
 	$(ENGINE_ROOT)/src/render/png.cpp\
 	$(ENGINE_ROOT)/src/render/mesh_import.cpp\
 
-$(BIN)/$(ENGINE_ROOT)/src/render/shaders/mesh/vertex.glsl.cpp: NAME=MeshVertexShaderCode
-$(BIN)/$(ENGINE_ROOT)/src/render/shaders/mesh/fragment.glsl.cpp: NAME=MeshFragmentShaderCode
+$(BIN)/$(ENGINE_ROOT)/src/render/shaders/mesh.vert.cpp: NAME=MeshVertexShaderCode
+$(BIN)/$(ENGINE_ROOT)/src/render/shaders/mesh.frag.cpp: NAME=MeshFragmentShaderCode
 
-$(BIN)/$(ENGINE_ROOT)/src/render/shaders/hdr/vertex.glsl.cpp: NAME=HdrVertexShaderCode
-$(BIN)/$(ENGINE_ROOT)/src/render/shaders/hdr/fragment.glsl.cpp: NAME=HdrFragmentShaderCode
+$(BIN)/$(ENGINE_ROOT)/src/render/shaders/hdr.vert.cpp: NAME=HdrVertexShaderCode
+$(BIN)/$(ENGINE_ROOT)/src/render/shaders/hdr.frag.cpp: NAME=HdrFragmentShaderCode
 
-$(BIN)/$(ENGINE_ROOT)/src/render/shaders/bloom/vertex.glsl.cpp: NAME=BloomVertexShaderCode
-$(BIN)/$(ENGINE_ROOT)/src/render/shaders/bloom/fragment.glsl.cpp: NAME=BloomFragmentShaderCode
+$(BIN)/$(ENGINE_ROOT)/src/render/shaders/bloom.vert.cpp: NAME=BloomVertexShaderCode
+$(BIN)/$(ENGINE_ROOT)/src/render/shaders/bloom.frag.cpp: NAME=BloomFragmentShaderCode
 
-$(BIN)/%.glsl.cpp: %.glsl
+$(BIN)/%.frag.cpp: %.frag
+	@mkdir -p $(dir $@)
+	scripts/embed.sh "$<" "$@" "$(NAME)"
+
+$(BIN)/%.vert.cpp: %.vert
 	@mkdir -p $(dir $@)
 	scripts/embed.sh "$<" "$@" "$(NAME)"
 
