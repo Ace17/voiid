@@ -41,11 +41,15 @@
    {
       "desc" : "Platform-specific adapters",
       "name" : "platform",
-      "deps" : [ "base", "engine", "audio", "render", "misc", "GL" ]
+      "deps" : [ "base", "engine", "audio", "render", "misc", "GL", "KHR" ]
    },
    {
       "desc" : "Desc GL",
       "name" : "GL"
+   },
+   {
+      "desc" : "Khronos SDK",
+      "name" : "KHR"
    },
    {
       "desc" : "Test suite",

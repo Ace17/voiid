@@ -46,19 +46,15 @@ res/%.render: res/%.mesh $(BIN_HOST)/meshcooker.exe
 
 SHADERS_SRC+=$(wildcard assets/shaders/*.vert)
 SHADERS_SRC+=$(wildcard assets/shaders/*.frag)
-TARGETS+=$(SHADERS_SRC:assets/%=res/%)
+TARGETS+=$(SHADERS_SRC:assets/%=res/%.spv)
 
-res/%.frag: assets/%.frag
+res/%.frag.spv: assets/%.frag
 	@mkdir -p $(dir $@)
-	@mkdir -p $(dir $(BIN)/$*)
-	glslangValidator -G -o "$(BIN)/$*.spv" "$<"
-	@cp "$<" "$@"
+	glslangValidator -G -o "$@" "$<"
 
-res/%.vert: assets/%.vert
+res/%.vert.spv: assets/%.vert
 	@mkdir -p $(dir $@)
-	@mkdir -p $(dir $(BIN)/$*)
-	glslangValidator -G -o "$(BIN)/$*.spv" "$<"
-	@cp "$<" "$@"
+	glslangValidator -G -o "$@" "$<"
 
 #-----------------------------------
 res/%: assets/%
