@@ -77,10 +77,8 @@ GLuint compileShader(Span<const uint8_t> code, int type)
   if(!shaderId)
     throw runtime_error("Can't create shader");
 
-  auto srcPtr = (const char*)code.data;
-  auto length = (GLint)code.len;
-  SAFE_GL(glShaderSource(shaderId, 1, &srcPtr, &length));
-  SAFE_GL(glCompileShader(shaderId));
+  SAFE_GL(glShaderBinary(1, &shaderId, GL_SHADER_BINARY_FORMAT_SPIR_V, code.data, code.len));
+  SAFE_GL(glSpecializeShader(shaderId, "main", 0, nullptr, nullptr));
 
   // Check compile result
   GLint Result;
@@ -168,8 +166,8 @@ GLuint loadShaders(Span<const uint8_t> vsCode, Span<const uint8_t> fsCode)
 GLuint loadShader(std::string name)
 {
   printf("[display] loading shader '%s'\n", name.c_str());
-  auto vsCode = File::read("res/shaders/" + name + ".vert");
-  auto fsCode = File::read("res/shaders/" + name + ".frag");
+  auto vsCode = File::read("res/shaders/" + name + ".vert.spv");
+  auto fsCode = File::read("res/shaders/" + name + ".frag.spv");
 
   auto toSpan = [] (const std::string& s)
     {
@@ -466,9 +464,9 @@ struct OpenglDisplay : Display
     // require OpenGL 2.0, ES or Core. No compatibility mode.
     {
       // SDL_GL_CONTEXT_PROFILE_ES: works in both browser and native
-      SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-      SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-      SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+      SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+      SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+      SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
     }
 
     m_window = SDL_CreateWindow(
@@ -487,13 +485,18 @@ struct OpenglDisplay : Display
     if(!m_context)
       throw runtime_error(string("Can't create OpenGL context: ") + SDL_GetError());
 
-    if(!gladLoadGLES2Loader(&SDL_GL_GetProcAddress))
+    if(!gladLoadGLLoader(&SDL_GL_GetProcAddress))
       throw runtime_error("Can't load OpenGL");
 
     printOpenGlVersion();
 
     // Enable vsync
     SDL_GL_SetSwapInterval(1);
+
+    // Create our unique vertex array
+    GLuint VertexArrayID;
+    SAFE_GL(glGenVertexArrays(1, &VertexArrayID));
+    SAFE_GL(glBindVertexArray(VertexArrayID));
 
     glEnable(GL_BLEND);
     glEnable(GL_CULL_FACE);

@@ -26,7 +26,7 @@
    {
       "desc" : "Render subsystem",
       "name" : "render",
-      "deps" : [ "base", "engine", "misc", "GL" ]
+      "deps" : [ "base", "engine", "misc", "GL", "KHR" ]
    },
    {
       "desc" : "Audio subsystem",
@@ -46,6 +46,10 @@
    {
       "desc" : "Desc GL",
       "name" : "GL"
+   },
+   {
+      "desc" : "Khronos SDK",
+      "name" : "KHR"
    },
    {
       "desc" : "Test suite",
