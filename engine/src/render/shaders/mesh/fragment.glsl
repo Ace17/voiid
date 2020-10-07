@@ -27,12 +27,12 @@ void main()
   float attenuation = 100.0/(lightDist*lightDist*lightDist);
 
   // ambient
-  vec3 ambient = texture2D(DiffuseTex, UV).rgb * ambientLight;
+  vec3 ambient = texture(DiffuseTex, UV).rgb * ambientLight;
 
   // diffuse
   float diff = max(0.0, dot(lightDir, vNormal))*attenuation;
-  diff += length(texture2D(LightmapTex, UV_lightmap)) * 0.01;
-  vec3 diffuse = lightColor * (diff * (texture2D(DiffuseTex, UV).rgb + fragOffset.rgb));
+  diff += length(texture(LightmapTex, UV_lightmap)) * 0.01;
+  vec3 diffuse = lightColor * (diff * (texture(DiffuseTex, UV).rgb + fragOffset.rgb));
 
   // specular
   const float material_shininess = 1024.0;
@@ -44,7 +44,7 @@ void main()
   vec3 specular = lightColor * (spec * material_specular);
 
   vec3 result = ambient + diffuse + specular;
-  color = vec4(result, texture2D(DiffuseTex, UV).a);
+  color = vec4(result, texture(DiffuseTex, UV).a);
 
   if(false)
   {
