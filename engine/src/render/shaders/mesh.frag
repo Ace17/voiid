@@ -24,7 +24,7 @@ void main()
   vec3 lightColor = vec3(1,1,1);
   vec3 lightDir = normalize(LightPos - vPos);
   float lightDist = length(LightPos - vPos);
-  float attenuation = 100.0/(lightDist*lightDist*lightDist);
+  float attenuation = 10.0/(lightDist*lightDist*lightDist);
 
   // ambient
   vec3 ambient = texture(DiffuseTex, UV).rgb * ambientLight;
