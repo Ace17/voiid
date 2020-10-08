@@ -1,4 +1,6 @@
 SRCS_ENGINE:=\
+	$(BIN)/$(ENGINE_ROOT)/src/render/shaders/text.frag.cpp\
+	$(BIN)/$(ENGINE_ROOT)/src/render/shaders/text.vert.cpp\
 	$(BIN)/$(ENGINE_ROOT)/src/render/shaders/mesh.frag.cpp\
 	$(BIN)/$(ENGINE_ROOT)/src/render/shaders/mesh.vert.cpp\
 	$(BIN)/$(ENGINE_ROOT)/src/render/shaders/hdr.frag.cpp\
@@ -20,6 +22,9 @@ SRCS_ENGINE:=\
 	$(ENGINE_ROOT)/src/render/picture.cpp\
 	$(ENGINE_ROOT)/src/render/png.cpp\
 	$(ENGINE_ROOT)/src/render/mesh_import.cpp\
+
+$(BIN)/$(ENGINE_ROOT)/src/render/shaders/text.vert.cpp: NAME=TextVertexShaderCode
+$(BIN)/$(ENGINE_ROOT)/src/render/shaders/text.frag.cpp: NAME=TextFragmentShaderCode
 
 $(BIN)/$(ENGINE_ROOT)/src/render/shaders/mesh.vert.cpp: NAME=MeshVertexShaderCode
 $(BIN)/$(ENGINE_ROOT)/src/render/shaders/mesh.frag.cpp: NAME=MeshFragmentShaderCode

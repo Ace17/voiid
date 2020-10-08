@@ -25,6 +25,8 @@ using namespace std;
 #include "picture.h"
 #include "rendermesh.h"
 
+extern const Span<uint8_t> TextVertexShaderCode;
+extern const Span<uint8_t> TextFragmentShaderCode;
 extern const Span<uint8_t> MeshVertexShaderCode;
 extern const Span<uint8_t> MeshFragmentShaderCode;
 extern const Span<uint8_t> HdrVertexShaderCode;
@@ -549,6 +551,15 @@ struct OpenglDisplay : Display
     }
 
     {
+      m_textShader.programId = loadShaders(TextVertexShaderCode, TextFragmentShaderCode);
+
+      m_textShader.MVP = safeGetUniformLocation(m_textShader.programId, "MVP");
+      m_textShader.DiffuseTex = safeGetUniformLocation(m_textShader.programId, "DiffuseTex");
+      m_textShader.positionLoc = safeGetAttributeLocation(m_textShader.programId, "vertexPos_model");
+      m_textShader.uvDiffuseLoc = safeGetAttributeLocation(m_textShader.programId, "vertexUV");
+    }
+
+    {
       m_meshShader.programId = loadShaders(MeshVertexShaderCode, MeshFragmentShaderCode);
 
       m_meshShader.CameraPos = safeGetUniformLocation(m_meshShader.programId, "CameraPos");
@@ -764,12 +775,8 @@ private:
   {
     SAFE_GL(glViewport(0, 0, screenSize.width, screenSize.height));
 
-    SAFE_GL(glUseProgram(m_meshShader.programId));
-
     SAFE_GL(glClearColor(0, 0, 0, 1));
     SAFE_GL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
-
-    SAFE_GL(glUniform3f(m_meshShader.ambientLoc, m_ambientLight, m_ambientLight, m_ambientLight));
 
     for(auto& cmd : m_drawCommands)
       executeDrawCommand(cmd);
@@ -787,66 +794,109 @@ private:
   {
     auto& model = *cmd.pMesh;
     auto& where = cmd.where;
-    SAFE_GL(glUniform4f(m_meshShader.colorId, 0, 0, 0, 0));
-    SAFE_GL(glUniform3f(m_meshShader.LightPosLoc, cmd.camera.pos.x, cmd.camera.pos.y, cmd.camera.pos.z));
 
     if(cmd.depthtest)
-      glEnable(GL_DEPTH_TEST);
-    else
-      glDisable(GL_DEPTH_TEST);
-
-    if(cmd.blinking)
     {
-      if((m_frameCount / 4) % 2)
-        SAFE_GL(glUniform4f(m_meshShader.colorId, 0.8, 0.4, 0.4, 0));
-    }
+      glEnable(GL_DEPTH_TEST);
+      SAFE_GL(glUseProgram(m_meshShader.programId));
+      SAFE_GL(glUniform3f(m_meshShader.ambientLoc, m_ambientLight, m_ambientLight, m_ambientLight));
+      SAFE_GL(glUniform4f(m_meshShader.colorId, 0, 0, 0, 0));
+      SAFE_GL(glUniform3f(m_meshShader.LightPosLoc, cmd.camera.pos.x, cmd.camera.pos.y, cmd.camera.pos.z));
 
-    // Texture Unit 0: Diffuse
-    SAFE_GL(glActiveTexture(GL_TEXTURE0));
-    SAFE_GL(glBindTexture(GL_TEXTURE_2D, model.diffuse));
-    SAFE_GL(glUniform1i(m_meshShader.DiffuseTex, 0));
+      if(cmd.blinking)
+      {
+        if((m_frameCount / 4) % 2)
+          SAFE_GL(glUniform4f(m_meshShader.colorId, 0.8, 0.4, 0.4, 0));
+      }
 
-    // Texture Unit 1: Lightmap
-    SAFE_GL(glActiveTexture(GL_TEXTURE1));
-    SAFE_GL(glBindTexture(GL_TEXTURE_2D, model.lightmap));
-    SAFE_GL(glUniform1i(m_meshShader.LightmapTex, 1));
+      // Texture Unit 0: Diffuse
+      SAFE_GL(glActiveTexture(GL_TEXTURE0));
+      SAFE_GL(glBindTexture(GL_TEXTURE_2D, model.diffuse));
+      SAFE_GL(glUniform1i(m_meshShader.DiffuseTex, 0));
 
-    auto const forward = cmd.camera.dir.rotate(Vector3f(1, 0, 0));
-    auto const up = cmd.camera.dir.rotate(Vector3f(0, 0, 1));
+      // Texture Unit 1: Lightmap
+      SAFE_GL(glActiveTexture(GL_TEXTURE1));
+      SAFE_GL(glBindTexture(GL_TEXTURE_2D, model.lightmap));
+      SAFE_GL(glUniform1i(m_meshShader.LightmapTex, 1));
 
-    auto const target = cmd.camera.pos + forward;
-    auto const view = ::lookAt(cmd.camera.pos, target, up);
-    auto const pos = ::translate(where.pos);
-    auto const scale = ::scale(Vector3f(where.size.cx, where.size.cy, where.size.cz));
-    auto const rotate = quaternionToMatrix(cmd.orientation);
+      auto const forward = cmd.camera.dir.rotate(Vector3f(1, 0, 0));
+      auto const up = cmd.camera.dir.rotate(Vector3f(0, 0, 1));
 
-    static const float fovy = (float)((60.0f / 180) * PI);
-    static const float near_ = 0.1f;
-    static const float far_ = 1000.0f;
-    const auto perspective = ::perspective(fovy, m_aspectRatio, near_, far_);
+      auto const target = cmd.camera.pos + forward;
+      auto const view = ::lookAt(cmd.camera.pos, target, up);
+      auto const pos = ::translate(where.pos);
+      auto const scale = ::scale(Vector3f(where.size.cx, where.size.cy, where.size.cz));
+      auto const rotate = quaternionToMatrix(cmd.orientation);
 
-    auto MV = pos * rotate * scale;
-    auto MVP = perspective * view * MV;
+      static const float fovy = (float)((60.0f / 180) * PI);
+      static const float near_ = 0.1f;
+      static const float far_ = 1000.0f;
+      const auto perspective = ::perspective(fovy, m_aspectRatio, near_, far_);
 
-    SAFE_GL(glUniformMatrix4fv(m_meshShader.M, 1, GL_FALSE, &MV[0][0]));
-    SAFE_GL(glUniformMatrix4fv(m_meshShader.MVP, 1, GL_FALSE, &MVP[0][0]));
-    SAFE_GL(glUniform3f(m_meshShader.CameraPos, cmd.camera.pos.x, cmd.camera.pos.y, cmd.camera.pos.z));
+      auto MV = pos * rotate * scale;
+      auto MVP = perspective * view * MV;
 
-    SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, model.buffer));
+      SAFE_GL(glUniformMatrix4fv(m_meshShader.M, 1, GL_FALSE, &MV[0][0]));
+      SAFE_GL(glUniformMatrix4fv(m_meshShader.MVP, 1, GL_FALSE, &MVP[0][0]));
+      SAFE_GL(glUniform3f(m_meshShader.CameraPos, cmd.camera.pos.x, cmd.camera.pos.y, cmd.camera.pos.z));
 
-    SAFE_GL(glEnableVertexAttribArray(m_meshShader.positionLoc));
-    SAFE_GL(glEnableVertexAttribArray(m_meshShader.normalLoc));
-    SAFE_GL(glEnableVertexAttribArray(m_meshShader.uvDiffuseLoc));
-    SAFE_GL(glEnableVertexAttribArray(m_meshShader.uvLightmapLoc));
+      SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, model.buffer));
+
+      SAFE_GL(glEnableVertexAttribArray(m_meshShader.positionLoc));
+      SAFE_GL(glEnableVertexAttribArray(m_meshShader.normalLoc));
+      SAFE_GL(glEnableVertexAttribArray(m_meshShader.uvDiffuseLoc));
+      SAFE_GL(glEnableVertexAttribArray(m_meshShader.uvLightmapLoc));
 
 #define OFFSET(a) (void*)(&(((SingleRenderMesh::Vertex*)nullptr)->a))
-    SAFE_GL(glVertexAttribPointer(m_meshShader.positionLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(x)));
-    SAFE_GL(glVertexAttribPointer(m_meshShader.normalLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(nx)));
-    SAFE_GL(glVertexAttribPointer(m_meshShader.uvDiffuseLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(diffuse_u)));
-    SAFE_GL(glVertexAttribPointer(m_meshShader.uvLightmapLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(lightmap_u)));
+      SAFE_GL(glVertexAttribPointer(m_meshShader.positionLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(x)));
+      SAFE_GL(glVertexAttribPointer(m_meshShader.normalLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(nx)));
+      SAFE_GL(glVertexAttribPointer(m_meshShader.uvDiffuseLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(diffuse_u)));
+      SAFE_GL(glVertexAttribPointer(m_meshShader.uvLightmapLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(lightmap_u)));
 #undef OFFSET
 
-    SAFE_GL(glDrawArrays(GL_TRIANGLES, 0, model.vertices.size()));
+      SAFE_GL(glDrawArrays(GL_TRIANGLES, 0, model.vertices.size()));
+    }
+    else
+    {
+      glDisable(GL_DEPTH_TEST);
+
+      SAFE_GL(glUseProgram(m_textShader.programId));
+
+      // Texture Unit 0: Diffuse
+      SAFE_GL(glActiveTexture(GL_TEXTURE0));
+      SAFE_GL(glBindTexture(GL_TEXTURE_2D, model.diffuse));
+      SAFE_GL(glUniform1i(m_textShader.DiffuseTex, 0));
+
+      auto const forward = Vector3f(0, 1, 0);
+      auto const up = Vector3f(0, 0, 1);
+
+      auto const target = cmd.camera.pos + forward;
+      auto const view = ::lookAt(cmd.camera.pos, target, up);
+      auto const pos = ::translate(where.pos);
+      auto const scale = ::scale(Vector3f(where.size.cx, where.size.cy, where.size.cz));
+
+      static const float fovy = (float)((60.0f / 180) * PI);
+      static const float near_ = 0.1f;
+      static const float far_ = 100.0f;
+      const auto perspective = ::perspective(fovy, m_aspectRatio, near_, far_);
+
+      auto MV = pos * scale;
+      auto MVP = perspective * view * MV;
+
+      SAFE_GL(glUniformMatrix4fv(m_textShader.MVP, 1, GL_FALSE, &MVP[0][0]));
+
+      SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, model.buffer));
+
+      SAFE_GL(glEnableVertexAttribArray(m_textShader.positionLoc));
+      SAFE_GL(glEnableVertexAttribArray(m_textShader.uvDiffuseLoc));
+
+#define OFFSET(a) (void*)(&(((SingleRenderMesh::Vertex*)nullptr)->a))
+      SAFE_GL(glVertexAttribPointer(m_textShader.positionLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(x)));
+      SAFE_GL(glVertexAttribPointer(m_textShader.uvDiffuseLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(diffuse_u)));
+#undef OFFSET
+
+      SAFE_GL(glDrawArrays(GL_TRIANGLES, 0, model.vertices.size()));
+    }
   }
 
 private:
@@ -856,6 +906,21 @@ private:
   Camera m_camera;
 
   // shader attribute/uniform locations
+  struct TextShader
+  {
+    GLuint programId;
+
+    // attributes
+    GLint positionLoc;
+    GLint uvDiffuseLoc;
+
+    // uniforms
+    GLint DiffuseTex;
+    GLint MVP;
+  };
+
+  TextShader m_textShader;
+
   struct MeshShader
   {
     GLuint programId;
