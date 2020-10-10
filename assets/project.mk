@@ -16,7 +16,7 @@ TARGETS+=$(SPRITES_SRC:assets/%.blend=res/%.render)
 
 TARGETS+=res/font.png res/white.png
 
-res/%.mesh: assets/%.blend ./scripts/export_from_blender.py ./scripts/preprocess_blender.py
+res/%.mesh: assets/%.blend ./scripts/export_from_blender.py
 	@mkdir -p $(dir $@)
 	./scripts/export_from_blender "$<" "$@"
 

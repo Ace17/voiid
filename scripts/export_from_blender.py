@@ -169,19 +169,19 @@ def dumpMesh(mesh, file, obj):
         file.write("material: \"" + mesh.materials[material_index].name + "\"\n")
         for tri in triangles[material_index]:
             for vertex in (tri.a, tri.b, tri.c):
-                line = ""
+                line = "vertex: "
                 line += str(round(vertex.pos.x, 6))
                 line += " "
                 line += str(round(vertex.pos.y, 6))
                 line += " "
                 line += str(round(vertex.pos.z, 6))
-                line += " - "
+                line += " | "
                 line += str(round(vertex.normal.x, 2))
                 line += " "
                 line += str(round(vertex.normal.y, 2))
                 line += " "
                 line += str(round(vertex.normal.z, 2))
-                line += " - "
+                line += " | "
                 line += str(round(vertex.uv[0], 6)) # u1
                 line += " "
                 line += str(round(vertex.uv[1], 6)) # v1

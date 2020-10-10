@@ -84,15 +84,18 @@ Mesh parseOneMesh(String& stream, String name)
     if(line.len == 0)
       break;
 
-    Mesh::Vertex vertex;
-    int count = sscanf(line.data,
-                       "%f %f %f - %f %f %f - %f %f",
-                       &vertex.x, &vertex.y, &vertex.z,
-                       &vertex.nx, &vertex.ny, &vertex.nz,
-                       &vertex.u, &vertex.v);
-
-    if(count == 8)
+    if(accept(line, S("vertex: ")))
     {
+      Mesh::Vertex vertex;
+      int count = sscanf(line.data,
+          "%f %f %f | %f %f %f | %f %f",
+          &vertex.x, &vertex.y, &vertex.z,
+          &vertex.nx, &vertex.ny, &vertex.nz,
+          &vertex.u, &vertex.v);
+
+      if(count != 8)
+        throw runtime_error("Invalid vertex in mesh file: '" + string(line.begin(), line.end()) + "'");
+
       mesh.vertices.push_back(vertex);
     }
     else if(accept(line, S("prop: ")))
