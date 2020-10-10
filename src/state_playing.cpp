@@ -174,6 +174,7 @@ struct GameState : Scene, private IGame
 
   void loadLevel(int levelIdx)
   {
+    printf("[gameplay] loading level %d\n", levelIdx);
     {
       char filename[256];
       sprintf(filename, "res/rooms/%02d/mesh.render", levelIdx);
@@ -211,6 +212,8 @@ struct GameState : Scene, private IGame
     m_view->playMusic(levelIdx);
 
     spawn(m_player);
+
+    removeDeadThings();
   }
 
   void endLevel() override
