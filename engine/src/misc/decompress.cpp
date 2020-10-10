@@ -453,37 +453,42 @@ struct Inflator
     bp = p * 8;
   }
 };
+}
+
+using namespace std;
 
 // https://tools.ietf.org/html/rfc1950#page-5
-int Zlib_decompress(std::vector<uint8_t>& out, Span<const uint8_t> in) // returns error value
+//
+// zlib header:
+// - 2 bytes: 0x78 0x9C
+// - <deflated stream>
+// - 4 bytes: adler32 checksum
+vector<uint8_t> zlibDecompress(Span<const uint8_t> in)
 {
   if(in.len < 2)
-    throw runtime_error("decompress: size of zlib data too small");
+    throw runtime_error("zlibDecompress: zlib data too small");
 
   if((in[0] * 256 + in[1]) % 31 != 0)
-    throw runtime_error("decompress: invalid header");
+    throw runtime_error("zlibDecompress: invalid header");
 
   const int CM = (in[0] >> 0) & 15;
   const int CINFO = (in[0] >> 4) & 15;
   const int FDICT = (in[1] >> 5) & 1;
 
   if(CM != 8 || CINFO > 7)
-    throw runtime_error("decompress: unsupported compression method");
+    throw runtime_error("zlibDecompress: unsupported compression method");
 
   if(FDICT != 0)
-    throw runtime_error("decompress: unsupported preset directory");
+    throw runtime_error("zlibDecompress: unsupported preset directory");
 
+  vector<uint8_t> out;
   Inflator inflator;
   inflator.inflate(out, in, 2);
-  return inflator.error; // note: adler32 checksum was skipped and ignored
-}
-}
+  // skip adler32 checksum
 
-using namespace std;
-vector<uint8_t> decompress(Span<const uint8_t> buffer)
-{
-  vector<uint8_t> r;
-  Zlib_decompress(r, buffer);
-  return r;
+  if(inflator.error)
+    throw runtime_error("zlibDecompress: decompression error");
+
+  return out;
 }
 
