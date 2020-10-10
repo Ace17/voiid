@@ -36,7 +36,7 @@ struct Door : Entity, IEventSink
     if(openingDelay > 0)
     {
       auto sign = state ? 1 : -1;
-      physics->moveBody(this, Up * 0.003 * sign);
+      physics->moveBody(this, Up * 0.03 * sign);
     }
   }
 
@@ -60,7 +60,7 @@ struct Door : Entity, IEventSink
       state = !state;
 
       if(state)
-        openingDelay = 1000;
+        openingDelay = 100;
       else
         solid = true;
     }
@@ -102,7 +102,7 @@ struct AutoDoor : Entity, Switchable
     case State::Opening:
       {
         if(pos.z - basePos.z < 2.3)
-          physics->moveBody(this, Up * 0.004);
+          physics->moveBody(this, Up * 0.04);
         else
           state = State::Open;
 
@@ -121,7 +121,7 @@ struct AutoDoor : Entity, Switchable
     case State::Closing:
       {
         if(pos.z - basePos.z > 0.001)
-          physics->moveBody(this, Down * 0.004);
+          physics->moveBody(this, Down * 0.04);
         else
           state = State::Closed;
       }
@@ -144,7 +144,7 @@ struct AutoDoor : Entity, Switchable
 
     game->playSound(SND_DOOR);
     state = State::Opening;
-    timer = 1500;
+    timer = 150;
   }
 
   enum class State

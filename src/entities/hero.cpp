@@ -18,12 +18,12 @@
 #include "sounds.h"
 #include "toggle.h"
 
-auto const GRAVITY = 0.00005;
-auto const JUMP_SPEED = 0.012;
-auto const WALK_SPEED = 0.0075f;
-auto const MAX_HORZ_SPEED = 0.02f;
-auto const MAX_FALL_SPEED = 0.02f;
-auto const HURT_DELAY = 500;
+auto const GRAVITY = 0.005;
+auto const JUMP_SPEED = 0.15;
+auto const WALK_SPEED = 0.075f;
+auto const MAX_HORZ_SPEED = 0.2f;
+auto const MAX_FALL_SPEED = 0.2f;
+auto const HURT_DELAY = 50;
 auto const STAIR_CLIMB = 0.5;
 
 static auto const NORMAL_SIZE = Size(0.7, 0.7, 1.5);
@@ -115,16 +115,16 @@ struct Hero : Player, Damageable
     if(c.right)
       wantedVel -= left * WALK_SPEED;
 
-    vel.x = vel.x * 0.95 + wantedVel.x * 0.05;
-    vel.y = vel.y * 0.95 + wantedVel.y * 0.05;
+    vel.x = vel.x * 0.90 + wantedVel.x * 0.10;
+    vel.y = vel.y * 0.90 + wantedVel.y * 0.10;
 
-    if(abs(vel.x) < 0.00001)
+    if(abs(vel.x) < 0.0001)
       vel.x = 0;
 
-    if(abs(vel.y) < 0.00001)
+    if(abs(vel.y) < 0.0001)
       vel.y = 0;
 
-    if(abs(vel.z) < 0.00001)
+    if(abs(vel.z) < 0.0001)
       vel.z = 0;
   }
 
@@ -136,8 +136,8 @@ struct Hero : Player, Damageable
     if(hurtDelay || life <= 0)
       control = Control {};
 
-    lookAngleVert -= control.look_vert * 0.1;
-    lookAngleHorz -= control.look_horz * 0.1;
+    lookAngleVert -= control.look_vert * 1.0;
+    lookAngleHorz -= control.look_horz * 1.0;
 
     lookAngleHorz = fmod(lookAngleHorz, PI * 2.0);
     lookAngleVert = clamp<float>(lookAngleVert, -PI * 0.4, PI * 0.4);
@@ -165,7 +165,7 @@ struct Hero : Player, Damageable
     {
       if(vel.z < 0 && !ground)
       {
-        if(tryActivate(debounceLanding, 150))
+        if(tryActivate(debounceLanding, 15))
           game->playSound(SND_LAND);
 
         ground = true;

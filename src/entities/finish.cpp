@@ -44,7 +44,7 @@ struct FinishLine : Entity
       return;
 
     game->playSound(SND_TELEPORT);
-    touchDelay = 1000;
+    touchDelay = 100;
   }
 
   int id = 0;

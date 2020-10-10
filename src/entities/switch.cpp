@@ -106,7 +106,7 @@ struct DetectorSwitch : Entity
         evt->idx = id;
         game->postEvent(move(evt));
 
-        touchDelay = 1000;
+        touchDelay = 100;
       };
   }
 

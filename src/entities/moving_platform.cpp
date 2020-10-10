@@ -32,7 +32,7 @@ struct MovingPlatform : Entity
 
   void tick() override
   {
-    auto delta = 0.003 * sin(ticks * 0.001);
+    auto delta = 0.03 * sin(ticks * 0.01);
     auto v = dir ? Vector(0, delta, 0) : Vector(0, 0, delta);
     physics->moveBody(this, v);
     ++ticks;

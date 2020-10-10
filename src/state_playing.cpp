@@ -99,10 +99,7 @@ struct GameState : Scene, private IGame
     m_player->think(c);
 
     for(auto& e : m_entities)
-    {
-      for(int i = 0; i < 10; ++i)
-        e->tick();
-    }
+      e->tick();
 
     m_physics->checkForOverlaps();
     removeDeadThings();
