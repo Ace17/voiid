@@ -4,7 +4,9 @@ import bpy
 import bmesh
 import sys
 import os
+import io
 import traceback
+import gzip
 
 from bpy_extras.io_utils import create_derived_objects, free_derived_objects
 
@@ -39,9 +41,13 @@ def run():
   # apply all transforms
   bpy.ops.object.transform_apply(location=True, scale=True, rotation=True)
 
-  file = open(outputMeshPath, 'w')
+  file = io.StringIO()
   exportMaterials(file)
   exportMeshes(bpy.context.scene, file)
+  data = gzip.compress(bytearray(file.getvalue(), encoding ='utf-8'))
+
+  file = open(outputMeshPath, 'wb')
+  file.write(data)
   file.close()
 
 def exportMaterials(file):

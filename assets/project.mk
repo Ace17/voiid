@@ -19,8 +19,6 @@ TARGETS+=res/font.png res/white.png
 res/%.mesh: assets/%.blend ./scripts/export_from_blender.py
 	@mkdir -p $(dir $@)
 	./scripts/export_from_blender "$<" "$@"
-	@gzip -n "$@"
-	@mv "$@".gz "$@"
 
 res/%.render: res/%.mesh $(BIN_HOST)/meshcooker.exe
 	@mkdir -p $(dir $@)
