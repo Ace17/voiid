@@ -17,6 +17,7 @@
 #include <string.h>
 #include <vector>
 
+#include "misc/decompress.h"
 #include "misc/file.h"
 
 using namespace std;
@@ -185,9 +186,11 @@ std::vector<Mesh> importMesh(char const* path)
   std::vector<Mesh> meshes;
   std::map<std::string, Material> materials;
 
-  auto s = File::read(path);
+  auto gzipData = File::read(path);
 
-  auto stream = String { s.data(), (int)s.size() };
+  auto s = gzipDecompress(Span<const uint8_t> { (uint8_t*)gzipData.data(), (int)gzipData.size() });
+
+  auto stream = String { (const char*)s.data(), (int)s.size() };
 
   while(stream.len > 0)
   {
