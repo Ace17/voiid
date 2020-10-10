@@ -71,6 +71,28 @@ bool accept(String& line, String word)
   return true;
 }
 
+float parseFloat(String& stream)
+{
+  char* end = nullptr;
+  const float value = strtof(stream.data, &end);
+
+  if(end == stream.data)
+    throw runtime_error("Invalid float in mesh file");
+
+  const int len = int(end - stream.data);
+
+  stream += len;
+  return value;
+}
+
+void expect(String& stream, char c)
+{
+  if(stream[0] != c)
+    throw runtime_error("Unexpected char");
+
+  stream += 1;
+}
+
 Mesh parseOneMesh(String& stream, String name)
 {
   Mesh mesh;
@@ -87,14 +109,26 @@ Mesh parseOneMesh(String& stream, String name)
     if(accept(line, S("vertex: ")))
     {
       Mesh::Vertex vertex;
-      int count = sscanf(line.data,
-          "%f %f %f | %f %f %f | %f %f",
-          &vertex.x, &vertex.y, &vertex.z,
-          &vertex.nx, &vertex.ny, &vertex.nz,
-          &vertex.u, &vertex.v);
 
-      if(count != 8)
-        throw runtime_error("Invalid vertex in mesh file: '" + string(line.begin(), line.end()) + "'");
+      vertex.x = parseFloat(line);
+      expect(line, ' ');
+      vertex.y = parseFloat(line);
+      expect(line, ' ');
+      vertex.z = parseFloat(line);
+      expect(line, ' ');
+      expect(line, '|');
+      expect(line, ' ');
+      vertex.nx = parseFloat(line);
+      expect(line, ' ');
+      vertex.ny = parseFloat(line);
+      expect(line, ' ');
+      vertex.nz = parseFloat(line);
+      expect(line, ' ');
+      expect(line, '|');
+      expect(line, ' ');
+      vertex.u = parseFloat(line);
+      expect(line, ' ');
+      vertex.v = parseFloat(line);
 
       mesh.vertices.push_back(vertex);
     }
