@@ -125,7 +125,7 @@ struct Inflator
 {
   int error;
 
-  void inflate(std::vector<uint8_t>& out, const std::vector<uint8_t>& in, size_t inpos = 0)
+  void inflate(std::vector<uint8_t>& out, Span<const uint8_t> in, size_t inpos = 0)
   {
     size_t bp = 0, pos = 0; // bit pointer and byte pointer
     error = 0;
@@ -133,7 +133,7 @@ struct Inflator
 
     while(!BFINAL && !error)
     {
-      if(bp >> 3 >= in.size())
+      if((bp >> 3) >= (size_t)in.len)
       {
         error = 52;
         return;
@@ -149,9 +149,9 @@ struct Inflator
         return;
       } // error: invalid BTYPE
       else if(BTYPE == 0)
-        inflateNoCompression(out, &in[inpos], bp, pos, in.size());
+        inflateNoCompression(out, &in[inpos], bp, pos, in.len);
       else
-        inflateHuffmanBlock(out, &in[inpos], bp, pos, in.size(), BTYPE);
+        inflateHuffmanBlock(out, &in[inpos], bp, pos, in.len, BTYPE);
     }
 
     if(!error)
@@ -454,17 +454,18 @@ struct Inflator
   }
 };
 
-int Zlib_decompress(std::vector<uint8_t>& out, Span<const uint8_t> in_span) // returns error value
+// https://tools.ietf.org/html/rfc1950#page-5
+int Zlib_decompress(std::vector<uint8_t>& out, Span<const uint8_t> in) // returns error value
 {
-  auto in = std::vector<uint8_t>(in_span.data, in_span.data + in_span.len);
-
-  if(in.size() < 2)
+  if(in.len < 2)
     throw runtime_error("decompress: size of zlib data too small");
 
   if((in[0] * 256 + in[1]) % 31 != 0)
     throw runtime_error("decompress: invalid header");
 
-  unsigned long CM = in[0] & 15, CINFO = (in[0] >> 4) & 15, FDICT = (in[1] >> 5) & 1;
+  const int CM = (in[0] >> 0) & 15;
+  const int CINFO = (in[0] >> 4) & 15;
+  const int FDICT = (in[1] >> 5) & 1;
 
   if(CM != 8 || CINFO > 7)
     throw runtime_error("decompress: unsupported compression method");
