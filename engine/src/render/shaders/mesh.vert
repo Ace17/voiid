@@ -1,20 +1,20 @@
-#version 300 es
+#version 310 es
 
 // Input vertex data, different for all executions of this shader
-in vec4 vertexPos_model;
-in vec2 vertexUV;
-in vec2 vertexUV_lightmap;
-in vec3 a_normal;
+layout(location = 0) in vec4 vertexPos_model;
+layout(location = 1) in vec2 vertexUV;
+layout(location = 2) in vec2 vertexUV_lightmap;
+layout(location = 3) in vec3 a_normal;
 
 // Output data; will be interpolated for each fragment
-out vec2 UV;
-out vec2 UV_lightmap;
-out vec3 vPos;
-out vec3 vNormal;
+layout(location = 0) out vec2 UV;
+layout(location = 1) out vec2 UV_lightmap;
+layout(location = 2) out vec3 vPos;
+layout(location = 3) out vec3 vNormal;
 
 // Values that stay constant for the whole mesh.
-uniform mat4 M;
-uniform mat4 MVP;
+layout(location = 0) uniform mat4 M;
+layout(location = 1) uniform mat4 MVP;
 
 void main()
 {

@@ -38,12 +38,12 @@ $(BIN)/$(ENGINE_ROOT)/src/render/shaders/bloom.frag.cpp: NAME=BloomFragmentShade
 $(BIN)/%.frag.cpp: %.frag
 	@mkdir -p $(dir $@)
 	scripts/embed.sh "$<" "$@" "$(NAME)"
-	glslangValidator -s -G -o "$(BIN)/$*.spv" "$<" || glslangValidator -G -o "$(BIN)/$*.spv" "$<"
+	glslangValidator -G -o "$(BIN)/$*.spv" "$<"
 
 $(BIN)/%.vert.cpp: %.vert
 	@mkdir -p $(dir $@)
 	scripts/embed.sh "$<" "$@" "$(NAME)"
-	glslangValidator -s -G -o "$(BIN)/$*.spv" "$<" || glslangValidator -G -o "$(BIN)/$*.spv" "$<"
+	glslangValidator -G -o "$(BIN)/$*.spv" "$<"
 
 $(BIN)/$(ENGINE_ROOT)/src/%: CXXFLAGS+=-I$(ENGINE_ROOT)/src
 

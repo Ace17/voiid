@@ -1,23 +1,23 @@
-#version 300 es
+#version 310 es
 
 precision mediump float;
 
 // Interpolated values from the vertex shader
-in vec2 UV;
-in vec2 UV_lightmap;
-in vec3 vPos;
-in vec3 vNormal;
+layout(location = 0) in vec2 UV;
+layout(location = 1) in vec2 UV_lightmap;
+layout(location = 2) in vec3 vPos;
+layout(location = 3) in vec3 vNormal;
 
 // Ouput data
-out vec4 color;
+layout(location = 0) out vec4 color;
 
 // Values that stay constant for the whole mesh
-uniform vec3 CameraPos;
-uniform vec4 fragOffset;
-uniform sampler2D DiffuseTex;
-uniform sampler2D LightmapTex;
-uniform vec3 ambientLight;
-uniform vec3 LightPos;
+layout(location = 2) uniform vec3 CameraPos;
+layout(location = 3) uniform vec4 fragOffset;
+layout(location = 4) uniform sampler2D DiffuseTex;
+layout(location = 5) uniform sampler2D LightmapTex;
+layout(location = 6) uniform vec3 ambientLight;
+layout(location = 7) uniform vec3 LightPos;
 
 void main()
 {

@@ -1,15 +1,15 @@
-#version 300 es
+#version 310 es
 
 precision mediump float;
 
 // Interpolated values from the vertex shader
-in vec2 UV;
+layout(location = 0) in vec2 UV;
 
 // Ouput data
-out vec4 color;
+layout(location = 0) out vec4 color;
 
 // Values that stay constant for the whole mesh
-uniform sampler2D DiffuseTex;
+layout(location = 1) uniform sampler2D DiffuseTex;
 
 void main()
 {

@@ -1,16 +1,16 @@
-#version 300 es
+#version 310 es
 
 precision mediump float;
 
 // Interpolated values from the vertex shader
-in vec2 UV;
+layout(location = 0) in vec2 UV;
 
 // Ouput data
-out vec4 color;
+layout(location = 0) out vec4 color;
 
 // Values that stay constant for the whole mesh
-uniform sampler2D InputTex;
-uniform bool IsThreshold;
+layout(location = 2) uniform sampler2D InputTex;
+layout(location = 3) uniform bool IsThreshold;
 
 const float offset = 1.0 / 600.0;
 
