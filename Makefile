@@ -38,8 +38,42 @@ LDFLAGS+=$(DBGFLAGS)
 
 #------------------------------------------------------------------------------
 
-ENGINE_ROOT:=engine
-include $(ENGINE_ROOT)/project.mk
+SRCS_ENGINE:=\
+	src/engine/app.cpp\
+	src/engine/main.cpp\
+	src/audio/audio.cpp\
+	src/audio/audio_sdl.cpp\
+	src/audio/sound_ogg.cpp\
+	src/misc/base64.cpp\
+	src/misc/decompress.cpp\
+	src/misc/file.cpp\
+	src/misc/json.cpp\
+	src/render/display_ogl.cpp\
+	src/render/glad.cpp\
+	src/render/rendermesh.cpp\
+	src/render/picture.cpp\
+	src/render/png.cpp\
+	src/render/mesh_import.cpp\
+
+SRCS_MESHCOOKER:=\
+	src/engine/main_meshcooker.cpp\
+	src/misc/decompress.cpp\
+	src/misc/file.cpp\
+	src/render/mesh_import.cpp\
+
+#-----------------------------------
+$(BIN_HOST):
+	@mkdir -p "$@"
+
+$(BIN_HOST)/%.cpp.o: %.cpp
+	@mkdir -p $(dir $@)
+	@echo [HOST] compile "$@"
+	g++ -Isrc -Iengine/src -c "$^" -o "$@"
+
+$(BIN_HOST)/meshcooker.exe: $(SRCS_MESHCOOKER:%=$(BIN_HOST)/%.o)
+	@mkdir -p $(dir $@)
+	g++ $^ -o '$@'
+
 
 #------------------------------------------------------------------------------
 
@@ -83,7 +117,7 @@ include assets/project.mk
 
 SRCS_TESTS:=\
 	$(SRCS_GAME)\
-	$(filter-out $(ENGINE_ROOT)/src/main.cpp, $(SRCS_ENGINE))\
+	$(filter-out src/engine/main.cpp, $(SRCS_ENGINE))\
 	src/tests/tests.cpp\
 	src/tests/tests_main.cpp\
 	src/tests/audio.cpp\

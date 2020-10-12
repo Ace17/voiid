@@ -4,7 +4,7 @@
 // published by the Free Software Foundation, either version 3 of the
 // License, or (at your option) any later version.
 
-#include "engine/src/audio/audio_channel.h"
+#include "audio/audio_channel.h"
 #include "tests.h"
 
 struct DummySource : IAudioSource
