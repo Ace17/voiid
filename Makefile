@@ -55,14 +55,14 @@ SRCS_GAME:=\
 	src/entities/moving_platform.cpp\
 	src/entities/finish.cpp\
 	src/entities/switch.cpp\
-	src/entity_factory.cpp\
-	src/game.cpp\
-	src/state_playing.cpp\
-	src/state_splash.cpp\
-	src/convex.cpp\
-	src/room_loader.cpp\
-	src/physics.cpp\
-	src/resources.cpp\
+	src/gameplay/convex.cpp\
+	src/gameplay/entity_factory.cpp\
+	src/gameplay/game.cpp\
+	src/gameplay/physics.cpp\
+	src/gameplay/resources.cpp\
+	src/gameplay/room_loader.cpp\
+	src/gameplay/state_playing.cpp\
+	src/gameplay/state_splash.cpp\
 
 #------------------------------------------------------------------------------
 
@@ -84,17 +84,17 @@ include assets/project.mk
 SRCS_TESTS:=\
 	$(SRCS_GAME)\
 	$(filter-out $(ENGINE_ROOT)/src/main.cpp, $(SRCS_ENGINE))\
-	engine/tests/tests.cpp\
-	engine/tests/tests_main.cpp\
-	engine/tests/audio.cpp\
-	engine/tests/base64.cpp\
-	engine/tests/decompress.cpp\
-	engine/tests/json.cpp\
-	engine/tests/util.cpp\
-	engine/tests/png.cpp\
-	tests/entities.cpp\
-	tests/physics.cpp\
-	tests/trace.cpp\
+	src/tests/tests.cpp\
+	src/tests/tests_main.cpp\
+	src/tests/audio.cpp\
+	src/tests/base64.cpp\
+	src/tests/decompress.cpp\
+	src/tests/json.cpp\
+	src/tests/util.cpp\
+	src/tests/png.cpp\
+	src/tests/entities.cpp\
+	src/tests/physics.cpp\
+	src/tests/trace.cpp\
 
 $(BIN)/tests$(EXT): $(SRCS_TESTS:%=$(BIN)/%.o)
 	@mkdir -p $(dir $@)

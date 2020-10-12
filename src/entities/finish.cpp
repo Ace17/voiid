@@ -8,11 +8,13 @@
 
 #include "base/scene.h"
 #include "base/util.h"
+#include "gameplay/entity.h"
+#include "gameplay/entity_factory.h"
+#include "gameplay/models.h"
+#include "gameplay/sounds.h"
+#include "gameplay/toggle.h"
+
 #include "collision_groups.h"
-#include "entity.h"
-#include "models.h"
-#include "sounds.h"
-#include "toggle.h"
 
 struct FinishLine : Entity
 {
@@ -51,6 +53,5 @@ struct FinishLine : Entity
   int touchDelay = 0;
 };
 
-#include "entity_factory.h"
 static auto const reg3_ = registerEntity("finish", [] (IEntityConfig*) -> unique_ptr<Entity> { return make_unique<FinishLine>(); });
 

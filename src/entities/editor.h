@@ -1,7 +1,8 @@
 #pragma once
 
-#include "game.h" // Matrix
-#include "player.h"
+#include "gameplay/game.h" // Matrix
+struct Player;
+
 #include <memory>
 
 std::unique_ptr<Player> makeEditor(Matrix& tiles);

@@ -10,14 +10,14 @@
 
 #include "base/scene.h"
 #include "base/util.h"
+#include "gameplay/entity.h"
+#include "gameplay/models.h"
+#include "gameplay/sounds.h"
+#include "gameplay/toggle.h"
 
 #include "collision_groups.h"
-#include "entities/move.h"
-#include "entities/player.h"
-#include "entity.h"
-#include "models.h"
-#include "sounds.h"
-#include "toggle.h"
+#include "move.h"
+#include "player.h"
 
 auto const WALK_SPEED = 0.0075f;
 auto const MAX_SPEED = 0.02f;

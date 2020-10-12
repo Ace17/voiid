@@ -2,10 +2,11 @@
 
 #include "base/scene.h"
 #include "base/util.h"
-#include "entities/player.h"
-#include "entity.h"
-#include "models.h"
-#include "sounds.h"
+#include "gameplay/entity.h"
+#include "gameplay/models.h"
+#include "gameplay/sounds.h"
+
+#include "player.h"
 
 static auto const DURATION = 500;
 

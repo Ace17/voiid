@@ -2,11 +2,12 @@
 
 #include "base/scene.h"
 #include "base/util.h"
+#include "gameplay/entity.h"
+#include "gameplay/models.h"
+#include "gameplay/sounds.h"
+#include "gameplay/toggle.h" // decrement
+
 #include "collision_groups.h"
-#include "entity.h"
-#include "models.h"
-#include "sounds.h"
-#include "toggle.h" // decrement
 
 struct CrumbleBlock : Entity
 {

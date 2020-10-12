@@ -6,9 +6,8 @@
 
 #pragma once
 
-#include "body.h"
-#include "physics_probe.h"
-#include <math.h>
+#include "gameplay/body.h"
+#include "gameplay/physics_probe.h"
 
 void slideMove(IPhysicsProbe* physics, Body* body, Vector delta);
 bool isOnGround(IPhysicsProbe* physics, Body* body);

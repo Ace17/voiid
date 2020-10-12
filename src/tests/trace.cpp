@@ -1,5 +1,5 @@
-#include "engine/tests/tests.h"
-#include "src/convex.h"
+#include "gameplay/convex.h"
+#include "tests.h"
 
 static
 void assertNearlyEqualsFunc(float expected, float actual, const char* file, int line)

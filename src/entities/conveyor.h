@@ -1,9 +1,10 @@
 #pragma once
 
 #include "base/scene.h"
+#include "gameplay/entity.h"
+#include "gameplay/models.h"
+
 #include "collision_groups.h"
-#include "entity.h"
-#include "models.h"
 
 struct Conveyor : Entity
 {

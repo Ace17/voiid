@@ -9,13 +9,15 @@
 
 #include "base/scene.h"
 #include "base/util.h"
+#include "gameplay/entity.h"
+#include "gameplay/entity_factory.h"
+#include "gameplay/models.h"
+#include "gameplay/sounds.h"
+#include "gameplay/toggle.h"
+#include "gameplay/trigger.h"
+
 #include "collision_groups.h"
-#include "entity.h"
-#include "models.h"
 #include "move.h"
-#include "sounds.h"
-#include "toggle.h"
-#include "trigger.h"
 
 struct Switch : Entity, Switchable
 {
@@ -114,7 +116,6 @@ struct DetectorSwitch : Entity
   int touchDelay = 0;
 };
 
-#include "entity_factory.h"
 static auto const reg1 = registerEntity("switch",
                                         [] (IEntityConfig* args) { auto arg = args->getInt("0"); return makeSwitch(arg); }
                                         );

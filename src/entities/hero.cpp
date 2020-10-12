@@ -8,15 +8,15 @@
 
 #include "base/scene.h"
 #include "base/util.h"
-
-#include "collision_groups.h"
 #include "entities/move.h"
 #include "entities/player.h"
-#include "entity.h"
+#include "gameplay/entity.h"
+#include "gameplay/models.h"
+#include "gameplay/sounds.h"
+#include "gameplay/toggle.h"
+
+#include "collision_groups.h"
 #include "hero.h"
-#include "models.h"
-#include "sounds.h"
-#include "toggle.h"
 
 auto const GRAVITY = 0.005;
 auto const JUMP_SPEED = 0.15;

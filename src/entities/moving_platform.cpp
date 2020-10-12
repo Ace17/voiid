@@ -7,9 +7,11 @@
 // moving block that the player can walk on
 
 #include "base/scene.h"
+#include "gameplay/entity.h"
+#include "gameplay/entity_factory.h"
+#include "gameplay/models.h"
+
 #include "collision_groups.h"
-#include "entity.h"
-#include "models.h"
 
 struct MovingPlatform : Entity
 {
@@ -42,7 +44,6 @@ struct MovingPlatform : Entity
   int dir = 0;
 };
 
-#include "entity_factory.h"
 static auto const reg1_ = registerEntity("moving_platform", [] (IEntityConfig* args) -> unique_ptr<Entity> { auto arg = args->getInt("0"); return make_unique<MovingPlatform>(arg); });
 // alias for legacy levels
 static auto const reg2_ = registerEntity("mp", [] (IEntityConfig* args) -> unique_ptr<Entity> { auto arg = args->getInt("0"); return make_unique<MovingPlatform>(arg); });

@@ -3,7 +3,7 @@
 #include "entities/bonus.h"
 #include "entities/explosion.h"
 
-#include "engine/tests/tests.h"
+#include "tests.h"
 
 static Actor getActor(Entity* entity)
 {

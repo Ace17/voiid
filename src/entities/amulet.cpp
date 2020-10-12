@@ -7,8 +7,9 @@
 // 'end-of-level' touch-trigger entity
 
 #include "base/scene.h"
-#include "entity.h"
-#include "models.h"
+#include "gameplay/entity.h"
+#include "gameplay/entity_factory.h"
+#include "gameplay/models.h"
 
 namespace
 {
@@ -39,6 +40,5 @@ struct Amulet : Entity
 };
 }
 
-#include "entity_factory.h"
 static auto const reg = registerEntity("amulet", [] (IEntityConfig*) -> unique_ptr<Entity> { return make_unique<Amulet>(); });
 

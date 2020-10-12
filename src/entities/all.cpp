@@ -6,7 +6,7 @@
 
 // Pluggable entity factory, registration side: game-specific part
 
-#include "entity_factory.h"
+#include "gameplay/entity_factory.h"
 
 #include "blocks.h"
 #include "conveyor.h"

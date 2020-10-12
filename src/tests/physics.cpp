@@ -1,6 +1,6 @@
-#include "engine/tests/tests.h"
-#include "src/body.h"
-#include "src/physics.h"
+#include "gameplay/body.h"
+#include "gameplay/physics.h"
+#include "tests.h"
 #include <cmath>
 #include <memory>
 

@@ -60,7 +60,7 @@ $(BIN_HOST):
 $(BIN_HOST)/%.cpp.o: %.cpp
 	@mkdir -p $(dir $@)
 	@echo [HOST] compile "$@"
-	g++ -Iengine/include -Iengine/src -c "$^" -o "$@"
+	g++ -Isrc -Iengine/src -c "$^" -o "$@"
 
 $(BIN_HOST)/meshcooker.exe: $(SRCS_MESHCOOKER:%=$(BIN_HOST)/%.o)
 	@mkdir -p $(dir $@)

@@ -4,12 +4,14 @@
 // published by the Free Software Foundation, either version 3 of the
 // License, or (at your option) any later version.
 
+#include "gameplay/entity.h"
+#include "gameplay/entity_factory.h"
+#include "gameplay/models.h" // MDL_DOOR
+#include "gameplay/sounds.h" // SND_DOOR
+#include "gameplay/toggle.h" // decrement
+#include "gameplay/trigger.h" // TriggerEvent
+
 #include "collision_groups.h" // CG_WALLS
-#include "entity.h"
-#include "models.h" // MDL_DOOR
-#include "sounds.h" // SND_DOOR
-#include "toggle.h" // decrement
-#include "trigger.h" // TriggerEvent
 
 struct Door : Entity, IEventSink
 {
@@ -167,7 +169,7 @@ unique_ptr<Entity> makeAutoDoor()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "entities/explosion.h"
+#include "explosion.h"
 
 struct BreakableDoor : Entity, Damageable
 {
@@ -220,7 +222,6 @@ unique_ptr<Entity> makeBreakableDoor()
   return make_unique<BreakableDoor>();
 }
 
-#include "entity_factory.h"
 static auto const reg1 = registerEntity("auto_door", [] (IEntityConfig*) { return makeAutoDoor(); });
 static auto const reg2 = registerEntity("door", [] (IEntityConfig* args) { auto arg = args->getInt("0"); return makeDoor(arg); });
 
