@@ -4,9 +4,8 @@
 #include "base/util.h"
 #include "gameplay/entity.h"
 #include "gameplay/models.h"
+#include "gameplay/player.h"
 #include "gameplay/sounds.h"
-
-#include "player.h"
 
 static auto const DURATION = 500;
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "player.h"
+#include "gameplay/player.h"
 #include <memory>
 
 std::unique_ptr<Player> makeHero();

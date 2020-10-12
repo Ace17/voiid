@@ -1,0 +1,50 @@
+[
+   {
+      "desc" : "Basic types",
+      "name" : "base"
+   },
+   {
+      "desc" : "Miscellaneous stuff",
+      "name" : "misc",
+      "deps" : [ "base" ]
+   },
+   {
+      "desc" : "Main",
+      "name" : "engine",
+      "deps" : [ "base", "misc", "audio", "render" ]
+   },
+   {
+      "desc" : "Game-specific gameplay",
+      "name" : "gameplay",
+      "deps" : [ "base", "misc" ]
+   },
+   {
+      "desc" : "Game-specific entities",
+      "name" : "entities",
+      "deps" : [ "base", "gameplay" ]
+   },
+   {
+      "desc" : "Render subsystem",
+      "name" : "render",
+      "deps" : [ "base", "misc", "GL" ]
+   },
+   {
+      "desc" : "Audio subsystem",
+      "name" : "audio",
+      "deps" : [ "base"]
+   },
+   {
+      "desc" : "Input subsystem",
+      "name" : "input",
+      "deps" : [ "base", "engine" ]
+   },
+   {
+      "desc" : "Desc GL",
+      "name" : "GL"
+   },
+   {
+      "desc" : "Test suite",
+      "name" : "tests",
+      "deps" : [ "engine", "base", "misc", "audio", "gameplay", "entities", "render" ]
+   }
+]

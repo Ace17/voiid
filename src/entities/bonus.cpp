@@ -14,9 +14,8 @@
 #include "gameplay/entity.h"
 #include "gameplay/entity_factory.h"
 #include "gameplay/models.h"
+#include "gameplay/player.h"
 #include "gameplay/sounds.h"
-
-#include "player.h"
 
 struct Bonus : Entity
 {

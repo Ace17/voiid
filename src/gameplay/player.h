@@ -1,6 +1,6 @@
 #pragma once
 
-#include "gameplay/entity.h"
+#include "entity.h"
 
 struct Player : Entity
 {

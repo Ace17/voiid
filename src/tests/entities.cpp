@@ -42,7 +42,7 @@ unittest("Entity: explosion")
   assertEquals(100, int(getActor(explosion.get()).ratio * 100));
 }
 
-#include "entities/player.h"
+#include "gameplay/player.h"
 
 struct NullPlayer : Player
 {
