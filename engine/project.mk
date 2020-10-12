@@ -1,12 +1,4 @@
 SRCS_ENGINE:=\
-	$(BIN)/$(ENGINE_ROOT)/src/render/shaders/text.frag.cpp\
-	$(BIN)/$(ENGINE_ROOT)/src/render/shaders/text.vert.cpp\
-	$(BIN)/$(ENGINE_ROOT)/src/render/shaders/mesh.frag.cpp\
-	$(BIN)/$(ENGINE_ROOT)/src/render/shaders/mesh.vert.cpp\
-	$(BIN)/$(ENGINE_ROOT)/src/render/shaders/hdr.frag.cpp\
-	$(BIN)/$(ENGINE_ROOT)/src/render/shaders/hdr.vert.cpp\
-	$(BIN)/$(ENGINE_ROOT)/src/render/shaders/bloom.frag.cpp\
-	$(BIN)/$(ENGINE_ROOT)/src/render/shaders/bloom.vert.cpp\
 	$(ENGINE_ROOT)/src/app.cpp\
 	$(ENGINE_ROOT)/src/main.cpp\
 	$(ENGINE_ROOT)/src/audio/audio.cpp\
@@ -22,28 +14,6 @@ SRCS_ENGINE:=\
 	$(ENGINE_ROOT)/src/render/picture.cpp\
 	$(ENGINE_ROOT)/src/render/png.cpp\
 	$(ENGINE_ROOT)/src/render/mesh_import.cpp\
-
-$(BIN)/$(ENGINE_ROOT)/src/render/shaders/text.vert.cpp: NAME=TextVertexShaderCode
-$(BIN)/$(ENGINE_ROOT)/src/render/shaders/text.frag.cpp: NAME=TextFragmentShaderCode
-
-$(BIN)/$(ENGINE_ROOT)/src/render/shaders/mesh.vert.cpp: NAME=MeshVertexShaderCode
-$(BIN)/$(ENGINE_ROOT)/src/render/shaders/mesh.frag.cpp: NAME=MeshFragmentShaderCode
-
-$(BIN)/$(ENGINE_ROOT)/src/render/shaders/hdr.vert.cpp: NAME=HdrVertexShaderCode
-$(BIN)/$(ENGINE_ROOT)/src/render/shaders/hdr.frag.cpp: NAME=HdrFragmentShaderCode
-
-$(BIN)/$(ENGINE_ROOT)/src/render/shaders/bloom.vert.cpp: NAME=BloomVertexShaderCode
-$(BIN)/$(ENGINE_ROOT)/src/render/shaders/bloom.frag.cpp: NAME=BloomFragmentShaderCode
-
-$(BIN)/%.frag.cpp: %.frag
-	@mkdir -p $(dir $@)
-	scripts/embed.sh "$<" "$@" "$(NAME)"
-	glslangValidator -G -o "$(BIN)/$*.spv" "$<"
-
-$(BIN)/%.vert.cpp: %.vert
-	@mkdir -p $(dir $@)
-	scripts/embed.sh "$<" "$@" "$(NAME)"
-	glslangValidator -G -o "$(BIN)/$*.spv" "$<"
 
 $(BIN)/$(ENGINE_ROOT)/src/%: CXXFLAGS+=-I$(ENGINE_ROOT)/src
 

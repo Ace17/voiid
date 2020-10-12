@@ -22,17 +22,10 @@ using namespace std;
 #include "base/span.h"
 #include "base/util.h"
 #include "matrix4.h"
+#include "misc/file.h"
 #include "picture.h"
 #include "rendermesh.h"
 
-extern const Span<uint8_t> TextVertexShaderCode;
-extern const Span<uint8_t> TextFragmentShaderCode;
-extern const Span<uint8_t> MeshVertexShaderCode;
-extern const Span<uint8_t> MeshFragmentShaderCode;
-extern const Span<uint8_t> HdrVertexShaderCode;
-extern const Span<uint8_t> HdrFragmentShaderCode;
-extern const Span<uint8_t> BloomVertexShaderCode;
-extern const Span<uint8_t> BloomFragmentShaderCode;
 extern RenderMesh boxModel();
 
 #ifdef NDEBUG
@@ -79,14 +72,13 @@ GLuint safeGetAttributeLocation(GLuint programId, const char* name)
   return attribLocation;
 }
 
-GLuint compileShader(Span<uint8_t> code, int type)
+GLuint compileShader(Span<const uint8_t> code, int type)
 {
   auto shaderId = glCreateShader(type);
 
   if(!shaderId)
     throw runtime_error("Can't create shader");
 
-  printf("[display] compiling %s shader ... ", (type == GL_VERTEX_SHADER ? "vertex" : "fragment"));
   auto srcPtr = (const char*)code.data;
   auto length = (GLint)code.len;
   SAFE_GL(glShaderSource(shaderId, 1, &srcPtr, &length));
@@ -107,15 +99,12 @@ GLuint compileShader(Span<uint8_t> code, int type)
     throw runtime_error("Can't compile shader");
   }
 
-  printf("OK\n");
-
   return shaderId;
 }
 
 GLuint linkShaders(vector<GLuint> ids)
 {
   // Link the program
-  printf("[display] Linking shaders ... ");
   auto ProgramID = glCreateProgram();
 
   for(auto id : ids)
@@ -137,8 +126,6 @@ GLuint linkShaders(vector<GLuint> ids)
 
     throw runtime_error("Can't link shader");
   }
-
-  printf("OK\n");
 
   return ProgramID;
 }
@@ -167,7 +154,7 @@ int loadTexture(const char* path)
   return uploadTextureToGPU(pic);
 }
 
-GLuint loadShaders(Span<uint8_t> vsCode, Span<uint8_t> fsCode)
+GLuint loadShaders(Span<const uint8_t> vsCode, Span<const uint8_t> fsCode)
 {
   auto const vertexId = compileShader(vsCode, GL_VERTEX_SHADER);
   auto const fragmentId = compileShader(fsCode, GL_FRAGMENT_SHADER);
@@ -178,6 +165,20 @@ GLuint loadShaders(Span<uint8_t> vsCode, Span<uint8_t> fsCode)
   SAFE_GL(glDeleteShader(fragmentId));
 
   return progId;
+}
+
+GLuint loadShaders(std::string name)
+{
+  printf("[display] loading shader '%s'\n", name.c_str());
+  auto vsCode = File::read("res/shaders/" + name + ".vert");
+  auto fsCode = File::read("res/shaders/" + name + ".frag");
+
+  auto toSpan = [] (const std::string& s)
+    {
+      return Span<const uint8_t>((const uint8_t*)s.c_str(), s.size());
+    };
+
+  return loadShaders(toSpan(vsCode), toSpan(fsCode));
 }
 
 struct Camera
@@ -279,7 +280,7 @@ struct PostProcessing
     : m_resolution(resolution)
   {
     {
-      m_hdrShader.programId = loadShaders(HdrVertexShaderCode, HdrFragmentShaderCode);
+      m_hdrShader.programId = loadShaders("hdr");
 
       m_hdrShader.InputTex1 = safeGetUniformLocation(m_hdrShader.programId, "InputTex1");
       m_hdrShader.InputTex2 = safeGetUniformLocation(m_hdrShader.programId, "InputTex2");
@@ -288,7 +289,7 @@ struct PostProcessing
     }
 
     {
-      m_bloomShader.programId = loadShaders(BloomVertexShaderCode, BloomFragmentShaderCode);
+      m_bloomShader.programId = loadShaders("bloom");
 
       m_bloomShader.InputTex = safeGetUniformLocation(m_bloomShader.programId, "InputTex");
       m_bloomShader.IsThreshold = safeGetUniformLocation(m_bloomShader.programId, "IsThreshold");
@@ -551,7 +552,7 @@ struct OpenglDisplay : Display
     }
 
     {
-      m_textShader.programId = loadShaders(TextVertexShaderCode, TextFragmentShaderCode);
+      m_textShader.programId = loadShaders("text");
 
       m_textShader.MVP = safeGetUniformLocation(m_textShader.programId, "MVP");
       m_textShader.DiffuseTex = safeGetUniformLocation(m_textShader.programId, "DiffuseTex");
@@ -560,7 +561,7 @@ struct OpenglDisplay : Display
     }
 
     {
-      m_meshShader.programId = loadShaders(MeshVertexShaderCode, MeshFragmentShaderCode);
+      m_meshShader.programId = loadShaders("mesh");
 
       m_meshShader.CameraPos = safeGetUniformLocation(m_meshShader.programId, "CameraPos");
       m_meshShader.M = safeGetUniformLocation(m_meshShader.programId, "M");
