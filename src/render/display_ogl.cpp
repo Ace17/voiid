@@ -255,17 +255,18 @@ std::vector<RenderMesh> loadFontModels(const char* path, int COLS, int ROWS)
 
 void printOpenGlVersion()
 {
-  auto sVersion = (char const*)glGetString(GL_VERSION);
-  auto sLangVersion = (char const*)glGetString(GL_SHADING_LANGUAGE_VERSION);
-
-  auto notNull = [] (char const* s) -> char const*
+  auto notNull = [] (const void* s) -> char const*
     {
-      return s ? s : "<null>";
+      return s ? (const char*)s : "<null>";
     };
 
-  printf("[display] OpenGL version: %s (shading version: %s)\n",
-         notNull(sVersion),
-         notNull(sLangVersion));
+  printf("[display] %s [%s]\n",
+         notNull(glGetString(GL_VERSION)),
+         notNull(glGetString(GL_SHADING_LANGUAGE_VERSION)));
+
+  printf("[display] GPU: %s [%s]\n",
+         notNull(glGetString(GL_RENDERER)),
+         notNull(glGetString(GL_VENDOR)));
 }
 
 template<typename T>
