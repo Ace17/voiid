@@ -527,11 +527,6 @@ struct OpenglDisplay : Display
     // This makes our buffer swap syncronized with the monitor's vertical refresh
     SDL_GL_SetSwapInterval(1);
 
-    // Create our unique vertex array
-    GLuint VertexArrayID;
-    SAFE_GL(glGenVertexArrays(1, &VertexArrayID));
-    SAFE_GL(glBindVertexArray(VertexArrayID));
-
     glEnable(GL_BLEND);
     glEnable(GL_CULL_FACE);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
