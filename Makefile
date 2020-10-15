@@ -55,6 +55,9 @@ SRCS_ENGINE:=\
 	src/render/png.cpp\
 	src/render/mesh_import.cpp\
 
+SRCS_ENGINE+=\
+	src/platform/input_sdl.cpp\
+
 SRCS_MESHCOOKER:=\
 	src/engine/main_meshcooker.cpp\
 	src/misc/decompress.cpp\

@@ -39,6 +39,11 @@
       "deps" : [ "base", "engine" ]
    },
    {
+      "desc" : "Platform-specific adapters",
+      "name" : "platform",
+      "deps" : [ "base", "engine"]
+   },
+   {
       "desc" : "Desc GL",
       "name" : "GL"
    },

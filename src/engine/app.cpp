@@ -25,6 +25,7 @@
 #include "misc/file.h"
 #include "render/display.h"
 
+#include "input.h"
 #include "ratecounter.h"
 
 using namespace std;
@@ -34,6 +35,7 @@ auto const RESOLUTION = Size2i(1280, 720);
 
 Display* createDisplay(Size2i resolution);
 Audio* createAudio();
+UserInput* createUserInput();
 
 Scene* createGame(View* view, vector<string> argv);
 
@@ -47,6 +49,7 @@ public:
 
     m_display.reset(createDisplay(RESOLUTION));
     m_audio.reset(createAudio());
+    m_input.reset(createUserInput());
 
     m_scene.reset(createGame(this, m_args));
 
@@ -54,6 +57,8 @@ public:
 
     m_lastTime = SDL_GetTicks();
     m_lastDisplayFrameTime = SDL_GetTicks();
+
+    registerUserInputActions();
   }
 
   virtual ~App()
@@ -63,7 +68,7 @@ public:
 
   bool tick() override
   {
-    processInput();
+    m_input->process();
 
     auto const now = (int)SDL_GetTicks();
 
@@ -129,6 +134,8 @@ private:
 
   void tickGameplay()
   {
+    m_control.debug = m_debugMode;
+
     auto next = m_scene->tick(m_control);
     m_control.look_horz = 0;
     m_control.look_vert = 0;
@@ -137,47 +144,45 @@ private:
       m_scene.reset(next);
   }
 
-  void processInput()
+  void registerUserInputActions()
   {
-    SDL_Event event;
+    // App keys
+    m_input->listenToQuit([&] () { onQuit(); });
 
-    while(SDL_PollEvent(&event))
-    {
-      switch(event.type)
-      {
-      case SDL_MOUSEBUTTONDOWN:
-        m_doGrab = true;
-        m_display->enableGrab(m_doGrab);
-        break;
-      case SDL_MOUSEMOTION:
+    m_input->listenToKey(Key::RightControl, [&] (bool isDown) { if(isDown) toggleGrab(); }, true);
+    m_input->listenToKey(Key::PrintScreen, [&] (bool isDown) { if(isDown) toggleVideoCapture(); }, true);
+    m_input->listenToKey(Key::PrintScreen, [&] (bool isDown) { if(isDown) m_mustScreenshot = true; }, false);
+    m_input->listenToKey(Key::Return, [&] (bool isDown) { if(isDown) toggleFullScreen(); }, false, true);
 
-        if(m_doGrab)
-          onMouseMotion(&event);
+    m_input->listenToKey(Key::F3, [&] (bool isDown) { if(isDown) toggleFsaa(); });
+    m_input->listenToKey(Key::F4, [&] (bool isDown) { if(isDown) toggleHdr(); });
 
-        break;
-      case SDL_QUIT:
-        onQuit();
-        break;
-      case SDL_KEYDOWN:
-        onKeyDown(&event);
-        break;
-      case SDL_KEYUP:
-        onKeyUp(&event);
-        break;
-      }
-    }
+    // Player keys
+    m_input->listenToKey(Key::Esc, [&] (bool isDown) { if(isDown) onQuit(); });
 
-    m_control.left = keys[SDL_SCANCODE_LEFT] || keys[SDL_SCANCODE_A];
-    m_control.right = keys[SDL_SCANCODE_RIGHT] || keys[SDL_SCANCODE_D];
-    m_control.forward = keys[SDL_SCANCODE_UP] || keys[SDL_SCANCODE_W];
-    m_control.backward = keys[SDL_SCANCODE_DOWN] || keys[SDL_SCANCODE_S];
+    m_input->listenToMouseMove([this] (int dx, int dy) { onMouseMotion(dx, dy); });
+    m_input->listenToMouseClick([this] (int, int) { onMouseClick(); });
 
-    m_control.use = keys[SDL_SCANCODE_E];
-    m_control.jump = keys[SDL_SCANCODE_SPACE];
+    m_input->listenToKey(Key::Left, [&] (bool isDown) { m_control.left = isDown; });
+    m_input->listenToKey(Key::Right, [&] (bool isDown) { m_control.right = isDown; });
+    m_input->listenToKey(Key::Up, [&] (bool isDown) { m_control.forward = isDown; });
+    m_input->listenToKey(Key::Down, [&] (bool isDown) { m_control.backward = isDown; });
 
-    m_control.restart = keys[SDL_SCANCODE_R];
+    m_input->listenToKey(Key::A, [&] (bool isDown) { m_control.left = isDown; });
+    m_input->listenToKey(Key::D, [&] (bool isDown) { m_control.right = isDown; });
+    m_input->listenToKey(Key::W, [&] (bool isDown) { m_control.forward = isDown; });
+    m_input->listenToKey(Key::S, [&] (bool isDown) { m_control.backward = isDown; });
 
-    m_control.debug = m_debugMode;
+    m_input->listenToKey(Key::E, [&] (bool isDown) { m_control.use = isDown; });
+    m_input->listenToKey(Key::Space, [&] (bool isDown) { m_control.jump = isDown; });
+
+    m_input->listenToKey(Key::R, [&] (bool isDown) { m_control.restart = isDown; });
+
+    // Debug keys
+    m_input->listenToKey(Key::F2, [&] (bool isDown) { if(isDown) m_scene.reset(createGame(this, m_args)); });
+    m_input->listenToKey(Key::Tab, [&] (bool isDown) { if(isDown) m_slowMotion = !m_slowMotion; });
+    m_input->listenToKey(Key::ScrollLock, [&] (bool isDown) { if(isDown) m_debugMode = !m_debugMode; });
+    m_input->listenToKey(Key::Pause, [&] (bool isDown) { if(isDown){ m_audio->playSound(0); m_paused = !m_paused; } });
   }
 
   void draw()
@@ -260,104 +265,50 @@ private:
     m_display->setFullscreen(m_fullscreen);
   }
 
-  void onMouseMotion(SDL_Event* evt)
+  void onMouseClick()
   {
+    m_doGrab = true;
+    m_display->enableGrab(m_doGrab);
+  }
+
+  void onMouseMotion(int dx, int dy)
+  {
+    if(!m_doGrab)
+      return;
+
     auto const speed = 0.001;
 
-    m_control.look_horz += evt->motion.xrel * speed;
-    m_control.look_vert += evt->motion.yrel * speed;
+    m_control.look_horz += dx * speed;
+    m_control.look_vert += dy * speed;
   }
 
-  void onKeyDown(SDL_Event* evt)
+  void toggleDebug()
   {
-    keys[evt->key.keysym.scancode] = 1;
-
-    if(evt->key.repeat > 0)
-      return;
-    switch(evt->key.keysym.sym)
-    {
-    case SDLK_ESCAPE:
-      {
-        onQuit();
-        break;
-      }
-
-    case SDLK_F2:
-      {
-        m_scene.reset(createGame(this, m_args));
-        break;
-      }
-
-    case SDLK_TAB:
-      {
-        m_slowMotion = !m_slowMotion;
-        break;
-      }
-
-    case SDLK_PRINTSCREEN:
-      {
-        if(evt->key.keysym.mod & KMOD_CTRL)
-        {
-          toggleVideoCapture();
-        }
-        else
-        {
-          m_mustScreenshot = true;
-        }
-
-        break;
-      }
-
-    case SDLK_RETURN:
-      {
-        if(evt->key.keysym.mod & KMOD_LALT)
-          toggleFullScreen();
-
-        break;
-      }
-
-    case SDLK_BACKSPACE:
-      {
-        if(evt->key.keysym.mod & KMOD_LALT)
-        {
-          m_enableFsaa = !m_enableFsaa;
-          m_display->setFsaa(m_enableFsaa);
-        }
-        else
-        {
-          m_enableHdr = !m_enableHdr;
-          m_display->setHdr(m_enableHdr);
-        }
-
-        break;
-      }
-
-    case SDLK_SCROLLLOCK:
-      {
-        m_debugMode = !m_debugMode;
-
-        break;
-      }
-
-    case SDLK_PAUSE:
-      {
-        m_audio->playSound(0);
-        m_paused = !m_paused;
-        break;
-      }
-
-    case SDLK_RCTRL:
-      {
-        m_doGrab = !m_doGrab;
-        m_display->enableGrab(m_doGrab);
-        break;
-      }
-    }
+    m_debugMode = !m_debugMode;
   }
 
-  void onKeyUp(SDL_Event* evt)
+  void togglePause()
   {
-    keys[evt->key.keysym.scancode] = 0;
+    m_audio->playSound(0);
+    m_paused = !m_paused;
+  }
+
+  void toggleGrab()
+  {
+    m_doGrab = !m_doGrab;
+    m_display->enableGrab(m_doGrab);
+  }
+
+  void toggleFsaa()
+  {
+    m_enableFsaa = !m_enableFsaa;
+    m_display->setFsaa(m_enableFsaa);
+  }
+
+  void toggleHdr()
+  {
+    m_enableHdr = !m_enableHdr;
+    m_display->setHdr(m_enableHdr);
   }
 
   // View implementation
@@ -415,7 +366,6 @@ private:
     m_actors.push_back(actor);
   }
 
-  int keys[SDL_NUM_SCANCODES] {};
   int m_running = 1;
   int m_fixedDisplayFramePeriod = 0;
   FILE* m_captureFile = nullptr;
@@ -438,6 +388,7 @@ private:
   unique_ptr<Audio> m_audio;
   unique_ptr<Display> m_display;
   vector<Actor> m_actors;
+  unique_ptr<UserInput> m_input;
 
   string m_textbox;
   int m_textboxDelay = 0;
