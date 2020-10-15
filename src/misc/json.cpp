@@ -21,6 +21,12 @@ Value const& Value::operator [] (const char* name) const
 
   return it->second;
 }
+
+void Value::enforceType(Type expected) const
+{
+  if(type != expected)
+    throw runtime_error("Type error");
+}
 }
 
 struct Token

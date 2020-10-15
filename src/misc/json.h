@@ -9,7 +9,6 @@
 #pragma once
 
 #include <map>
-#include <stdexcept>
 #include <string>
 #include <vector>
 using namespace std;
@@ -70,11 +69,7 @@ struct Value
   }
 
 private:
-  void enforceType(Type expected) const
-  {
-    if(type != expected)
-      throw runtime_error("Type error");
-  }
+  void enforceType(Type expected) const;
 };
 
 Value parse(const char* text, size_t len);
