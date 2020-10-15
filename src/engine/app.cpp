@@ -98,7 +98,7 @@ private:
     {
       m_lastTime += timestep;
 
-      if(!m_paused)
+      if(!m_paused && m_running == 1)
         tickGameplay();
     }
 
@@ -147,7 +147,7 @@ private:
   void registerUserInputActions()
   {
     // App keys
-    m_input->listenToQuit([&] () { onQuit(); });
+    m_input->listenToQuit([&] () { m_running = 0; });
 
     m_input->listenToKey(Key::RightControl, [&] (bool isDown) { if(isDown) toggleGrab(); }, true);
     m_input->listenToKey(Key::PrintScreen, [&] (bool isDown) { if(isDown) toggleVideoCapture(); }, true);
@@ -156,6 +156,9 @@ private:
 
     m_input->listenToKey(Key::F3, [&] (bool isDown) { if(isDown) toggleFsaa(); });
     m_input->listenToKey(Key::F4, [&] (bool isDown) { if(isDown) toggleHdr(); });
+
+    m_input->listenToKey(Key::Y, [&] (bool isDown) { if(isDown && m_running == 2) m_running = 0; });
+    m_input->listenToKey(Key::N, [&] (bool isDown) { if(isDown && m_running == 2) m_running = 1; });
 
     // Player keys
     m_input->listenToKey(Key::Esc, [&] (bool isDown) { if(isDown) onQuit(); });
@@ -197,7 +200,9 @@ private:
       m_display->drawActor(where, actor.orientation, (int)actor.model, actor.effect == Effect::Blinking, actor.action, actor.ratio);
     }
 
-    if(m_paused)
+    if(m_running == 2)
+      m_display->drawText(Vector2f(0, 0), "QUIT? [Y/N]");
+    else if(m_paused)
       m_display->drawText(Vector2f(0, 0), "PAUSE");
     else if(m_slowMotion)
       m_display->drawText(Vector2f(0, 0), "SLOW-MOTION MODE");
@@ -220,7 +225,10 @@ private:
 
   void onQuit()
   {
-    m_running = 0;
+    if(m_running == 2)
+      m_running = 1;
+    else
+      m_running = 2;
   }
 
   void toggleVideoCapture()

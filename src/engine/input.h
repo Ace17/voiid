@@ -30,10 +30,12 @@ enum class Key
   C,
   D,
   E,
+  N,
   R,
   S,
   W,
   X,
+  Y,
   Z,
 };
 

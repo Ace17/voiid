@@ -50,10 +50,12 @@ Uint32 translateToSdlKey(Key key)
   case Key::C: return SDLK_c;
   case Key::D: return SDLK_d;
   case Key::E: return SDLK_e;
+  case Key::N: return SDLK_n;
   case Key::R: return SDLK_r;
   case Key::S: return SDLK_s;
   case Key::W: return SDLK_w;
   case Key::X: return SDLK_x;
+  case Key::Y: return SDLK_y;
   case Key::Z: return SDLK_z;
   }
 
