@@ -13,7 +13,9 @@ layout(location = 1) uniform sampler2D DiffuseTex;
 
 void main()
 {
-  color = texture(DiffuseTex, UV);
+  vec4 c = texture(DiffuseTex, UV);
+  color.rgb = c.rgb * 2.5;
+  color.a = c.a;
 }
 
 // vim: syntax=glsl

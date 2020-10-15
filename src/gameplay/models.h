@@ -5,6 +5,7 @@ enum
 {
   MDL_RECT,
   MDL_INVRECT,
+  MDL_SPLASH,
   MDL_AMULET,
   MDL_DOOR,
   MDL_SWITCH,

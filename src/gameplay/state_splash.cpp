@@ -15,8 +15,8 @@
 #include "state_machine.h"
 #include "toggle.h"
 
-static const float LIGHT_ON = 10;
-static const float LIGHT_OFF = 0;
+static const float LIGHT_ON = 1;
+static const float LIGHT_OFF = -2.7;
 
 template<typename T>
 T blend(T a, T b, float alpha)
@@ -40,8 +40,6 @@ struct SplashState : Scene
 
     view->playMusic(1);
 
-    view->textBox("V O I I D");
-
     if(!activated)
     {
       if(c.fire || c.jump || c.dash)
@@ -54,6 +52,7 @@ struct SplashState : Scene
 
     if(activated)
     {
+      time ++;
       const float alpha = 1.0 - delay / float(FADE_TIME);
       view->setAmbientLight(blend(LIGHT_ON, LIGHT_OFF, alpha));
 
@@ -70,12 +69,20 @@ struct SplashState : Scene
 
   void draw() override
   {
+    double t = time * 0.01;
+    view->setCameraPos(Vector3f(0, 0, 0), Quaternion::fromEuler(0, 0, 0));
+    Actor panel = Actor(Vector3f(2.5, 0, +0.15), MDL_SPLASH);
+    panel.scale = panel.scale * (1.0 / (1.0 + t));
+    panel.orientation = Quaternion::fromEuler(0, 0, t * 5.0);
+    view->sendActor(panel);
   }
+
 
 private:
   View* const view;
   bool activated = false;
   int delay = 0;
+  int time = 0;
 };
 
 Scene* createSplashState(View* view)
