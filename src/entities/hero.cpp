@@ -65,7 +65,7 @@ struct Hero : Player, Damageable
 
   float health() override
   {
-    return clamp(life / 31.0f, 0.0f, 1.0f);
+    return ::clamp(life / 31.0f, 0.0f, 1.0f);
   }
 
   virtual void addUpgrade(int upgrade) override
@@ -91,8 +91,8 @@ struct Hero : Player, Damageable
     if(vel.z > 0 && !c.jump)
       vel.z = 0;
 
-    vel.x = clamp(vel.x, -MAX_HORZ_SPEED, MAX_HORZ_SPEED);
-    vel.y = clamp(vel.y, -MAX_HORZ_SPEED, MAX_HORZ_SPEED);
+    vel.x = ::clamp(vel.x, -MAX_HORZ_SPEED, MAX_HORZ_SPEED);
+    vel.y = ::clamp(vel.y, -MAX_HORZ_SPEED, MAX_HORZ_SPEED);
     vel.z = max(vel.z, -MAX_FALL_SPEED);
   }
 
@@ -140,7 +140,7 @@ struct Hero : Player, Damageable
     lookAngleHorz -= control.look_horz * 1.0;
 
     lookAngleHorz = fmod(lookAngleHorz, PI * 2.0);
-    lookAngleVert = clamp<float>(lookAngleVert, -PI * 0.4, PI * 0.4);
+    lookAngleVert = ::clamp<float>(lookAngleVert, -PI * 0.4, PI * 0.4);
 
     if(decrement(respawnDelay))
     {

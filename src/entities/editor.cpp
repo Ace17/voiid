@@ -58,9 +58,9 @@ struct Editor : Player
   {
     airMove(c);
 
-    vel.x = clamp(vel.x, -MAX_SPEED, MAX_SPEED);
-    vel.y = clamp(vel.y, -MAX_SPEED, MAX_SPEED);
-    vel.z = clamp(vel.z, -MAX_SPEED, MAX_SPEED);
+    vel.x = ::clamp(vel.x, -MAX_SPEED, MAX_SPEED);
+    vel.y = ::clamp(vel.y, -MAX_SPEED, MAX_SPEED);
+    vel.z = ::clamp(vel.z, -MAX_SPEED, MAX_SPEED);
   }
 
   void airMove(Control c)

@@ -27,7 +27,7 @@ CXXFLAGS+=-Wall -Wextra
 CXXFLAGS+=-Isrc
 CXXFLAGS+=-I.
 CXXFLAGS+=-Iengine/include
-CXXFLAGS+=-std=c++14
+CXXFLAGS+=-std=c++17
 CXXFLAGS+=$(PKG_CFLAGS)
 LDFLAGS+=$(PKG_LDFLAGS)
 
