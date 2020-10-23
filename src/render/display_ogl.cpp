@@ -493,7 +493,7 @@ struct OpenglDisplay : Display
 
     printOpenGlVersion();
 
-    // This makes our buffer swap syncronized with the monitor's vertical refresh
+    // Enable vsync
     SDL_GL_SetSwapInterval(1);
 
     glEnable(GL_BLEND);
