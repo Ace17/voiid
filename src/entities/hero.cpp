@@ -146,7 +146,7 @@ struct Hero : Player, Damageable
     {
       pos = respawnPoint;
       life = 31;
-      blinking = 2000;
+      blinking = 200;
     }
 
     computeVelocity(control);
@@ -219,7 +219,7 @@ struct Hero : Player, Damageable
       }
 
       hurtDelay = HURT_DELAY;
-      blinking = 2000;
+      blinking = 200;
       game->playSound(SND_HURT);
     }
   }
@@ -227,7 +227,7 @@ struct Hero : Player, Damageable
   void die()
   {
     game->playSound(SND_DIE);
-    respawnDelay = 2000;
+    respawnDelay = 100;
     game->textBox("game over");
   }
 
