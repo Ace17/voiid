@@ -20,7 +20,6 @@
 #include "base/geom.h"
 #include "base/resource.h"
 #include "base/scene.h"
-#include "base/util.h" // clamp
 #include "base/view.h"
 #include "misc/file.h"
 
