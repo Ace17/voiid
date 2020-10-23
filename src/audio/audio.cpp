@@ -55,14 +55,16 @@ struct HighLevelAudio : Audio
 
   void loadSound(int id, String path) override
   {
-    if(!File::exists(path))
+    try
     {
-      printf("[audio] sound '%.*s' was not found, fallback on default sound\n", (int)path.len, path.data);
-      sounds[id] = make_unique<BleepSound>();
-      return;
+      sounds[id] = loadSoundFile(path);
     }
-
-    sounds[id] = loadSoundFile(path);
+    catch(std::exception const& e)
+    {
+      printf("[audio] can't load sound '%.*s' (%s)\n", path.len, path.data, e.what());
+      printf("[audio] falling back on generated sound\n");
+      sounds[id] = make_unique<BleepSound>();
+    }
   }
 
   void playSound(int id) override

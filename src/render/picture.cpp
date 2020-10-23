@@ -85,7 +85,7 @@ Picture loadPicture(String path)
   }
   catch(std::exception const& e)
   {
-    printf("[display] can't load texture: %s\n", e.what());
+    printf("[display] can't load texture '%.*s' (%s)\n", path.len, path.data, e.what());
     printf("[display] falling back on generated texture\n");
 
     Picture r {};
