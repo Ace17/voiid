@@ -6,11 +6,11 @@
 
 #include "base/geom.h"
 #include "base/util.h" // setExtension
+#include "engine/rendermesh.h"
 #include "misc/file.h"
-#include "rendermesh.h"
 #include <stdexcept>
-#include <string.h> // strlen
 
+static
 RenderMesh boxModel()
 {
   static const SingleRenderMesh::Vertex vertices[] =

@@ -5,7 +5,8 @@
 #include "base/span.h"
 #include "base/util.h" // setExtension
 #include "misc/file.h" // exists
-#include "render/rendermesh.h"
+
+#include "rendermesh.h"
 
 namespace
 {

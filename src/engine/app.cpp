@@ -23,8 +23,8 @@
 #include "base/util.h" // clamp
 #include "base/view.h"
 #include "misc/file.h"
-#include "render/display.h"
 
+#include "display.h"
 #include "input.h"
 #include "ratecounter.h"
 

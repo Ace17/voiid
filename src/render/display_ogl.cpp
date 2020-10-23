@@ -6,7 +6,7 @@
 
 // OpenGL stuff
 
-#include "display.h"
+#include "engine/display.h"
 
 #include <cassert>
 #include <cstdio>
@@ -21,10 +21,10 @@ using namespace std;
 #include "base/scene.h"
 #include "base/span.h"
 #include "base/util.h"
+#include "engine/rendermesh.h"
 #include "matrix4.h"
 #include "misc/file.h"
 #include "picture.h"
-#include "rendermesh.h"
 
 extern RenderMesh boxModel();
 
