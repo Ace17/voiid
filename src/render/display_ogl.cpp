@@ -40,6 +40,22 @@ extern RenderMesh boxModel();
 
 namespace
 {
+struct QuadVertex
+{
+  float x, y, u, v;
+};
+
+const QuadVertex screenQuad[] =
+{
+  { -1, -1, 0, 0 },
+  { +1, +1, 1, 1 },
+  { -1, +1, 0, 1 },
+
+  { -1, -1, 0, 0 },
+  { +1, -1, 1, 0 },
+  { +1, +1, 1, 1 },
+};
+
 void ensureGl(char const* expr, int line)
 {
   auto const errorCode = glGetError();
@@ -357,22 +373,6 @@ struct PostProcessing
     m_bloomShader.use();
     SAFE_GL(glDisable(GL_DEPTH_TEST));
 
-    struct QuadVertex
-    {
-      float x, y, u, v;
-    };
-
-    static const QuadVertex screenQuad[] =
-    {
-      { -1, -1, 0, 0 },
-      { +1, +1, 1, 1 },
-      { -1, +1, 0, 1 },
-
-      { -1, -1, 0, 0 },
-      { +1, -1, 1, 0 },
-      { +1, +1, 1, 1 },
-    };
-
     SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, m_hdrQuadVbo));
     SAFE_GL(glBufferData(GL_ARRAY_BUFFER, sizeof screenQuad, screenQuad, GL_STATIC_DRAW));
 
@@ -422,22 +422,6 @@ struct PostProcessing
     SAFE_GL(glActiveTexture(GL_TEXTURE1));
     SAFE_GL(glBindTexture(GL_TEXTURE_2D, m_bloomTexture[0]));
     SAFE_GL(glUniform1i(m_hdrShader.InputTex2, 1));
-
-    struct QuadVertex
-    {
-      float x, y, u, v;
-    };
-
-    static const QuadVertex screenQuad[] =
-    {
-      { -1, -1, 0, 0 },
-      { +1, +1, 1, 1 },
-      { -1, +1, 0, 1 },
-
-      { -1, -1, 0, 0 },
-      { +1, -1, 1, 0 },
-      { +1, +1, 1, 1 },
-    };
 
     SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, m_hdrQuadVbo));
     SAFE_GL(glBufferData(GL_ARRAY_BUFFER, sizeof screenQuad, screenQuad, GL_STATIC_DRAW));
