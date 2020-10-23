@@ -27,6 +27,7 @@
 #include "display.h"
 #include "input.h"
 #include "ratecounter.h"
+#include "stats.h"
 
 using namespace std;
 
@@ -108,6 +109,7 @@ private:
     draw();
 
     m_fps.tick(now);
+    Stat("FPS", m_fps.slope());
 
     captureDisplayFrameIfNeeded();
   }
@@ -209,9 +211,13 @@ private:
 
     if(m_debugMode)
     {
-      char debugText[256];
-      sprintf(debugText, "FPS: %d", m_fps.slope());
-      m_display->drawText(Vector2f(0, -4), debugText);
+      for(int i = 0; i < getStatCount(); ++i)
+      {
+        char txt[256];
+        auto stat = getStat(i);
+        snprintf(txt, sizeof txt, "%s: %.2f", stat.name, stat.val);
+        m_display->drawText(Vector2f(0, 4 - i), txt);
+      }
     }
 
     if(m_textboxDelay > 0)

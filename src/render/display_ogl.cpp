@@ -22,6 +22,7 @@ using namespace std;
 #include "base/span.h"
 #include "base/util.h"
 #include "engine/rendermesh.h"
+#include "engine/stats.h"
 #include "matrix4.h"
 #include "misc/file.h"
 #include "picture.h"
@@ -719,6 +720,8 @@ private:
 
     SAFE_GL(glClearColor(0, 0, 0, 1));
     SAFE_GL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+
+    Stat("Draw calls", m_drawCommands.size());
 
     for(auto& cmd : m_drawCommands)
       executeDrawCommand(cmd);

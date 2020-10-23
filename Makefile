@@ -41,6 +41,7 @@ LDFLAGS+=$(DBGFLAGS)
 SRCS_ENGINE:=\
 	src/engine/app.cpp\
 	src/engine/main.cpp\
+	src/engine/stats.cpp\
 	src/audio/audio.cpp\
 	src/audio/audio_sdl.cpp\
 	src/audio/sound_ogg.cpp\
