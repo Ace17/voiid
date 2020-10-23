@@ -2,6 +2,14 @@
 
 precision mediump float;
 
+// Uniforms
+layout(location = 2) uniform vec3 CameraPos;
+layout(location = 3) uniform vec4 fragOffset;
+layout(location = 4) uniform sampler2D DiffuseTex;
+layout(location = 5) uniform sampler2D LightmapTex;
+layout(location = 6) uniform vec3 ambientLight;
+layout(location = 7) uniform vec3 LightPos;
+
 // Interpolated values from the vertex shader
 layout(location = 0) in vec2 UV;
 layout(location = 1) in vec2 UV_lightmap;
@@ -10,14 +18,6 @@ layout(location = 3) in vec3 vNormal;
 
 // Ouput data
 layout(location = 0) out vec4 color;
-
-// Values that stay constant for the whole mesh
-layout(location = 2) uniform vec3 CameraPos;
-layout(location = 3) uniform vec4 fragOffset;
-layout(location = 4) uniform sampler2D DiffuseTex;
-layout(location = 5) uniform sampler2D LightmapTex;
-layout(location = 6) uniform vec3 ambientLight;
-layout(location = 7) uniform vec3 LightPos;
 
 void main()
 {

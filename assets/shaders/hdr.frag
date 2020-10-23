@@ -2,15 +2,15 @@
 
 precision mediump float;
 
+// Uniforms
+layout(location = 0) uniform sampler2D InputTex1;
+layout(location = 1) uniform sampler2D InputTex2;
+
 // Interpolated values from the vertex shader
 layout(location = 0) in vec2 UV;
 
 // Ouput data
 layout(location = 0) out vec4 color;
-
-// Values that stay constant for the whole mesh
-layout(location = 2) uniform sampler2D InputTex1;
-layout(location = 3) uniform sampler2D InputTex2;
 
 void main()
 {

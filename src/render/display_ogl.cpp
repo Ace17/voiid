@@ -291,28 +291,8 @@ struct PostProcessing
   PostProcessing(Size2i resolution)
     : m_resolution(resolution)
   {
-    {
-      m_hdrShader.program = loadShaders("hdr");
-
-      // uniforms
-      m_hdrShader.InputTex1 = 2;
-      m_hdrShader.InputTex2 = 3;
-
-      // attributes
-      m_hdrShader.positionLoc = 0;
-      m_hdrShader.uvLoc = 1;
-    }
-
-    {
-      m_bloomShader.program = loadShaders("bloom");
-
-      m_bloomShader.InputTex = 2;
-      m_bloomShader.IsThreshold = 3;
-
-      // attributes
-      m_bloomShader.positionLoc = 0;
-      m_bloomShader.uvLoc = 1;
-    }
+    m_hdrShader.program = loadShaders("hdr");
+    m_bloomShader.program = loadShaders("bloom");
 
     SAFE_GL(glGenBuffers(1, &m_hdrQuadVbo));
 
@@ -376,20 +356,20 @@ struct PostProcessing
     SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, m_hdrQuadVbo));
     SAFE_GL(glBufferData(GL_ARRAY_BUFFER, sizeof screenQuad, screenQuad, GL_STATIC_DRAW));
 
-    SAFE_GL(glEnableVertexAttribArray(m_bloomShader.positionLoc));
-    SAFE_GL(glEnableVertexAttribArray(m_bloomShader.uvLoc));
+    SAFE_GL(glEnableVertexAttribArray(BloomShader::Attribute::positionLoc));
+    SAFE_GL(glEnableVertexAttribArray(BloomShader::Attribute::uvLoc));
 
-    SAFE_GL(glVertexAttribPointer(m_bloomShader.positionLoc, 2, GL_FLOAT, GL_FALSE, sizeof(QuadVertex), OFFSET(QuadVertex, x)));
-    SAFE_GL(glVertexAttribPointer(m_bloomShader.uvLoc, 2, GL_FLOAT, GL_FALSE, sizeof(QuadVertex), OFFSET(QuadVertex, u)));
+    SAFE_GL(glVertexAttribPointer(BloomShader::Attribute::positionLoc, 2, GL_FLOAT, GL_FALSE, sizeof(QuadVertex), OFFSET(QuadVertex, x)));
+    SAFE_GL(glVertexAttribPointer(BloomShader::Attribute::uvLoc, 2, GL_FLOAT, GL_FALSE, sizeof(QuadVertex), OFFSET(QuadVertex, u)));
 
     auto oneBlurringPass = [&] (GLuint inputTex, GLuint outputFramebuffer, bool isThreshold = false)
       {
-        SAFE_GL(glUniform1i(m_bloomShader.IsThreshold, isThreshold));
+        SAFE_GL(glUniform1i(BloomShader::Uniform::IsThreshold, isThreshold));
 
         // Texture Unit 0
         SAFE_GL(glActiveTexture(GL_TEXTURE0));
         SAFE_GL(glBindTexture(GL_TEXTURE_2D, inputTex));
-        SAFE_GL(glUniform1i(m_bloomShader.InputTex, 0));
+        SAFE_GL(glUniform1i(BloomShader::Uniform::InputTex, 0));
 
         SAFE_GL(glBindFramebuffer(GL_FRAMEBUFFER, outputFramebuffer));
         SAFE_GL(glDrawArrays(GL_TRIANGLES, 0, 6));
@@ -416,21 +396,21 @@ struct PostProcessing
     // Texture Unit 0
     SAFE_GL(glActiveTexture(GL_TEXTURE0));
     SAFE_GL(glBindTexture(GL_TEXTURE_2D, m_hdrTexture));
-    SAFE_GL(glUniform1i(m_hdrShader.InputTex1, 0));
+    SAFE_GL(glUniform1i(HdrShader::Uniform::InputTex1, 0));
 
     // Texture Unit 1
     SAFE_GL(glActiveTexture(GL_TEXTURE1));
     SAFE_GL(glBindTexture(GL_TEXTURE_2D, m_bloomTexture[0]));
-    SAFE_GL(glUniform1i(m_hdrShader.InputTex2, 1));
+    SAFE_GL(glUniform1i(HdrShader::Uniform::InputTex2, 1));
 
     SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, m_hdrQuadVbo));
     SAFE_GL(glBufferData(GL_ARRAY_BUFFER, sizeof screenQuad, screenQuad, GL_STATIC_DRAW));
 
-    SAFE_GL(glEnableVertexAttribArray(m_hdrShader.positionLoc));
-    SAFE_GL(glEnableVertexAttribArray(m_hdrShader.uvLoc));
+    SAFE_GL(glEnableVertexAttribArray(HdrShader::Attribute::positionLoc));
+    SAFE_GL(glVertexAttribPointer(HdrShader::Attribute::positionLoc, 2, GL_FLOAT, GL_FALSE, sizeof(QuadVertex), OFFSET(QuadVertex, x)));
 
-    SAFE_GL(glVertexAttribPointer(m_hdrShader.positionLoc, 2, GL_FLOAT, GL_FALSE, sizeof(QuadVertex), OFFSET(QuadVertex, x)));
-    SAFE_GL(glVertexAttribPointer(m_hdrShader.uvLoc, 2, GL_FLOAT, GL_FALSE, sizeof(QuadVertex), OFFSET(QuadVertex, u)));
+    SAFE_GL(glEnableVertexAttribArray(HdrShader::Attribute::uvLoc));
+    SAFE_GL(glVertexAttribPointer(HdrShader::Attribute::uvLoc, 2, GL_FLOAT, GL_FALSE, sizeof(QuadVertex), OFFSET(QuadVertex, u)));
 
     SAFE_GL(glDrawArrays(GL_TRIANGLES, 0, 6));
     SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, 0));
@@ -438,18 +418,32 @@ struct PostProcessing
 
   struct HdrShader : Shader
   {
-    GLint InputTex1;
-    GLint InputTex2;
-    GLint positionLoc;
-    GLint uvLoc;
+    enum Uniform
+    {
+      InputTex1 = 0,
+      InputTex2 = 1,
+    };
+
+    enum Attribute
+    {
+      positionLoc = 0,
+      uvLoc = 1,
+    };
   };
 
   struct BloomShader : Shader
   {
-    GLint InputTex;
-    GLint positionLoc;
-    GLint uvLoc;
-    GLint IsThreshold;
+    enum Uniform
+    {
+      InputTex = 0,
+      IsThreshold = 1,
+    };
+
+    enum Attribute
+    {
+      positionLoc = 0,
+      uvLoc = 1,
+    };
   };
 
   const Size2i m_resolution;
@@ -526,35 +520,9 @@ struct OpenglDisplay : Display
       }
     }
 
-    {
-      m_textShader.program = loadShaders("text");
+    m_textShader.program = loadShaders("text");
 
-      m_textShader.MVP = 0;
-      m_textShader.DiffuseTex = 1;
-      m_textShader.positionLoc = 0;
-      m_textShader.uvDiffuseLoc = 1;
-    }
-
-    {
-      m_meshShader.program = loadShaders("mesh");
-
-      // uniforms
-      m_meshShader.M = 0;
-      m_meshShader.MVP = 1;
-
-      m_meshShader.CameraPos = 2;
-      m_meshShader.DiffuseTex = 4;
-      m_meshShader.LightmapTex = 5;
-      m_meshShader.colorId = 3;
-      m_meshShader.ambientLoc = 6;
-      m_meshShader.LightPosLoc = 7;
-
-      // attributes
-      m_meshShader.positionLoc = 0;
-      m_meshShader.uvDiffuseLoc = 1;
-      m_meshShader.uvLightmapLoc = 2;
-      m_meshShader.normalLoc = 3;
-    }
+    m_meshShader.program = loadShaders("mesh");
 
     m_postProcessing = make_unique<PostProcessing>(resolution);
 
@@ -779,25 +747,25 @@ private:
     {
       m_meshShader.use();
       glEnable(GL_DEPTH_TEST);
-      SAFE_GL(glUniform3f(m_meshShader.ambientLoc, m_ambientLight, m_ambientLight, m_ambientLight));
-      SAFE_GL(glUniform4f(m_meshShader.colorId, 0, 0, 0, 0));
-      SAFE_GL(glUniform3f(m_meshShader.LightPosLoc, cmd.camera.pos.x, cmd.camera.pos.y, cmd.camera.pos.z));
+      SAFE_GL(glUniform3f(MeshShader::Uniform::ambientLoc, m_ambientLight, m_ambientLight, m_ambientLight));
+      SAFE_GL(glUniform4f(MeshShader::Uniform::colorId, 0, 0, 0, 0));
+      SAFE_GL(glUniform3f(MeshShader::Uniform::LightPosLoc, cmd.camera.pos.x, cmd.camera.pos.y, cmd.camera.pos.z));
 
       if(cmd.blinking)
       {
         if((m_frameCount / 4) % 2)
-          SAFE_GL(glUniform4f(m_meshShader.colorId, 0.8, 0.4, 0.4, 0));
+          SAFE_GL(glUniform4f(MeshShader::Uniform::colorId, 0.8, 0.4, 0.4, 0));
       }
 
       // Texture Unit 0: Diffuse
       SAFE_GL(glActiveTexture(GL_TEXTURE0));
       SAFE_GL(glBindTexture(GL_TEXTURE_2D, model.diffuse));
-      SAFE_GL(glUniform1i(m_meshShader.DiffuseTex, 0));
+      SAFE_GL(glUniform1i(MeshShader::Uniform::DiffuseTex, 0));
 
       // Texture Unit 1: Lightmap
       SAFE_GL(glActiveTexture(GL_TEXTURE1));
       SAFE_GL(glBindTexture(GL_TEXTURE_2D, model.lightmap));
-      SAFE_GL(glUniform1i(m_meshShader.LightmapTex, 1));
+      SAFE_GL(glUniform1i(MeshShader::Uniform::LightmapTex, 1));
 
       auto const forward = cmd.camera.dir.rotate(Vector3f(1, 0, 0));
       auto const up = cmd.camera.dir.rotate(Vector3f(0, 0, 1));
@@ -816,21 +784,21 @@ private:
       auto MV = pos * rotate * scale;
       auto MVP = perspective * view * MV;
 
-      SAFE_GL(glUniformMatrix4fv(m_meshShader.M, 1, GL_FALSE, &MV[0][0]));
-      SAFE_GL(glUniformMatrix4fv(m_meshShader.MVP, 1, GL_FALSE, &MVP[0][0]));
-      SAFE_GL(glUniform3f(m_meshShader.CameraPos, cmd.camera.pos.x, cmd.camera.pos.y, cmd.camera.pos.z));
+      SAFE_GL(glUniformMatrix4fv(MeshShader::Uniform::M, 1, GL_FALSE, &MV[0][0]));
+      SAFE_GL(glUniformMatrix4fv(MeshShader::Uniform::MVP, 1, GL_FALSE, &MVP[0][0]));
+      SAFE_GL(glUniform3f(MeshShader::Uniform::CameraPos, cmd.camera.pos.x, cmd.camera.pos.y, cmd.camera.pos.z));
 
       SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, model.buffer));
 
-      SAFE_GL(glEnableVertexAttribArray(m_meshShader.positionLoc));
-      SAFE_GL(glEnableVertexAttribArray(m_meshShader.normalLoc));
-      SAFE_GL(glEnableVertexAttribArray(m_meshShader.uvDiffuseLoc));
-      SAFE_GL(glEnableVertexAttribArray(m_meshShader.uvLightmapLoc));
+      SAFE_GL(glEnableVertexAttribArray(MeshShader::Attribute::positionLoc));
+      SAFE_GL(glEnableVertexAttribArray(MeshShader::Attribute::normalLoc));
+      SAFE_GL(glEnableVertexAttribArray(MeshShader::Attribute::uvDiffuseLoc));
+      SAFE_GL(glEnableVertexAttribArray(MeshShader::Attribute::uvLightmapLoc));
 
-      SAFE_GL(glVertexAttribPointer(m_meshShader.positionLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, x)));
-      SAFE_GL(glVertexAttribPointer(m_meshShader.normalLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, nx)));
-      SAFE_GL(glVertexAttribPointer(m_meshShader.uvDiffuseLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, diffuse_u)));
-      SAFE_GL(glVertexAttribPointer(m_meshShader.uvLightmapLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, lightmap_u)));
+      SAFE_GL(glVertexAttribPointer(MeshShader::Attribute::positionLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, x)));
+      SAFE_GL(glVertexAttribPointer(MeshShader::Attribute::normalLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, nx)));
+      SAFE_GL(glVertexAttribPointer(MeshShader::Attribute::uvDiffuseLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, diffuse_u)));
+      SAFE_GL(glVertexAttribPointer(MeshShader::Attribute::uvLightmapLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, lightmap_u)));
 
       SAFE_GL(glDrawArrays(GL_TRIANGLES, 0, model.vertices.size()));
     }
@@ -884,31 +852,42 @@ private:
   // shader attribute/uniform locations
   struct TextShader : Shader
   {
-    // attributes
-    GLint positionLoc;
-    GLint uvDiffuseLoc;
+    enum Uniform
+    {
+      MVP = 0,
+      DiffuseTex = 1,
+    };
 
-    // uniforms
-    GLint DiffuseTex;
-    GLint MVP;
+    enum Attribute
+    {
+      positionLoc = 0,
+      uvDiffuseLoc = 1,
+    };
   };
 
   TextShader m_textShader;
 
   struct MeshShader : Shader
   {
-    GLint CameraPos;
-    GLint M;
-    GLint MVP;
-    GLint colorId;
-    GLint ambientLoc;
-    GLint DiffuseTex;
-    GLint LightmapTex;
-    GLint positionLoc;
-    GLint uvDiffuseLoc;
-    GLint uvLightmapLoc;
-    GLint normalLoc;
-    GLint LightPosLoc;
+    enum Uniform
+    {
+      M = 0,
+      MVP = 1,
+      CameraPos = 2,
+      DiffuseTex = 4,
+      LightmapTex = 5,
+      colorId = 3,
+      ambientLoc = 6,
+      LightPosLoc = 7,
+    };
+
+    enum Attribute
+    {
+      positionLoc = 0,
+      uvDiffuseLoc = 1,
+      uvLightmapLoc = 2,
+      normalLoc = 3,
+    };
   };
 
   MeshShader m_meshShader;
