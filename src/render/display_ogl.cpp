@@ -35,6 +35,9 @@ extern RenderMesh boxModel();
   do { a; ensureGl(# a, __LINE__); } while (0)
 #endif
 
+#define OFFSET(VertexType, Attribute) \
+  (void*)(&(((VertexType*)nullptr)->Attribute))
+
 namespace
 {
 void ensureGl(char const* expr, int line)
@@ -364,10 +367,9 @@ struct PostProcessing
     SAFE_GL(glEnableVertexAttribArray(m_bloomShader.positionLoc));
     SAFE_GL(glEnableVertexAttribArray(m_bloomShader.uvLoc));
 
-#define OFFSET(a) (void*)(&(((QuadVertex*)nullptr)->a))
-    SAFE_GL(glVertexAttribPointer(m_bloomShader.positionLoc, 2, GL_FLOAT, GL_FALSE, sizeof(QuadVertex), OFFSET(x)));
-    SAFE_GL(glVertexAttribPointer(m_bloomShader.uvLoc, 2, GL_FLOAT, GL_FALSE, sizeof(QuadVertex), OFFSET(u)));
-#undef OFFSET
+    SAFE_GL(glVertexAttribPointer(m_bloomShader.positionLoc, 2, GL_FLOAT, GL_FALSE, sizeof(QuadVertex), OFFSET(QuadVertex, x)));
+    SAFE_GL(glVertexAttribPointer(m_bloomShader.uvLoc, 2, GL_FLOAT, GL_FALSE, sizeof(QuadVertex), OFFSET(QuadVertex, u)));
+
     auto oneBlurringPass = [&] (GLuint inputTex, GLuint outputFramebuffer, bool isThreshold = false)
       {
         SAFE_GL(glUniform1i(m_bloomShader.IsThreshold, isThreshold));
@@ -431,10 +433,8 @@ struct PostProcessing
     SAFE_GL(glEnableVertexAttribArray(m_hdrShader.positionLoc));
     SAFE_GL(glEnableVertexAttribArray(m_hdrShader.uvLoc));
 
-#define OFFSET(a) (void*)(&(((QuadVertex*)nullptr)->a))
-    SAFE_GL(glVertexAttribPointer(m_hdrShader.positionLoc, 2, GL_FLOAT, GL_FALSE, sizeof(QuadVertex), OFFSET(x)));
-    SAFE_GL(glVertexAttribPointer(m_hdrShader.uvLoc, 2, GL_FLOAT, GL_FALSE, sizeof(QuadVertex), OFFSET(u)));
-#undef OFFSET
+    SAFE_GL(glVertexAttribPointer(m_hdrShader.positionLoc, 2, GL_FLOAT, GL_FALSE, sizeof(QuadVertex), OFFSET(QuadVertex, x)));
+    SAFE_GL(glVertexAttribPointer(m_hdrShader.uvLoc, 2, GL_FLOAT, GL_FALSE, sizeof(QuadVertex), OFFSET(QuadVertex, u)));
 
     SAFE_GL(glDrawArrays(GL_TRIANGLES, 0, 6));
     SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, 0));
@@ -833,12 +833,10 @@ private:
       SAFE_GL(glEnableVertexAttribArray(m_meshShader.uvDiffuseLoc));
       SAFE_GL(glEnableVertexAttribArray(m_meshShader.uvLightmapLoc));
 
-#define OFFSET(a) (void*)(&(((SingleRenderMesh::Vertex*)nullptr)->a))
-      SAFE_GL(glVertexAttribPointer(m_meshShader.positionLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(x)));
-      SAFE_GL(glVertexAttribPointer(m_meshShader.normalLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(nx)));
-      SAFE_GL(glVertexAttribPointer(m_meshShader.uvDiffuseLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(diffuse_u)));
-      SAFE_GL(glVertexAttribPointer(m_meshShader.uvLightmapLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(lightmap_u)));
-#undef OFFSET
+      SAFE_GL(glVertexAttribPointer(m_meshShader.positionLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, x)));
+      SAFE_GL(glVertexAttribPointer(m_meshShader.normalLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, nx)));
+      SAFE_GL(glVertexAttribPointer(m_meshShader.uvDiffuseLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, diffuse_u)));
+      SAFE_GL(glVertexAttribPointer(m_meshShader.uvLightmapLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, lightmap_u)));
 
       SAFE_GL(glDrawArrays(GL_TRIANGLES, 0, model.vertices.size()));
     }
@@ -876,10 +874,8 @@ private:
       SAFE_GL(glEnableVertexAttribArray(m_textShader.positionLoc));
       SAFE_GL(glEnableVertexAttribArray(m_textShader.uvDiffuseLoc));
 
-#define OFFSET(a) (void*)(&(((SingleRenderMesh::Vertex*)nullptr)->a))
-      SAFE_GL(glVertexAttribPointer(m_textShader.positionLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(x)));
-      SAFE_GL(glVertexAttribPointer(m_textShader.uvDiffuseLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(diffuse_u)));
-#undef OFFSET
+      SAFE_GL(glVertexAttribPointer(m_textShader.positionLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, x)));
+      SAFE_GL(glVertexAttribPointer(m_textShader.uvDiffuseLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, diffuse_u)));
 
       SAFE_GL(glDrawArrays(GL_TRIANGLES, 0, model.vertices.size()));
     }
