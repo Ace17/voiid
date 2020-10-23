@@ -27,8 +27,6 @@ using namespace std;
 #include "misc/file.h"
 #include "picture.h"
 
-extern RenderMesh boxModel();
-
 #ifdef NDEBUG
 #define SAFE_GL(a) a
 #else
