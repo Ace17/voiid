@@ -258,13 +258,25 @@ T blend(T a, T b, float alpha)
   return a * (1 - alpha) + b * alpha;
 }
 
+struct Shader
+{
+  virtual ~Shader() = default;
+
+  void use()
+  {
+    SAFE_GL(glUseProgram(program));
+  }
+
+  GLuint program;
+};
+
 struct PostProcessing
 {
   PostProcessing(Size2i resolution)
     : m_resolution(resolution)
   {
     {
-      m_hdrShader.programId = loadShaders("hdr");
+      m_hdrShader.program = loadShaders("hdr");
 
       // uniforms
       m_hdrShader.InputTex1 = 2;
@@ -276,7 +288,7 @@ struct PostProcessing
     }
 
     {
-      m_bloomShader.programId = loadShaders("bloom");
+      m_bloomShader.program = loadShaders("bloom");
 
       m_bloomShader.InputTex = 2;
       m_bloomShader.IsThreshold = 3;
@@ -342,7 +354,7 @@ struct PostProcessing
   {
     SAFE_GL(glViewport(0, 0, m_resolution.width, m_resolution.height));
 
-    SAFE_GL(glUseProgram(m_bloomShader.programId));
+    m_bloomShader.use();
     SAFE_GL(glDisable(GL_DEPTH_TEST));
 
     struct QuadVertex
@@ -398,7 +410,7 @@ struct PostProcessing
   {
     SAFE_GL(glViewport(0, 0, screenSize.width, screenSize.height));
 
-    SAFE_GL(glUseProgram(m_hdrShader.programId));
+    m_hdrShader.use();
     SAFE_GL(glDisable(GL_DEPTH_TEST));
 
     // Texture Unit 0
@@ -440,18 +452,16 @@ struct PostProcessing
     SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, 0));
   }
 
-  struct HdrShader
+  struct HdrShader : Shader
   {
-    GLuint programId;
     GLint InputTex1;
     GLint InputTex2;
     GLint positionLoc;
     GLint uvLoc;
   };
 
-  struct BloomShader
+  struct BloomShader : Shader
   {
-    GLuint programId;
     GLint InputTex;
     GLint positionLoc;
     GLint uvLoc;
@@ -533,7 +543,7 @@ struct OpenglDisplay : Display
     }
 
     {
-      m_textShader.programId = loadShaders("text");
+      m_textShader.program = loadShaders("text");
 
       m_textShader.MVP = 0;
       m_textShader.DiffuseTex = 1;
@@ -542,7 +552,7 @@ struct OpenglDisplay : Display
     }
 
     {
-      m_meshShader.programId = loadShaders("mesh");
+      m_meshShader.program = loadShaders("mesh");
 
       // uniforms
       m_meshShader.M = 0;
@@ -783,8 +793,8 @@ private:
 
     if(cmd.depthtest)
     {
+      m_meshShader.use();
       glEnable(GL_DEPTH_TEST);
-      SAFE_GL(glUseProgram(m_meshShader.programId));
       SAFE_GL(glUniform3f(m_meshShader.ambientLoc, m_ambientLight, m_ambientLight, m_ambientLight));
       SAFE_GL(glUniform4f(m_meshShader.colorId, 0, 0, 0, 0));
       SAFE_GL(glUniform3f(m_meshShader.LightPosLoc, cmd.camera.pos.x, cmd.camera.pos.y, cmd.camera.pos.z));
@@ -842,9 +852,9 @@ private:
     }
     else
     {
-      glDisable(GL_DEPTH_TEST);
+      m_textShader.use();
 
-      SAFE_GL(glUseProgram(m_textShader.programId));
+      glDisable(GL_DEPTH_TEST);
 
       // Texture Unit 0: Diffuse
       SAFE_GL(glActiveTexture(GL_TEXTURE0));
@@ -888,10 +898,8 @@ private:
   Camera m_camera;
 
   // shader attribute/uniform locations
-  struct TextShader
+  struct TextShader : Shader
   {
-    GLuint programId;
-
     // attributes
     GLint positionLoc;
     GLint uvDiffuseLoc;
@@ -903,9 +911,8 @@ private:
 
   TextShader m_textShader;
 
-  struct MeshShader
+  struct MeshShader : Shader
   {
-    GLuint programId;
     GLint CameraPos;
     GLint M;
     GLint MVP;

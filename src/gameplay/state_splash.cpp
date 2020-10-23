@@ -52,7 +52,7 @@ struct SplashState : Scene
 
     if(activated)
     {
-      time ++;
+      time++;
       const float alpha = 1.0 - delay / float(FADE_TIME);
       view->setAmbientLight(blend(LIGHT_ON, LIGHT_OFF, alpha));
 
@@ -76,7 +76,6 @@ struct SplashState : Scene
     panel.orientation = Quaternion::fromEuler(0, 0, t * 5.0);
     view->sendActor(panel);
   }
-
 
 private:
   View* const view;
