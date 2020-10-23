@@ -9,6 +9,7 @@
 #include "engine/display.h"
 
 #include <cassert>
+#include <chrono>
 #include <cstdio>
 #include <stdexcept>
 #include <vector>
@@ -620,6 +621,8 @@ struct OpenglDisplay : Display
 
   void endDraw() override
   {
+    const auto t0 = chrono::high_resolution_clock::now();
+
     auto screenSize = getCurrentScreenSize();
 
     m_aspectRatio = float(screenSize.width) / screenSize.height;
@@ -643,6 +646,9 @@ struct OpenglDisplay : Display
       executeAllDrawCommands(screenSize);
     }
 
+    const auto t1 = chrono::high_resolution_clock::now();
+
+    Stat("Render time (ms)", chrono::duration_cast<chrono::microseconds>(t1 - t0).count()/1000.0);
     SDL_GL_SwapWindow(m_window);
   }
 
