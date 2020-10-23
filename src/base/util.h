@@ -19,21 +19,6 @@ class uvector : public vector<unique_ptr<T>>
 {
 };
 
-template<typename T>
-class uptr : public unique_ptr<T>
-{
-public:
-  uptr(T* p) : unique_ptr<T>(p)
-  {
-  }
-};
-
-template<typename T>
-uptr<T> unique(T* p)
-{
-  return uptr<T>(p);
-}
-
 inline bool endsWith(string const& value, string const& ending)
 {
   if(ending.size() > value.size())

@@ -227,7 +227,7 @@ struct GameState : Scene, private IGame
 
   void spawn(Entity* e) override
   {
-    m_spawned.push_back(unique(e));
+    m_spawned.push_back(unique_ptr<Entity>(e));
   }
 
   void postEvent(unique_ptr<Event> event) override
