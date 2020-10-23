@@ -166,7 +166,7 @@ GLuint loadShaders(Span<const uint8_t> vsCode, Span<const uint8_t> fsCode)
   return progId;
 }
 
-GLuint loadShaders(std::string name)
+GLuint loadShader(std::string name)
 {
   printf("[display] loading shader '%s'\n", name.c_str());
   auto vsCode = File::read("res/shaders/" + name + ".vert");
@@ -276,13 +276,7 @@ T blend(T a, T b, float alpha)
 
 struct Shader
 {
-  virtual ~Shader() = default;
-
-  void use()
-  {
-    SAFE_GL(glUseProgram(program));
-  }
-
+  operator GLuint () { return program; }
   GLuint program;
 };
 
@@ -291,8 +285,8 @@ struct PostProcessing
   PostProcessing(Size2i resolution)
     : m_resolution(resolution)
   {
-    m_hdrShader.program = loadShaders("hdr");
-    m_bloomShader.program = loadShaders("bloom");
+    m_hdrShader.program = loadShader("hdr");
+    m_bloomShader.program = loadShader("bloom");
 
     SAFE_GL(glGenBuffers(1, &m_hdrQuadVbo));
 
@@ -350,7 +344,7 @@ struct PostProcessing
   {
     SAFE_GL(glViewport(0, 0, m_resolution.width, m_resolution.height));
 
-    m_bloomShader.use();
+    SAFE_GL(glUseProgram(m_bloomShader));
     SAFE_GL(glDisable(GL_DEPTH_TEST));
 
     SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, m_hdrQuadVbo));
@@ -390,7 +384,8 @@ struct PostProcessing
   {
     SAFE_GL(glViewport(0, 0, screenSize.width, screenSize.height));
 
-    m_hdrShader.use();
+    SAFE_GL(glUseProgram(m_hdrShader));
+
     SAFE_GL(glDisable(GL_DEPTH_TEST));
 
     // Texture Unit 0
@@ -520,9 +515,8 @@ struct OpenglDisplay : Display
       }
     }
 
-    m_textShader.program = loadShaders("text");
-
-    m_meshShader.program = loadShaders("mesh");
+    m_textShader = loadShader("text");
+    m_meshShader = loadShader("mesh");
 
     m_postProcessing = make_unique<PostProcessing>(resolution);
 
@@ -745,7 +739,8 @@ private:
 
     if(cmd.depthtest)
     {
-      m_meshShader.use();
+      SAFE_GL(glUseProgram(m_meshShader));
+
       glEnable(GL_DEPTH_TEST);
       SAFE_GL(glUniform3f(MeshShader::Uniform::ambientLoc, m_ambientLight, m_ambientLight, m_ambientLight));
       SAFE_GL(glUniform4f(MeshShader::Uniform::colorId, 0, 0, 0, 0));
@@ -791,27 +786,29 @@ private:
       SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, model.buffer));
 
       SAFE_GL(glEnableVertexAttribArray(MeshShader::Attribute::positionLoc));
-      SAFE_GL(glEnableVertexAttribArray(MeshShader::Attribute::normalLoc));
-      SAFE_GL(glEnableVertexAttribArray(MeshShader::Attribute::uvDiffuseLoc));
-      SAFE_GL(glEnableVertexAttribArray(MeshShader::Attribute::uvLightmapLoc));
-
       SAFE_GL(glVertexAttribPointer(MeshShader::Attribute::positionLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, x)));
+
+      SAFE_GL(glEnableVertexAttribArray(MeshShader::Attribute::normalLoc));
       SAFE_GL(glVertexAttribPointer(MeshShader::Attribute::normalLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, nx)));
+
+      SAFE_GL(glEnableVertexAttribArray(MeshShader::Attribute::uvDiffuseLoc));
       SAFE_GL(glVertexAttribPointer(MeshShader::Attribute::uvDiffuseLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, diffuse_u)));
+
+      SAFE_GL(glEnableVertexAttribArray(MeshShader::Attribute::uvLightmapLoc));
       SAFE_GL(glVertexAttribPointer(MeshShader::Attribute::uvLightmapLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, lightmap_u)));
 
       SAFE_GL(glDrawArrays(GL_TRIANGLES, 0, model.vertices.size()));
     }
     else
     {
-      m_textShader.use();
+      SAFE_GL(glUseProgram(m_textShader));
 
       glDisable(GL_DEPTH_TEST);
 
       // Texture Unit 0: Diffuse
       SAFE_GL(glActiveTexture(GL_TEXTURE0));
       SAFE_GL(glBindTexture(GL_TEXTURE_2D, model.diffuse));
-      SAFE_GL(glUniform1i(m_textShader.DiffuseTex, 0));
+      SAFE_GL(glUniform1i(TextShader::Uniform::DiffuseTex, 0));
 
       auto const forward = Vector3f(0, 1, 0);
       auto const up = Vector3f(0, 0, 1);
@@ -829,15 +826,15 @@ private:
       auto MV = pos * scale;
       auto MVP = perspective * view * MV;
 
-      SAFE_GL(glUniformMatrix4fv(m_textShader.MVP, 1, GL_FALSE, &MVP[0][0]));
+      SAFE_GL(glUniformMatrix4fv(TextShader::Uniform::MVP, 1, GL_FALSE, &MVP[0][0]));
 
       SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, model.buffer));
 
-      SAFE_GL(glEnableVertexAttribArray(m_textShader.positionLoc));
-      SAFE_GL(glEnableVertexAttribArray(m_textShader.uvDiffuseLoc));
+      SAFE_GL(glEnableVertexAttribArray(TextShader::Attribute::positionLoc));
+      SAFE_GL(glEnableVertexAttribArray(TextShader::Attribute::uvDiffuseLoc));
 
-      SAFE_GL(glVertexAttribPointer(m_textShader.positionLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, x)));
-      SAFE_GL(glVertexAttribPointer(m_textShader.uvDiffuseLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, diffuse_u)));
+      SAFE_GL(glVertexAttribPointer(TextShader::Attribute::positionLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, x)));
+      SAFE_GL(glVertexAttribPointer(TextShader::Attribute::uvDiffuseLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, diffuse_u)));
 
       SAFE_GL(glDrawArrays(GL_TRIANGLES, 0, model.vertices.size()));
     }
@@ -850,7 +847,7 @@ private:
   Camera m_camera;
 
   // shader attribute/uniform locations
-  struct TextShader : Shader
+  struct TextShader
   {
     enum Uniform
     {
@@ -865,7 +862,7 @@ private:
     };
   };
 
-  TextShader m_textShader;
+  GLint m_textShader;
 
   struct MeshShader : Shader
   {
@@ -890,7 +887,7 @@ private:
     };
   };
 
-  MeshShader m_meshShader;
+  GLint m_meshShader;
 
   vector<RenderMesh> m_Models;
   vector<RenderMesh> m_fontModel;
