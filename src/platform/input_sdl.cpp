@@ -9,6 +9,8 @@
 #include "engine/input.h"
 #include "SDL.h"
 #include <map>
+#include <stdexcept>
+#include <string>
 
 namespace
 {
@@ -79,7 +81,15 @@ struct SdlUserInput : UserInput
 {
   SdlUserInput()
   {
+    if(SDL_InitSubSystem(SDL_INIT_EVENTS))
+      throw std::runtime_error(std::string("Can't init input: ") + SDL_GetError());
+
     m_quitDelegate = &unbound;
+  }
+
+  ~SdlUserInput()
+  {
+    SDL_QuitSubSystem(SDL_INIT_EVENTS);
   }
 
   void process() override
