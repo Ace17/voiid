@@ -5,10 +5,10 @@
 // License, or (at your option) any later version.
 
 #include "base/geom.h"
-#include "base/util.h" // setExtension
 #include "engine/rendermesh.h"
 #include "misc/file.h"
 #include <stdexcept>
+#include <string.h> // memcpy
 
 static
 RenderMesh boxModel()
@@ -72,30 +72,33 @@ RenderMesh boxModel()
 }
 
 static
-RenderMesh loadBinaryRenderMesh(String path_)
+RenderMesh loadBinaryRenderMesh(String path)
 {
-  string path(path_.data, path_.len);
-  auto fp = fopen(path.c_str(), "rb");
+  auto data = File::read(path);
+  int readPosition = 0;
 
-  if(!fp)
-    throw runtime_error("Can't open model file: '" + path + "'");
+  auto read = [&] (void* ptr, size_t size)
+    {
+      if(readPosition + size > data.size())
+        throw std::runtime_error("Truncated file '" + string(path.data) + "'");
+
+      memcpy(ptr, &data[readPosition], size);
+      readPosition += size;
+    };
 
   RenderMesh mesh;
 
-  while(1)
+  while(readPosition < (int)data.size())
   {
     int vertexCount = 0;
-    int n = fread(&vertexCount, 1, 4, fp);
-
-    if(n == 0)
-      break;
+    read(&vertexCount, 4);
 
     SingleRenderMesh single;
 
     for(int i = 0; i < vertexCount; ++i)
     {
       SingleRenderMesh::Vertex vertex;
-      fread(&vertex, 1, sizeof vertex, fp);
+      read(&vertex, sizeof vertex);
 
       single.vertices.push_back(vertex);
     }
@@ -104,8 +107,6 @@ RenderMesh loadBinaryRenderMesh(String path_)
 
     mesh.singleMeshes.push_back(single);
   }
-
-  fclose(fp);
 
   return mesh;
 }

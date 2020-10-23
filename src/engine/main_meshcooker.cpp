@@ -1,5 +1,5 @@
 #include <map>
-#include <stdio.h>
+#include <string.h> // memcpy
 
 #include "base/mesh.h"
 #include "base/span.h"
@@ -68,18 +68,25 @@ RenderMesh convertToRenderMesh(vector<Mesh> const& meshes, vector<string>& textu
 
 void writeRenderMesh(string path, const RenderMesh& renderMesh)
 {
-  FILE* fp = fopen(path.c_str(), "wb");
+  std::vector<uint8_t> data;
+
+  auto write = [&] (const void* ptr, size_t size)
+    {
+      const auto i = data.size();
+      data.resize(i + size);
+      memcpy(&data[i], ptr, size);
+    };
 
   for(auto& single : renderMesh.singleMeshes)
   {
     const int num = (int)single.vertices.size();
-    fwrite(&num, 1, 4, fp);
+    write(&num, 4);
 
     for(auto& vertex : single.vertices)
-      fwrite(&vertex, 1, sizeof vertex, fp);
+      write(&vertex, sizeof vertex);
   }
 
-  fclose(fp);
+  File::write(path, data);
 }
 }
 
