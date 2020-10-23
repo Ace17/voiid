@@ -72,12 +72,13 @@ RenderMesh boxModel()
 }
 
 static
-RenderMesh loadBinaryRenderMesh(String path)
+RenderMesh loadBinaryRenderMesh(String path_)
 {
-  auto fp = fopen(path.data, "rb");
+  string path(path_.data, path_.len);
+  auto fp = fopen(path.c_str(), "rb");
 
   if(!fp)
-    throw runtime_error("Can't open model file: '" + string(path.data) + "'");
+    throw runtime_error("Can't open model file: '" + path + "'");
 
   RenderMesh mesh;
 

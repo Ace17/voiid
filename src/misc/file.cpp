@@ -13,15 +13,16 @@ using namespace std;
 
 namespace File
 {
-string read(String path)
+string read(String path_)
 {
-  FILE* fp = fopen(path.data, "rb");
+  string path(path_.data, path_.len);
+  FILE* fp = fopen(path.c_str(), "rb");
 
   if(!fp)
-    throw runtime_error("Can't open file '" + string(path.data) + "' for reading");
+    throw runtime_error("Can't open file '" + path + "' for reading");
 
   fseek(fp, 0, SEEK_END);
-  auto size = ftell(fp);
+  const auto size = ftell(fp);
   fseek(fp, 0, SEEK_SET);
 
   string r;
@@ -33,12 +34,13 @@ string read(String path)
   return r;
 }
 
-void write(String path, Span<const uint8_t> data)
+void write(String path_, Span<const uint8_t> data)
 {
-  FILE* fp = fopen(path.data, "wb");
+  string path(path_.data, path_.len);
+  FILE* fp = fopen(path.c_str(), "wb");
 
   if(!fp)
-    throw runtime_error("Can't open file '" + string(path.data) + "' for writing");
+    throw runtime_error("Can't open file '" + path + "' for writing");
 
   fwrite(data.data, 1, data.len, fp);
   fflush(fp);
