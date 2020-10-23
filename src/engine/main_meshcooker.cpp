@@ -88,7 +88,7 @@ int main(int argc, const char* argv[])
   if(argc != 4)
     return 1;
 
-  const auto input = argv[1];
+  const auto input = string(argv[1]);
   const auto textureDir = argv[2];
   const auto outputPathMesh = argv[3];
 
@@ -117,7 +117,7 @@ int main(int argc, const char* argv[])
 
       auto const inputPathDiffuse = string(textureDir) + "/" + textureFiles[meshIndex];
 
-      if(File::exists(inputPathDiffuse.c_str()))
+      if(File::exists(inputPathDiffuse))
       {
         auto diffusePngData = File::read(inputPathDiffuse);
         File::write(outputPathDiffuse, { (uint8_t*)diffusePngData.data(), (int)diffusePngData.size() });

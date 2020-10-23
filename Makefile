@@ -49,6 +49,7 @@ SRCS_ENGINE:=\
 	src/misc/decompress.cpp\
 	src/misc/file.cpp\
 	src/misc/json.cpp\
+	src/misc/string.cpp\
 	src/render/display_ogl.cpp\
 	src/render/glad.cpp\
 	src/render/rendermesh.cpp\

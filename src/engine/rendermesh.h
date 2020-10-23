@@ -12,6 +12,7 @@
 using namespace std;
 
 #include "base/geom.h"
+#include "base/string.h"
 
 struct SingleRenderMesh
 {
@@ -38,5 +39,5 @@ struct RenderMesh
   vector<SingleRenderMesh> singleMeshes;
 };
 
-RenderMesh loadRenderMesh(string path);
+RenderMesh loadRenderMesh(String path);
 

@@ -225,7 +225,7 @@ Vector3f average(Span<const Mesh::Vertex> values)
   return result * (1.0 / values.len);
 }
 
-Room loadRoom(const char* filename)
+Room loadRoom(String filename)
 {
   Room r;
 

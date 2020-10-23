@@ -5,6 +5,7 @@
 // License, or (at your option) any later version.
 
 #pragma once
+#include "string.h"
 #include <string>
 #include <vector>
 
@@ -33,5 +34,5 @@ struct Mesh
   std::vector<Face> faces;
 };
 
-std::vector<Mesh> importMesh(char const* path);
+std::vector<Mesh> importMesh(String path);
 

@@ -24,18 +24,10 @@ using namespace std;
 
 namespace
 {
-using String = Span<const char>;
-
 String substr(String s, int n)
 {
   s.len = min(n, s.len);
   return s;
-}
-
-template<size_t N>
-String S(const char (& s)[N])
-{
-  return { s, int(N - 1) };
 }
 
 bool startsWith(String s, String prefix)
@@ -107,7 +99,7 @@ Mesh parseOneMesh(String& stream, String name)
     if(line.len == 0)
       break;
 
-    if(accept(line, S("vertex: ")))
+    if(accept(line, ("vertex: ")))
     {
       Mesh::Vertex vertex;
 
@@ -133,16 +125,16 @@ Mesh parseOneMesh(String& stream, String name)
 
       mesh.vertices.push_back(vertex);
     }
-    else if(accept(line, S("prop: ")))
+    else if(accept(line, ("prop: ")))
     {
     }
-    else if(accept(line, S("material: ")))
+    else if(accept(line, ("material: ")))
     {
       line += 1;
       line.len--;
       mesh.material.assign(line.begin(), line.end());
     }
-    else if(accept(line, S("diffuse: ")))
+    else if(accept(line, ("diffuse: ")))
     {
       line += 1;
       line.len--;
@@ -168,7 +160,7 @@ Material parseOneMaterial(String& stream)
     if(line.len == 0)
       break;
 
-    if(accept(line, S("diffuse: ")))
+    if(accept(line, ("diffuse: ")))
     {
       // skip quotes
       line += 1;
@@ -181,7 +173,7 @@ Material parseOneMaterial(String& stream)
 }
 }
 
-std::vector<Mesh> importMesh(char const* path)
+std::vector<Mesh> importMesh(String path)
 {
   std::vector<Mesh> meshes;
   std::map<std::string, Material> materials;
@@ -190,13 +182,15 @@ std::vector<Mesh> importMesh(char const* path)
 
   auto s = gzipDecompress(Span<const uint8_t> { (uint8_t*)gzipData.data(), (int)gzipData.size() });
 
-  auto stream = String { (const char*)s.data(), (int)s.size() };
+  String stream;
+  stream.data = (const char*)s.data();
+  stream.len = s.size();
 
   while(stream.len > 0)
   {
     auto line = parseLine(stream);
 
-    if(accept(line, S("obj: ")))
+    if(accept(line, ("obj: ")))
     {
       // skip quotes
       line += 1;
@@ -205,7 +199,7 @@ std::vector<Mesh> importMesh(char const* path)
 
       meshes.back().material = materials[meshes.back().material].diffuse;
     }
-    else if(accept(line, S("material: ")))
+    else if(accept(line, ("material: ")))
     {
       // skip quotes
       line += 1;

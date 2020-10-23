@@ -33,5 +33,5 @@ struct Room
   vector<Convex> colliders;
 };
 
-Room loadRoom(const char* filename);
+Room loadRoom(String filename);
 

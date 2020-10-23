@@ -9,9 +9,9 @@ static Actor getActor(Entity* entity)
 {
   struct FakeView : View
   {
-    virtual void setTitle(char const*) {}
+    virtual void setTitle(String) {}
     virtual void preload(Resource) {}
-    virtual void textBox(char const*) {}
+    virtual void textBox(String) {}
     virtual void playMusic(int) {}
     virtual void stopMusic() {}
     virtual void playSound(int) {}
@@ -72,7 +72,7 @@ struct NullGame : IGame
   virtual unique_ptr<Handle> subscribeForEvents(IEventSink*) { return nullptr; }
   virtual void unsubscribeForEvents(IEventSink*) {}
   virtual Vector3f getPlayerPosition() { return Vector3f(0, 0, 0); }
-  virtual void textBox(char const*) {}
+  virtual void textBox(String) {}
 };
 
 struct NullPhysicsProbe : IPhysicsProbe

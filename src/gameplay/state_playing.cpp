@@ -11,6 +11,7 @@
 #include <map>
 
 #include "base/scene.h"
+#include "base/string.h"
 #include "base/util.h"
 
 #include "entity_factory.h"
@@ -165,10 +166,11 @@ struct GameState : Scene, private IGame
 
   void loadLevel(int levelIdx)
   {
+    char buf[256];
+
     printf("[gameplay] loading level %d\n", levelIdx);
     {
-      char filename[256];
-      sprintf(filename, "res/rooms/%02d/mesh.render", levelIdx);
+      const auto filename = format(buf, "res/rooms/%02d/mesh.render", levelIdx);
       m_view->preload(Resource { ResourceType::Model, MDL_ROOMS, filename });
     }
 
@@ -186,8 +188,7 @@ struct GameState : Scene, private IGame
     assert(m_listeners.empty());
 
     {
-      char filename[256];
-      snprintf(filename, sizeof filename, "res/rooms/%02d/mesh.mesh", levelIdx);
+      const auto filename = format(buf, "res/rooms/%02d/mesh.mesh", levelIdx);
 
       auto level = loadRoom(filename);
       world = level.colliders;
@@ -249,7 +250,7 @@ struct GameState : Scene, private IGame
     return m_player->pos;
   }
 
-  void textBox(char const* msg) override
+  void textBox(String msg) override
   {
     m_view->textBox(msg);
   }

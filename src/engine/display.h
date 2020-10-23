@@ -10,6 +10,7 @@
 
 #include "base/geom.h"
 #include "base/span.h"
+#include "base/string.h"
 
 struct Display
 {
@@ -18,8 +19,8 @@ struct Display
   virtual void setFullscreen(bool fs) = 0;
   virtual void setHdr(bool enable) = 0;
   virtual void setFsaa(bool enable) = 0;
-  virtual void setCaption(const char* caption) = 0;
-  virtual void loadModel(int modelId, const char* path) = 0;
+  virtual void setCaption(String caption) = 0;
+  virtual void loadModel(int modelId, String path) = 0;
   virtual void setCamera(Vector3f pos, Quaternion dir) = 0;
   virtual void setAmbientLight(float ambientLight) = 0;
   virtual void readPixels(Span<uint8_t> dstRgbPixels) = 0;

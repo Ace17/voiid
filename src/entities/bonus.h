@@ -6,9 +6,10 @@
 
 #pragma once
 
+#include "base/string.h"
 #include "gameplay/entity.h"
 
 #include <memory>
 
-std::unique_ptr<Entity> makeBonus(int action, int upgradeType, char const* msg);
+std::unique_ptr<Entity> makeBonus(int action, int upgradeType, String msg);
 

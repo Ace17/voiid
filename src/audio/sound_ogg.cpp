@@ -42,10 +42,10 @@ struct OggSoundPlayer : IAudioSource
 
 struct OggSound : Sound
 {
-  OggSound(string filename)
+  OggSound(String filename)
   {
     if(!File::exists(filename))
-      throw runtime_error("OggSound: file doesn't exist: '" + filename + "'");
+      throw runtime_error("OggSound: file doesn't exist: '" + string(filename.data) + "'");
 
     m_data = File::read(filename);
   }
@@ -59,7 +59,7 @@ struct OggSound : Sound
   string m_data;
 };
 
-unique_ptr<Sound> loadSoundFile(string filename)
+unique_ptr<Sound> loadSoundFile(String filename)
 {
   return make_unique<OggSound>(filename);
 }

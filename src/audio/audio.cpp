@@ -53,11 +53,11 @@ struct HighLevelAudio : Audio
   {
   }
 
-  void loadSound(int id, const char* path) override
+  void loadSound(int id, String path) override
   {
     if(!File::exists(path))
     {
-      printf("[audio] sound '%s' was not found, fallback on default sound\n", path);
+      printf("[audio] sound '%.*s' was not found, fallback on default sound\n", (int)path.len, path.data);
       sounds[id] = make_unique<BleepSound>();
       return;
     }

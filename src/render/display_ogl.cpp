@@ -147,7 +147,7 @@ GLuint uploadTextureToGPU(PictureView pic)
   return texture;
 }
 
-int loadTexture(const char* path)
+int loadTexture(String path)
 {
   auto pic = loadPicture(path);
   return uploadTextureToGPU(pic);
@@ -208,7 +208,7 @@ void uploadVerticesToGPU(RenderMesh& mesh)
   }
 }
 
-std::vector<RenderMesh> loadFontModels(const char* path, int COLS, int ROWS)
+std::vector<RenderMesh> loadFontModels(String path, int COLS, int ROWS)
 {
   std::vector<RenderMesh> r;
 
@@ -562,12 +562,12 @@ struct OpenglDisplay : Display
     m_enableFsaa = enable;
   }
 
-  void setCaption(const char* caption) override
+  void setCaption(String caption) override
   {
-    SDL_SetWindowTitle(m_window, caption);
+    SDL_SetWindowTitle(m_window, caption.data);
   }
 
-  void loadModel(int modelId, const char* path) override
+  void loadModel(int modelId, String path) override
   {
     if((int)m_Models.size() <= modelId)
       m_Models.resize(modelId + 1);
@@ -578,8 +578,8 @@ struct OpenglDisplay : Display
 
     for(auto& single : m_Models[modelId].singleMeshes)
     {
-      single.diffuse = loadTexture(setExtension(path, to_string(i) + ".diffuse.png").c_str());
-      single.lightmap = loadTexture(setExtension(path, to_string(i) + ".lightmap.png").c_str());
+      single.diffuse = loadTexture(setExtension(string(path.data), to_string(i) + ".diffuse.png"));
+      single.lightmap = loadTexture(setExtension(string(path.data), to_string(i) + ".lightmap.png"));
       ++i;
     }
 
@@ -648,7 +648,7 @@ struct OpenglDisplay : Display
 
     const auto t1 = chrono::high_resolution_clock::now();
 
-    Stat("Render time (ms)", chrono::duration_cast<chrono::microseconds>(t1 - t0).count()/1000.0);
+    Stat("Render time (ms)", chrono::duration_cast<chrono::microseconds>(t1 - t0).count() / 1000.0);
     SDL_GL_SwapWindow(m_window);
   }
 

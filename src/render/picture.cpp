@@ -49,7 +49,7 @@ Picture addBorderToTiles(PictureView src, int cols, int rows)
   return dst;
 }
 
-Picture loadPicture(const char* path)
+Picture loadPicture(String path)
 {
   try
   {

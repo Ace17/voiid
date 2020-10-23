@@ -19,7 +19,7 @@
 
 struct Bonus : Entity
 {
-  Bonus(int modelAction_, int type_, char const* msg_)
+  Bonus(int modelAction_, int type_, String msg_)
   {
     modelAction = modelAction_;
     type = type_;
@@ -59,10 +59,10 @@ struct Bonus : Entity
   int time = 0;
   int modelAction;
   int type;
-  char const* msg;
+  String msg;
 };
 
-std::unique_ptr<Entity> makeBonus(int action, int upgradeType, char const* msg)
+std::unique_ptr<Entity> makeBonus(int action, int upgradeType, String msg)
 {
   return make_unique<Bonus>(action, upgradeType, msg);
 }

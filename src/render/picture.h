@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "base/geom.h"
+#include "base/string.h"
 
 struct PictureView
 {
@@ -22,5 +23,5 @@ struct Picture
 };
 
 Picture addBorderToTiles(PictureView src, int cols, int rows);
-Picture loadPicture(const char* path);
+Picture loadPicture(String path);
 
