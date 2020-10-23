@@ -52,26 +52,6 @@ void ensureGl(char const* expr, int line)
   throw runtime_error(ss);
 }
 
-GLuint safeGetUniformLocation(GLuint programId, const char* name)
-{
-  auto uniformLocation = glGetUniformLocation(programId, name);
-
-  if(uniformLocation < 0)
-    throw runtime_error("Can't get location for uniform '" + string(name) + "'");
-
-  return uniformLocation;
-}
-
-GLuint safeGetAttributeLocation(GLuint programId, const char* name)
-{
-  auto attribLocation = glGetAttribLocation(programId, name);
-
-  if(attribLocation < 0)
-    throw runtime_error("Can't get location for attribute '" + string(name) + "'");
-
-  return attribLocation;
-}
-
 GLuint compileShader(Span<const uint8_t> code, int type)
 {
   auto shaderId = glCreateShader(type);
@@ -283,19 +263,24 @@ struct PostProcessing
     {
       m_hdrShader.programId = loadShaders("hdr");
 
-      m_hdrShader.InputTex1 = safeGetUniformLocation(m_hdrShader.programId, "InputTex1");
-      m_hdrShader.InputTex2 = safeGetUniformLocation(m_hdrShader.programId, "InputTex2");
-      m_hdrShader.positionLoc = safeGetAttributeLocation(m_hdrShader.programId, "vertexPos_model");
-      m_hdrShader.uvLoc = safeGetAttributeLocation(m_hdrShader.programId, "vertexUV");
+      // uniforms
+      m_hdrShader.InputTex1 = 2;
+      m_hdrShader.InputTex2 = 3;
+
+      // attributes
+      m_hdrShader.positionLoc = 0;
+      m_hdrShader.uvLoc = 1;
     }
 
     {
       m_bloomShader.programId = loadShaders("bloom");
 
-      m_bloomShader.InputTex = safeGetUniformLocation(m_bloomShader.programId, "InputTex");
-      m_bloomShader.IsThreshold = safeGetUniformLocation(m_bloomShader.programId, "IsThreshold");
-      m_bloomShader.positionLoc = safeGetAttributeLocation(m_bloomShader.programId, "vertexPos_model");
-      m_bloomShader.uvLoc = safeGetAttributeLocation(m_bloomShader.programId, "vertexUV");
+      m_bloomShader.InputTex = 2;
+      m_bloomShader.IsThreshold = 3;
+
+      // attributes
+      m_bloomShader.positionLoc = 0;
+      m_bloomShader.uvLoc = 1;
     }
 
     SAFE_GL(glGenBuffers(1, &m_hdrQuadVbo));
@@ -550,27 +535,31 @@ struct OpenglDisplay : Display
     {
       m_textShader.programId = loadShaders("text");
 
-      m_textShader.MVP = safeGetUniformLocation(m_textShader.programId, "MVP");
-      m_textShader.DiffuseTex = safeGetUniformLocation(m_textShader.programId, "DiffuseTex");
-      m_textShader.positionLoc = safeGetAttributeLocation(m_textShader.programId, "vertexPos_model");
-      m_textShader.uvDiffuseLoc = safeGetAttributeLocation(m_textShader.programId, "vertexUV");
+      m_textShader.MVP = 0;
+      m_textShader.DiffuseTex = 1;
+      m_textShader.positionLoc = 0;
+      m_textShader.uvDiffuseLoc = 1;
     }
 
     {
       m_meshShader.programId = loadShaders("mesh");
 
-      m_meshShader.CameraPos = safeGetUniformLocation(m_meshShader.programId, "CameraPos");
-      m_meshShader.M = safeGetUniformLocation(m_meshShader.programId, "M");
-      m_meshShader.MVP = safeGetUniformLocation(m_meshShader.programId, "MVP");
-      m_meshShader.DiffuseTex = safeGetUniformLocation(m_meshShader.programId, "DiffuseTex");
-      m_meshShader.LightmapTex = safeGetUniformLocation(m_meshShader.programId, "LightmapTex");
-      m_meshShader.colorId = safeGetUniformLocation(m_meshShader.programId, "fragOffset");
-      m_meshShader.ambientLoc = safeGetUniformLocation(m_meshShader.programId, "ambientLight");
-      m_meshShader.LightPosLoc = safeGetUniformLocation(m_meshShader.programId, "LightPos");
-      m_meshShader.positionLoc = safeGetAttributeLocation(m_meshShader.programId, "vertexPos_model");
-      m_meshShader.uvDiffuseLoc = safeGetAttributeLocation(m_meshShader.programId, "vertexUV");
-      m_meshShader.uvLightmapLoc = safeGetAttributeLocation(m_meshShader.programId, "vertexUV_lightmap");
-      m_meshShader.normalLoc = safeGetAttributeLocation(m_meshShader.programId, "a_normal");
+      // uniforms
+      m_meshShader.M = 0;
+      m_meshShader.MVP = 1;
+
+      m_meshShader.CameraPos = 2;
+      m_meshShader.DiffuseTex = 4;
+      m_meshShader.LightmapTex = 5;
+      m_meshShader.colorId = 3;
+      m_meshShader.ambientLoc = 6;
+      m_meshShader.LightPosLoc = 7;
+
+      // attributes
+      m_meshShader.positionLoc = 0;
+      m_meshShader.uvDiffuseLoc = 1;
+      m_meshShader.uvLightmapLoc = 2;
+      m_meshShader.normalLoc = 3;
     }
 
     m_postProcessing = make_unique<PostProcessing>(resolution);
