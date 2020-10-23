@@ -75,7 +75,6 @@ struct GameState : Scene, private IGame
   GameState(View* view) :
     m_view(view)
   {
-    m_shouldLoadLevel = true;
     resetPhysics();
   }
 
@@ -90,10 +89,10 @@ struct GameState : Scene, private IGame
 
   Scene* tick(Control c) override
   {
-    if(m_shouldLoadLevel)
+    if(!m_levelIsLoaded)
     {
       loadLevel(m_level);
-      m_shouldLoadLevel = false;
+      m_levelIsLoaded = true;
     }
 
     m_player->think(c);
@@ -124,7 +123,7 @@ struct GameState : Scene, private IGame
 
   void draw() override
   {
-    if(m_shouldLoadLevel)
+    if(!m_levelIsLoaded)
       return;
 
     m_view->sendActor(Actor(Vector(0, 0, 0), MDL_ROOMS));
@@ -215,12 +214,12 @@ struct GameState : Scene, private IGame
 
   void endLevel() override
   {
-    m_shouldLoadLevel = true;
+    m_levelIsLoaded = false;
     m_level++;
   }
 
   int m_level = 1;
-  bool m_shouldLoadLevel = false;
+  bool m_levelIsLoaded = false;
 
   ////////////////////////////////////////////////////////////////
   // IGame: game, as seen by the entities
