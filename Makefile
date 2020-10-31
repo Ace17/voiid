@@ -43,7 +43,6 @@ SRCS_ENGINE:=\
 	src/engine/main.cpp\
 	src/engine/stats.cpp\
 	src/audio/audio.cpp\
-	src/audio/audio_sdl.cpp\
 	src/audio/sound_ogg.cpp\
 	src/misc/base64.cpp\
 	src/misc/decompress.cpp\
@@ -59,6 +58,7 @@ SRCS_ENGINE:=\
 	src/render/mesh_import.cpp\
 
 SRCS_ENGINE+=\
+	src/platform/audio_sdl.cpp\
 	src/platform/input_sdl.cpp\
 
 SRCS_MESHCOOKER:=\

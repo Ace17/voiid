@@ -41,7 +41,7 @@
    {
       "desc" : "Platform-specific adapters",
       "name" : "platform",
-      "deps" : [ "base", "engine"]
+      "deps" : [ "base", "engine", "audio" ]
    },
    {
       "desc" : "Desc GL",
