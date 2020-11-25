@@ -35,6 +35,21 @@ using namespace std;
   do { a; ensureGl(# a, __LINE__); } while (0)
 #endif
 
+void ensureGl(char const* expr, int line)
+{
+  auto const errorCode = glGetError();
+
+  if(errorCode == GL_NO_ERROR)
+    return;
+
+  string ss;
+  ss += "OpenGL error\n";
+  ss += "Expr: " + string(expr) + "\n";
+  ss += "Line: " + to_string(line) + "\n";
+  ss += "Code: " + to_string(errorCode) + "\n";
+  throw runtime_error(ss);
+}
+
 #define OFFSET(VertexType, Attribute) \
   (void*)(&(((VertexType*)nullptr)->Attribute))
 
@@ -55,21 +70,6 @@ const QuadVertex screenQuad[] =
   { +1, -1, 1, 0 },
   { +1, +1, 1, 1 },
 };
-
-void ensureGl(char const* expr, int line)
-{
-  auto const errorCode = glGetError();
-
-  if(errorCode == GL_NO_ERROR)
-    return;
-
-  string ss;
-  ss += "OpenGL error\n";
-  ss += "Expr: " + string(expr) + "\n";
-  ss += "Line: " + to_string(line) + "\n";
-  ss += "Code: " + to_string(errorCode) + "\n";
-  throw runtime_error(ss);
-}
 
 GLuint compileShader(Span<const uint8_t> code, int type)
 {
