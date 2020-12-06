@@ -13,6 +13,7 @@
 #include "base/scene.h"
 #include "base/string.h"
 #include "base/util.h"
+#include "misc/file.h"
 
 #include "entity_factory.h"
 #include "game.h"
@@ -112,8 +113,6 @@ struct GameState : Scene, private IGame
       m_player->addUpgrade(-1);
     }
 
-    m_view->setAmbientLight(1.0);
-
     return this;
   }
 
@@ -169,9 +168,18 @@ struct GameState : Scene, private IGame
     char buf[256];
 
     printf("[gameplay] loading level %d\n", levelIdx);
+
     {
-      const auto filename = format(buf, "res/rooms/%02d/mesh.render", levelIdx);
+      const auto filename = format(buf, "res/rooms/%02d/room.render", levelIdx);
       m_view->preload(Resource { ResourceType::Model, MDL_ROOMS, filename });
+    }
+
+    {
+      float ambientLight = 1.0;
+      const auto filename = format(buf, "res/rooms/%02d/room.settings", levelIdx);
+      const auto text = File::read(filename);
+      sscanf(text.c_str(), "%f", &ambientLight);
+      m_view->setAmbientLight(ambientLight);
     }
 
     if(m_player)
@@ -188,7 +196,7 @@ struct GameState : Scene, private IGame
     assert(m_listeners.empty());
 
     {
-      const auto filename = format(buf, "res/rooms/%02d/mesh.mesh", levelIdx);
+      const auto filename = format(buf, "res/rooms/%02d/room.mesh", levelIdx);
 
       auto level = loadRoom(filename);
       world = level.colliders;

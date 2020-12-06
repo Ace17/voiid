@@ -16,11 +16,19 @@ res/%.ogg: assets/%.ogg
 TARGETS+=res/font.png res/white.png
 
 #-----------------------------------
-# Meshes
+# ROOMS
 
-ROOMS_SRC+=$(wildcard assets/rooms/*/mesh.blend)
-TARGETS+=$(ROOMS_SRC:assets/%.blend=res/%.mesh)
-TARGETS+=$(ROOMS_SRC:assets/%.blend=res/%.render)
+ROOMS+=$(wildcard assets/rooms/*)
+TARGETS+=$(ROOMS:assets/%=res/%/room.settings)
+TARGETS+=$(ROOMS:assets/%=res/%/room.mesh)
+TARGETS+=$(ROOMS:assets/%=res/%/room.render)
+
+res/%/room.mesh: assets/%/room.blend ./scripts/export_from_blender.py
+	@mkdir -p $(dir $@)
+	./scripts/export_from_blender "$<" "$@"
+
+#-----------------------------------
+# Meshes
 
 SPRITES_SRC+=$(wildcard assets/sprites/*.blend)
 TARGETS+=$(SPRITES_SRC:assets/%.blend=res/%.render)
