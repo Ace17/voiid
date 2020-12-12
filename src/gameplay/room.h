@@ -29,8 +29,15 @@ struct Room
     map<string, string> config;
   };
 
+  struct Light
+  {
+    Vector pos;
+    Vector color;
+  };
+
   vector<Thing> things;
   vector<Convex> colliders;
+  vector<Light> lights;
 };
 
 Room loadRoom(String filename);

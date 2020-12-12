@@ -96,13 +96,13 @@ int main(int argc, const char* argv[])
     return 1;
 
   const auto input = string(argv[1]);
-  const auto textureDir = argv[2];
+  const auto textureDir = string(argv[2]);
   const auto outputPathMesh = argv[3];
 
-  auto mesh = importMesh(input);
+  auto importedMesh = importMesh(input);
 
   std::vector<string> textureFiles;
-  auto renderMesh = convertToRenderMesh(mesh, textureFiles);
+  auto renderMesh = convertToRenderMesh(importedMesh.meshes, textureFiles);
   writeRenderMesh(outputPathMesh, renderMesh);
 
   int meshIndex = 0;
@@ -122,7 +122,7 @@ int main(int argc, const char* argv[])
       if(textureFiles[meshIndex] == "")
         textureFiles[meshIndex] = "mesh.png";
 
-      auto const inputPathDiffuse = string(textureDir) + "/" + textureFiles[meshIndex];
+      auto const inputPathDiffuse = textureDir + "/" + textureFiles[meshIndex];
 
       if(File::exists(inputPathDiffuse))
       {

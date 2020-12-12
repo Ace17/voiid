@@ -231,9 +231,14 @@ Room loadRoom(String filename)
 
   r.start = Vector3i(0, 0, 2);
 
-  auto meshes = importMesh(filename);
+  auto importedMesh = importMesh(filename);
 
-  for(auto& mesh : meshes)
+  for(auto& light : importedMesh.lights)
+    r.lights.push_back({
+      { light.x, light.y, light.z }, { light.r, light.g, light.b }
+    });
+
+  for(auto& mesh : importedMesh.meshes)
   {
     auto& name = mesh.name;
 

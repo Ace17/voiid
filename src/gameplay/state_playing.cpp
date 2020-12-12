@@ -207,6 +207,12 @@ struct GameState : Scene, private IGame
       m_player->pos = Vector(level.start.x, level.start.y, level.start.z) - m_player->size * 0.5;
 
       spawnEntities(level, this, levelIdx);
+
+      for(auto& light : level.lights)
+      {
+        const int idx = int(&light - level.lights.data());
+        m_view->setLight(idx, light.pos, light.color);
+      }
     }
 
     m_view->playMusic(levelIdx);

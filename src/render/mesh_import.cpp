@@ -86,6 +86,30 @@ void expect(String& stream, char c)
   stream += 1;
 }
 
+Light parseOneLight(String& stream)
+{
+  Light light {};
+  String line;
+
+  line = parseLine(stream);
+  light.x = parseFloat(line);
+  expect(line, ' ');
+  light.y = parseFloat(line);
+  expect(line, ' ');
+  light.z = parseFloat(line);
+
+  line = parseLine(stream);
+  light.r = parseFloat(line);
+  expect(line, ' ');
+  light.g = parseFloat(line);
+  expect(line, ' ');
+  light.b = parseFloat(line);
+
+  parseLine(stream);
+
+  return light;
+}
+
 Mesh parseOneMesh(String& stream, String name)
 {
   Mesh mesh;
@@ -173,9 +197,10 @@ Material parseOneMaterial(String& stream)
 }
 }
 
-std::vector<Mesh> importMesh(String path)
+ImportedMesh importMesh(String path)
 {
-  std::vector<Mesh> meshes;
+  ImportedMesh result;
+
   std::map<std::string, Material> materials;
 
   auto gzipData = File::read(path);
@@ -195,9 +220,9 @@ std::vector<Mesh> importMesh(String path)
       // skip quotes
       line += 1;
       line.len--;
-      meshes.push_back(parseOneMesh(stream, line));
+      result.meshes.push_back(parseOneMesh(stream, line));
 
-      meshes.back().material = materials[meshes.back().material].diffuse;
+      result.meshes.back().material = materials[result.meshes.back().material].diffuse;
     }
     else if(accept(line, ("material: ")))
     {
@@ -206,6 +231,14 @@ std::vector<Mesh> importMesh(String path)
       line.len--;
       std::string matName(line.begin(), line.end());
       materials[matName] = parseOneMaterial(stream);
+    }
+    else if(accept(line, ("light: ")))
+    {
+      // skip quotes
+      line += 1;
+      line.len--;
+      std::string lightName(line.begin(), line.end());
+      result.lights.push_back(parseOneLight(stream));
     }
     else
     {
@@ -221,6 +254,6 @@ std::vector<Mesh> importMesh(String path)
     }
   }
 
-  return meshes;
+  return result;
 }
 

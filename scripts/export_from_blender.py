@@ -78,14 +78,14 @@ def exportMeshes(scene, file):
                 pass
             elif obj.type == 'LIGHT':
                 light = obj.data
-                # file.write("light: \"%s\"\n" % str(light.name))
-                # file.write("%s " % str(round(obj.location.x, 6)))
-                # file.write("%s " % str(round(obj.location.y, 6)))
-                # file.write("%s\n" % str(round(obj.location.z, 6)))
-                # file.write("%s " % str(round(light.color.r, 2)))
-                # file.write("%s " % str(round(light.color.g, 2)))
-                # file.write("%s\n" % str(round(light.color.b, 2)))
-                # file.write("\n")
+                file.write("light: \"%s\"\n" % str(light.name))
+                file.write("%s " % str(round(obj.location.x, 6)))
+                file.write("%s " % str(round(obj.location.y, 6)))
+                file.write("%s\n" % str(round(obj.location.z, 6)))
+                file.write("%s " % str(round(light.color.r, 2)))
+                file.write("%s " % str(round(light.color.g, 2)))
+                file.write("%s\n" % str(round(light.color.b, 2)))
+                file.write("\n")
             elif obj.type in {'MESH', 'CURVE', 'SURFACE', 'FONT', 'META'}:
                 theMesh = ob_derived.to_mesh()
 

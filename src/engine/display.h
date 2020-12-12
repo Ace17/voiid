@@ -23,6 +23,7 @@ struct Display
   virtual void loadModel(int modelId, String path) = 0;
   virtual void setCamera(Vector3f pos, Quaternion dir) = 0;
   virtual void setAmbientLight(float ambientLight) = 0;
+  virtual void setLight(int idx, Vector3f pos, Vector3f color) = 0;
   virtual void readPixels(Span<uint8_t> dstRgbPixels) = 0;
   virtual void enableGrab(bool enable) = 0;
 

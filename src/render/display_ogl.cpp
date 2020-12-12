@@ -32,10 +32,10 @@ using namespace std;
 #define SAFE_GL(a) a
 #else
 #define SAFE_GL(a) \
-  do { a; ensureGl(# a, __LINE__); } while (0)
+  do { a; ensureGl(# a, __FILE__, __LINE__); } while (0)
 #endif
 
-void ensureGl(char const* expr, int line)
+void ensureGl(char const* expr, const char* file, int line)
 {
   auto const errorCode = glGetError();
 
@@ -44,9 +44,8 @@ void ensureGl(char const* expr, int line)
 
   string ss;
   ss += "OpenGL error\n";
-  ss += "Expr: " + string(expr) + "\n";
-  ss += "Line: " + to_string(line) + "\n";
-  ss += "Code: " + to_string(errorCode) + "\n";
+  ss += string(file) + "(" + to_string(line) + "): " + string(expr) + "\n";
+  ss += "Error code: " + to_string(errorCode) + "\n";
   throw runtime_error(ss);
 }
 
@@ -613,6 +612,14 @@ struct OpenglDisplay : Display
     m_ambientLight = ambientLight;
   }
 
+  void setLight(int idx, Vector3f pos, Vector3f color) override
+  {
+    if(idx >= (int)m_lights.size())
+      m_lights.resize(idx + 1);
+
+    m_lights[idx] = { pos, color };
+  }
+
   void beginDraw() override
   {
     m_frameCount++;
@@ -751,7 +758,16 @@ private:
       glEnable(GL_DEPTH_TEST);
       SAFE_GL(glUniform3f(MeshShader::Uniform::ambientLoc, m_ambientLight, m_ambientLight, m_ambientLight));
       SAFE_GL(glUniform4f(MeshShader::Uniform::colorId, 0, 0, 0, 0));
-      SAFE_GL(glUniform3f(MeshShader::Uniform::LightPosLoc, cmd.camera.pos.x, cmd.camera.pos.y, cmd.camera.pos.z));
+
+      assert(m_lights.size() < 32);
+      SAFE_GL(glUniform1i(MeshShader::Uniform::LightCountLoc, (int)m_lights.size()));
+
+      for(auto& light : m_lights)
+      {
+        const auto i = int(&light - m_lights.data());
+        SAFE_GL(glUniform3f(MeshShader::Uniform::LightPosLoc + i, light.pos.x, light.pos.y, light.pos.z));
+        SAFE_GL(glUniform3f(MeshShader::Uniform::LightColorLoc + i, light.color.x, light.color.y, light.color.z));
+      }
 
       if(cmd.blinking)
       {
@@ -882,7 +898,9 @@ private:
       LightmapTex = 5,
       colorId = 3,
       ambientLoc = 6,
-      LightPosLoc = 7,
+      LightCountLoc = 7,
+      LightPosLoc = 8,
+      LightColorLoc = 40,
     };
 
     enum Attribute
@@ -894,10 +912,17 @@ private:
     };
   };
 
+  struct Light
+  {
+    Vector3f pos;
+    Vector3f color;
+  };
+
   GLint m_meshShader;
 
   vector<RenderMesh> m_Models;
   vector<RenderMesh> m_fontModel;
+  vector<Light> m_lights;
 
   float m_aspectRatio = 1.0;
   float m_ambientLight = 0;

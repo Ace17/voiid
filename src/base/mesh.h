@@ -34,5 +34,18 @@ struct Mesh
   std::vector<Face> faces;
 };
 
-std::vector<Mesh> importMesh(String path);
+struct Light
+{
+  float x, y, z;
+  float r, g, b;
+};
+
+// contents of the .blend file
+struct ImportedMesh
+{
+  std::vector<Mesh> meshes;
+  std::vector<Light> lights;
+};
+
+ImportedMesh importMesh(String path);
 

@@ -366,6 +366,11 @@ private:
     m_display->setAmbientLight(amount);
   }
 
+  void setLight(int idx, Vector3f pos, Vector3f color) override
+  {
+    m_display->setLight(idx, pos, color);
+  }
+
   void sendActor(Actor const& actor) override
   {
     m_actors.push_back(actor);

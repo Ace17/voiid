@@ -51,6 +51,7 @@ struct View
   virtual void playSound(int id) = 0;
   virtual void setCameraPos(Vector3f pos, Quaternion orientation) = 0;
   virtual void setAmbientLight(float amount) = 0;
+  virtual void setLight(int idx, Vector3f pos, Vector3f color) = 0;
 
   // adds a displayable object to the current frame
   virtual void sendActor(Actor const& actor) = 0;
