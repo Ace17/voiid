@@ -20,16 +20,23 @@ function main
 function deliverBinaryVersion
 {
   local N=$NAME
+  local version="$(date +"%Y%m%d")_$(git rev-parse HEAD)"
 
   mkdir $tmpDir/$N
+
+  echo "Version: $version"
 
   echo "-------------------------------------"
   echo "Building binaries"
 
   # Windows binaries
   BIN_WIN=$tmpDir/bin/w64
+  CXXFLAGS="" \
   BIN=$BIN_WIN \
-    ./scripts/w64-make -j`nproc` >/dev/null
+    ./scripts/w64-make -j`nproc` \
+    VERSION="$version" \
+    $BIN_WIN/rel/game.exe \
+    >/dev/null
 
   gccVersion=$(x86_64-w64-mingw32-g++ -dumpversion)
 
@@ -42,7 +49,12 @@ function deliverBinaryVersion
   # GNU/Linux binaries
   CXXFLAGS="-include extra/glibc_version.h" \
   BIN=$tmpDir/bin/gnu \
-    make -j`nproc` >/dev/null
+    make -j`nproc` \
+    VERSION="$version" \
+    >/dev/null
+
+  echo -n "Game required GLIBC: "
+  nm -D $tmpDir/bin/gnu/rel/game.exe | grep GLIBC_ | sed 's/.*GLIBC_//g' | sort -Vru | head -n 1
 
   cp -a $tmpDir/bin/gnu/rel/game.exe                                 $tmpDir/$N/$N.x86_64
 
@@ -50,7 +62,9 @@ function deliverBinaryVersion
   strip -s $tmpDir/$N/*.{exe,dll,x86_64}
 
   # Compress executables
-  upx $tmpDir/$N/*.{exe,dll,x86_64}
+  upx -9 $tmpDir/$N/*.{exe,dll,x86_64}
+
+  echo "$version" > "$tmpDir/$N/version.txt"
 
   # Copy data
   cp -a res                                                        $tmpDir/$N/res
