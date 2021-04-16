@@ -10,7 +10,7 @@
 #include "audio_backend.h"
 #include "sound.h"
 
-#include "misc/file.h" // exists
+#include "misc/file.h" // File::exists
 
 #include <cmath> // sin
 #include <cstdio> // printf
@@ -18,6 +18,8 @@
 #include <memory>
 #include <unordered_map>
 
+namespace
+{
 using namespace std;
 
 struct BleepSound : Sound
@@ -103,6 +105,7 @@ struct HighLevelAudio : Audio
   const unique_ptr<IAudioBackend> m_backend;
   unordered_map<int, unique_ptr<Sound>> sounds;
 };
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
