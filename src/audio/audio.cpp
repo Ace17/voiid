@@ -76,13 +76,13 @@ struct HighLevelAudio : Audio
 
   void playMusic(int id) override
   {
-    char path[256];
-    sprintf(path, "res/music/music-%02d.ogg", id);
+    char buffer[256];
+    String path = format(buffer, "res/music/music-%02d.ogg", id);
 
     if(!File::exists(path))
     {
-      printf("[audio] music '%s' was not found, fallback on default music\n", path);
-      strcpy(path, "res/music/default.ogg");
+      printf("[audio] music '%.*s' was not found, fallback on default music\n", path.len, path.data);
+      path = "res/music/default.ogg";
       id = 0;
     }
 
@@ -90,7 +90,7 @@ struct HighLevelAudio : Audio
       return;
 
     currMusic = id;
-    printf("[audio] playing music: %s\n", path);
+    printf("[audio] playing music: %.*s\n", path.len, path.data);
 
     musicChannel = m_backend->playLoop(loadSoundFile(path).release());
   }
