@@ -84,11 +84,11 @@ public:
 private:
   void tickOneDisplayFrame(int now)
   {
-    auto timestep = m_slowMotion ? TIMESTEP * 10 : TIMESTEP;
+    const auto timeStep = m_slowMotion ? TIMESTEP * 10 : TIMESTEP;
 
-    while(m_lastTime + timestep < now)
+    while(m_lastTime + timeStep < now)
     {
-      m_lastTime += timestep;
+      m_lastTime += timeStep;
 
       if(!m_paused && m_running == 1)
         tickGameplay();
