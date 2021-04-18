@@ -126,7 +126,6 @@ SRCS_TESTS:=\
 	$(filter-out src/engine/main.cpp, $(SRCS_ENGINE))\
 	src/tests/tests.cpp\
 	src/tests/tests_main.cpp\
-	src/tests/audio.cpp\
 	src/tests/base64.cpp\
 	src/tests/decompress.cpp\
 	src/tests/json.cpp\

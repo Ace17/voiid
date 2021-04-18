@@ -6,15 +6,16 @@
 
 #pragma once
 
-#include "base/string.h"
+const int SAMPLERATE = 22050;
 
-struct Audio
+// An audio backend doesn't receive messages.
+// It continuously pulls from an IAudioMixer.
+struct IAudioBackend
 {
-  virtual ~Audio() = default;
-
-  virtual void loadSound(int id, String path) = 0;
-  virtual void playSound(int id) = 0;
-  virtual void playMusic(int id) = 0;
-  virtual void stopMusic() = 0;
+  virtual ~IAudioBackend() = default;
 };
+
+struct IAudioMixer;
+
+IAudioBackend* createAudioBackend(IAudioMixer* mixer);
 

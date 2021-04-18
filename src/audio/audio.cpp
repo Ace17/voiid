@@ -6,21 +6,72 @@
 
 // Playlist management, sound loading
 
-#include "audio.h"
-#include "audio_backend.h"
+#include "engine/audio.h"
+#include "engine/audio_backend.h"
+#include "engine/stats.h"
+
 #include "sound.h"
 
-#include "misc/file.h" // File::exists
-
+#include <atomic>
+#include <cassert>
 #include <cmath> // sin
 #include <cstdio> // printf
-#include <cstring> // strcpy
 #include <memory>
 #include <unordered_map>
+#include <vector>
 
 namespace
 {
 using namespace std;
+
+template<typename T>
+struct Fifo
+{
+  Fifo(int maxCount = 1024) : data(maxCount) {}
+
+  void push(const T& element)
+  {
+    const auto currPos = m_writePos.load();
+    const auto nextPos = (currPos + 1) % (int)data.size();
+
+    if(nextPos == m_readPos.load())
+      return; // queue full
+
+    data[currPos] = element;
+    m_writePos.store(nextPos);
+  }
+
+  bool pop(T& element)
+  {
+    const auto currPos = m_readPos.load();
+    const auto nextPos = (currPos + 1) % (int)data.size();
+
+    if(currPos == m_writePos.load())
+      return false; // nothing to pop
+
+    element = std::move(data[currPos]);
+    m_readPos.store(nextPos);
+    return true;
+  }
+
+private:
+  std::vector<T> data;
+
+  std::atomic<int> m_readPos {};
+  std::atomic<int> m_writePos {};
+};
+
+template<typename Container, typename Lambda>
+void removeWhen(Container& container, Lambda predicate)
+{
+  for(auto i = container.begin(); i != container.end();)
+  {
+    if(predicate(i->second))
+      i = container.erase(i);
+    else
+      ++i;
+  }
+}
 
 struct BleepSound : Sound
 {
@@ -49,9 +100,9 @@ struct BleepSound : Sound
   }
 };
 
-struct HighLevelAudio : Audio
+struct HighLevelAudio : MixableAudio
 {
-  HighLevelAudio(unique_ptr<IAudioBackend> backend) : m_backend(move(backend))
+  HighLevelAudio() : m_bleepSound(std::make_shared<BleepSound>())
   {
   }
 
@@ -59,60 +110,223 @@ struct HighLevelAudio : Audio
   {
     try
     {
-      sounds[id] = loadSoundFile(path);
+      auto i = m_sounds.find(id);
+
+      if(i != m_sounds.end())
+        m_sounds.erase(i);
+
+      m_sounds.insert({ id, loadSoundFile(path) });
     }
     catch(std::exception const& e)
     {
       printf("[audio] can't load sound '%.*s' (%s)\n", path.len, path.data, e.what());
-      printf("[audio] falling back on generated sound\n");
-      sounds[id] = make_unique<BleepSound>();
+      printf("[audio] default sound will be used instead.\n");
     }
   }
 
-  void playSound(int id) override
+  VoiceId createVoice() override
   {
-    m_backend->playSound(sounds[id].get());
+    const auto id = m_nextVoiceId++;
+
+    m_commandQueue.push({ Opcode::CreateVoice, id });
+
+    return id;
   }
 
-  void playMusic(int id) override
+  void releaseVoice(VoiceId id, bool autonomous) override
   {
-    char buffer[256];
-    String path = format(buffer, "res/music/music-%02d.ogg", id);
+    uint8_t flags = autonomous ? 1 : 0;
+    m_commandQueue.push({ Opcode::ReleaseVoice, id, {}, {}, flags });
+  }
 
-    if(!File::exists(path))
+  void setVoiceVolume(VoiceId id, float vol) override
+  {
+    m_commandQueue.push({ Opcode::SetVoiceVolume, id, vol });
+  }
+
+  void playVoice(VoiceId id, int soundId, bool looped) override
+  {
+    auto i_sound = m_sounds.find(soundId);
+    auto sound = i_sound != m_sounds.end() ? i_sound->second : m_bleepSound;
+    const auto code = looped ? Opcode::PlayVoiceLooped : Opcode::PlayVoice;
+    m_commandQueue.push({ code, id, {}, sound });
+  }
+
+  void stopVoice(VoiceId id) override
+  {
+    m_commandQueue.push({ Opcode::StopVoice, id });
+  }
+
+  /////////////////////////////////////////////////////////////////////////////
+  // Resources
+  /////////////////////////////////////////////////////////////////////////////
+  unordered_map<int, std::shared_ptr<Sound>> m_sounds;
+  std::shared_ptr<BleepSound> m_bleepSound;
+
+  /////////////////////////////////////////////////////////////////////////////
+  // Communication between the main thread and the audio backend thread
+  /////////////////////////////////////////////////////////////////////////////
+
+  enum class Opcode
+  {
+    CreateVoice,
+    ReleaseVoice,
+    PlayVoice,
+    PlayVoiceLooped,
+    StopVoice,
+    SetVoiceVolume,
+  };
+
+  struct Command
+  {
+    Opcode op;
+    VoiceId id;
+    float floatVal {};
+    std::shared_ptr<Sound> sound {};
+    uint8_t flags {};
+  };
+
+  Fifo<Command> m_commandQueue;
+
+  /////////////////////////////////////////////////////////////////////////////
+  // Audio backend thread
+  /////////////////////////////////////////////////////////////////////////////
+  void mixAudio(Span<float> dst) override
+  {
+    processCommands();
+
+    float buffer[4096] {};
+    assert(dst.len <= int(sizeof buffer));
+
+    for(auto& voicePair : m_voices)
     {
-      printf("[audio] music '%.*s' was not found, fallback on default music\n", path.len, path.data);
-      path = "res/music/default.ogg";
-      id = 0;
+      auto& voice = voicePair.second;
+
+      if(voice.finished)
+        continue;
+
+      assert(voice.sound);
+
+      Span<float> buf = buffer;
+      buf.len = dst.len;
+
+      if(!voice.source)
+        voice.source = voice.sound->createSource();
+
+      const int len = voice.source->read(buf);
+
+      for(int i = 0; i < len / 2; ++i)
+      {
+        voice.vol.update();
+
+        dst[2 * i + 0] += buf[2 * i + 0] * voice.vol;
+        dst[2 * i + 1] += buf[2 * i + 1] * voice.vol;
+      }
+
+      if(len < buf.len)
+      {
+        if(voice.loop)
+          voice.source.reset();
+        else
+          voice.finished = true;
+      }
     }
 
-    if(id == currMusic)
-      return;
+    removeDeadVoices();
 
-    currMusic = id;
-    printf("[audio] playing music: %.*s\n", path.len, path.data);
-
-    musicChannel = m_backend->playLoop(loadSoundFile(path).release());
+    Stat("Audio voices", m_voices.size());
   }
 
-  void stopMusic() override
+  void removeDeadVoices()
   {
-    m_backend->stopLoop(musicChannel);
+    static auto isDead = [] (Voice& voice)
+      {
+        return voice.released && voice.finished;
+      };
+
+    removeWhen(m_voices, isDead);
   }
 
-  int currMusic = -1;
-  int musicChannel = -1;
-  const unique_ptr<IAudioBackend> m_backend;
-  unordered_map<int, unique_ptr<Sound>> sounds;
+  void processCommands()
+  {
+    Command cmd;
+
+    while(m_commandQueue.pop(cmd))
+    {
+      switch(cmd.op)
+      {
+      case Opcode::CreateVoice:
+        m_voices[cmd.id] = {};
+        m_voices[cmd.id].vol.value = 1;
+        m_voices[cmd.id].vol.target = 1;
+        m_voices[cmd.id].vol.speed = 0.1;
+        break;
+      case Opcode::PlayVoiceLooped:
+        m_voices[cmd.id].loop = true;
+      // fallthrough
+      case Opcode::PlayVoice:
+        m_voices[cmd.id].vol.target = m_voices[cmd.id].commandVolume;
+        m_voices[cmd.id].vol.speed = 0.001;
+        m_voices[cmd.id].sound = cmd.sound;
+        m_voices[cmd.id].source.reset();
+        m_voices[cmd.id].finished = false;
+        break;
+      case Opcode::StopVoice:
+        m_voices[cmd.id].vol.target = 0;
+        m_voices[cmd.id].vol.speed = 0.001;
+        break;
+      case Opcode::ReleaseVoice:
+        m_voices[cmd.id].released = true;
+
+        if(m_voices[cmd.id].loop)
+          m_voices[cmd.id].finished = true;
+
+        break;
+      case Opcode::SetVoiceVolume:
+        m_voices[cmd.id].commandVolume = cmd.floatVal;
+        m_voices[cmd.id].vol.target = cmd.floatVal;
+        break;
+      }
+    }
+  }
+
+  struct Fader
+  {
+    Fader(float val) : value(val), target(val) {}
+    float value;
+    float target;
+    float speed = 0.05;
+
+    operator float () const { return value; }
+
+    void update()
+    {
+      if(value < target)
+        value = std::min(value + speed, target);
+      else if(value > target)
+        value = std::max(value - speed, target);
+    }
+  };
+
+  struct Voice
+  {
+    Fader vol = Fader(1.0);
+
+    float commandVolume = 1;
+    bool released = false;
+    bool loop = false;
+    bool finished = false;
+    std::shared_ptr<Sound> sound;
+    std::unique_ptr<IAudioSource> source;
+  };
+
+  int m_nextVoiceId = 1;
+  std::unordered_map<VoiceId, Voice> m_voices;
 };
 }
 
-///////////////////////////////////////////////////////////////////////////////
-
-IAudioBackend* createAudioBackend();
-
-Audio* createAudio()
+MixableAudio* createAudio()
 {
-  return new HighLevelAudio(std::unique_ptr<IAudioBackend>(createAudioBackend()));
+  return new HighLevelAudio;
 }
 
