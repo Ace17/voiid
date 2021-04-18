@@ -11,7 +11,6 @@
 #include "base/geom.h"
 #include "base/scene.h"
 #include "base/view.h"
-#include <functional>
 #include <memory>
 
 typedef Matrix3<int> Matrix;
