@@ -75,23 +75,29 @@ void removeWhen(Container& container, Lambda predicate)
 
 struct BleepSound : Sound
 {
+  static constexpr auto sampleRate = 48000;
+  static constexpr auto baseFreq = 440.0;
+  static constexpr auto maxSamples = sampleRate / 80; // integer number of periods
+
   unique_ptr<IAudioSource> createSource()
   {
     struct BleepSoundSource : IAudioSource
     {
       virtual int read(Span<float> output)
       {
-        auto const MAX = 1000;
-        auto const N = min(output.len, MAX - sampleCount);
+        auto const N = min(output.len/2, maxSamples - sampleCount);
 
         for(int i = 0; i < N; ++i)
         {
-          output[i] = sin(440.0 * sampleCount * 3.1415 * 2.0) * 0.2;
+          output[2*i+0] = mySin(2 * baseFreq * sampleCount / sampleRate) * 0.5;
+          output[2*i+1] = mySin(0.5 + 2 * baseFreq * sampleCount / sampleRate) * 0.5;
           ++sampleCount;
         }
 
-        return N;
+        return N * 2;
       }
+
+      static double mySin(double t) { return sin(t * 3.141592653589793 * 2.0); }
 
       int sampleCount = 0;
     };
@@ -244,6 +250,18 @@ struct HighLevelAudio : MixableAudio
       Span<float> buf = buffer;
       buf.len = dst.len;
 
+      mixVoice(voice, buf, dst);
+    }
+
+    removeDeadVoices();
+
+    Stat("Audio voices", m_voices.size());
+  }
+
+  void mixVoice(Voice& voice, Span<float> buf, Span<float> dst)
+  {
+    while(buf.len > 0)
+    {
       if(!voice.source)
         voice.source = voice.sound->createSource();
 
@@ -257,18 +275,22 @@ struct HighLevelAudio : MixableAudio
         dst[2 * i + 1] += buf[2 * i + 1] * voice.vol;
       }
 
-      if(len < buf.len)
+      buf += len;
+      dst += len;
+
+      if(buf.len > 0)
       {
         if(voice.loop)
+        {
           voice.source.reset();
+        }
         else
+        {
           voice.finished = true;
+          break;
+        }
       }
     }
-
-    removeDeadVoices();
-
-    Stat("Audio voices", m_voices.size());
   }
 
   void removeDeadVoices()
