@@ -157,9 +157,10 @@ struct HighLevelAudio : MixableAudio
     m_commandQueue.push({ Opcode::StopVoice, id });
   }
 
-  /////////////////////////////////////////////////////////////////////////////
-  // Resources
-  /////////////////////////////////////////////////////////////////////////////
+  // Main thread data
+  int m_nextVoiceId = 1;
+
+  // Shared read-only data (Resources)
   unordered_map<int, std::shared_ptr<Sound>> m_sounds;
   std::shared_ptr<BleepSound> m_bleepSound;
 
@@ -191,6 +192,39 @@ struct HighLevelAudio : MixableAudio
   /////////////////////////////////////////////////////////////////////////////
   // Audio backend thread
   /////////////////////////////////////////////////////////////////////////////
+
+  struct Fader
+  {
+    Fader(float val) : value(val), target(val) {}
+    float value;
+    float target;
+    float speed = 0.05;
+
+    operator float () const { return value; }
+
+    void update()
+    {
+      if(value < target)
+        value = std::min(value + speed, target);
+      else if(value > target)
+        value = std::max(value - speed, target);
+    }
+  };
+
+  struct Voice
+  {
+    Fader vol = Fader(1.0);
+
+    float commandVolume = 1;
+    bool released = false;
+    bool loop = false;
+    bool finished = false;
+    std::shared_ptr<Sound> sound;
+    std::unique_ptr<IAudioSource> source;
+  };
+
+  std::unordered_map<VoiceId, Voice> m_voices;
+
   void mixAudio(Span<float> dst) override
   {
     processCommands();
@@ -289,39 +323,6 @@ struct HighLevelAudio : MixableAudio
       }
     }
   }
-
-  struct Fader
-  {
-    Fader(float val) : value(val), target(val) {}
-    float value;
-    float target;
-    float speed = 0.05;
-
-    operator float () const { return value; }
-
-    void update()
-    {
-      if(value < target)
-        value = std::min(value + speed, target);
-      else if(value > target)
-        value = std::max(value - speed, target);
-    }
-  };
-
-  struct Voice
-  {
-    Fader vol = Fader(1.0);
-
-    float commandVolume = 1;
-    bool released = false;
-    bool loop = false;
-    bool finished = false;
-    std::shared_ptr<Sound> sound;
-    std::unique_ptr<IAudioSource> source;
-  };
-
-  int m_nextVoiceId = 1;
-  std::unordered_map<VoiceId, Voice> m_voices;
 };
 }
 
