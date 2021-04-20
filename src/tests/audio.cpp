@@ -49,3 +49,31 @@ unittest("Audio: sound loops without discontinuity")
   audio->releaseVoice(voice);
 }
 
+unittest("Audio: fire-and-forget API: autonomous release")
+{
+  unique_ptr<MixableAudio> audio(createAudio());
+  auto voice = audio->createVoice();
+  audio->playVoice(voice, -1);
+  audio->releaseVoice(voice, true);
+
+  int soundDuration = 0;
+
+  for(int k=0;k < 20;++k)
+  {
+    float buffer[128] {};
+    audio->mixAudio(buffer);
+
+    float rms = 0;
+    for(auto val : buffer)
+      rms += val * val;
+
+    if(rms < 0.001)
+      break;
+
+    soundDuration += 128;
+  }
+
+  assertTrue(soundDuration >= 1280);
+  assertTrue(soundDuration <= 1300);
+}
+
