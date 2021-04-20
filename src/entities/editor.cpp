@@ -33,8 +33,6 @@ struct Editor : Player
   {
     auto r = Actor(pos - size * 0.5, MDL_INVRECT);
     r.scale = UnitSize * 0;
-    r.focus = true;
-
     r.orientation = Quaternion::fromEuler(lookAngleHorz, lookAngleVert, 0);
 
     view->sendActor(r);

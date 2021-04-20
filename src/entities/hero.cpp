@@ -44,7 +44,6 @@ struct Hero : Player, Damageable
   {
     auto r = Actor(pos, MDL_INVRECT);
     r.scale = size;
-    r.focus = true;
     r.orientation = Quaternion::fromEuler(lookAngleHorz, -lookAngleVert, 0);
 
     if(0) // hide debug box

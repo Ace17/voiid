@@ -34,7 +34,6 @@ struct Actor
   float ratio = 0; // in [0 .. 1]. 0 for action beginning, 1 for action end
   Size3f scale = Size3f(1, 1, 1); // sprite size
   Effect effect = Effect::Normal;
-  bool focus = false; // is it the camera?
 };
 
 // This interface should act as a message sink.
