@@ -334,7 +334,7 @@ struct HighLevelAudio : MixableAudio
       case Opcode::ReleaseVoice:
         m_voices[cmd.id].released = true;
 
-        if(m_voices[cmd.id].loop)
+        if(m_voices[cmd.id].loop || !cmd.flags)
           m_voices[cmd.id].finished = true;
 
         break;

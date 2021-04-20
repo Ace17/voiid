@@ -49,7 +49,7 @@ unittest("Audio: sound loops without discontinuity")
   audio->releaseVoice(voice);
 }
 
-unittest("Audio: fire-and-forget API: autonomous release")
+unittest("Audio: autonomous voice release")
 {
   unique_ptr<MixableAudio> audio(createAudio());
   auto voice = audio->createVoice();
@@ -58,12 +58,13 @@ unittest("Audio: fire-and-forget API: autonomous release")
 
   int soundDuration = 0;
 
-  for(int k=0;k < 20;++k)
+  for(int k = 0; k < 20; ++k)
   {
     float buffer[128] {};
     audio->mixAudio(buffer);
 
     float rms = 0;
+
     for(auto val : buffer)
       rms += val * val;
 
@@ -73,7 +74,24 @@ unittest("Audio: fire-and-forget API: autonomous release")
     soundDuration += 128;
   }
 
-  assertTrue(soundDuration >= 1280);
-  assertTrue(soundDuration <= 1300);
+  assertEquals(1280, soundDuration);
+}
+
+unittest("Audio: non-autonomous voice release: the sound gets stopped immediately")
+{
+  unique_ptr<MixableAudio> audio(createAudio());
+  auto voice = audio->createVoice();
+  audio->playVoice(voice, -1);
+  audio->releaseVoice(voice, false);
+
+  float buffer[128] {};
+  audio->mixAudio(buffer);
+
+  float rms = 0;
+
+  for(auto val : buffer)
+    rms += val * val;
+
+  assertEquals(0, rms);
 }
 
