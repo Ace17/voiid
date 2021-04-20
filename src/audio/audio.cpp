@@ -89,8 +89,8 @@ struct BleepSound : Sound
 
         for(int i = 0; i < N; ++i)
         {
-          output[2 * i + 0] = mySin(2 * baseFreq * sampleCount / sampleRate) * 0.5;
-          output[2 * i + 1] = mySin(0.5 + 2 * baseFreq * sampleCount / sampleRate) * 0.5;
+          output[2 * i + 0] = mySin(0.0 + baseFreq * sampleCount / sampleRate);
+          output[2 * i + 1] = mySin(0.5 + baseFreq * sampleCount / sampleRate);
           ++sampleCount;
         }
 
