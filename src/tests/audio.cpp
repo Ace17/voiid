@@ -24,15 +24,15 @@ unittest("Audio: sound loops without discontinuity")
   float maxDiffLeft = 0;
   float maxDiffRight = 0;
 
-  for(int k=0;k < 10;++k)
+  for(int k = 0; k < 10; ++k)
   {
     float buffer[512] {};
     audio->mixAudio(buffer);
 
-    for(int i=0;i < 256;++i)
+    for(int i = 0; i < 256; ++i)
     {
-      float left = buffer[2*i+0];
-      float right = buffer[2*i+1];
+      float left = buffer[2 * i + 0];
+      float right = buffer[2 * i + 1];
 
       maxDiffLeft = std::max<float>(maxDiffLeft, std::abs(left - prevLeft));
       maxDiffRight = std::max<float>(maxDiffRight, std::abs(right - prevRight));

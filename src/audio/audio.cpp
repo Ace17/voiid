@@ -85,12 +85,12 @@ struct BleepSound : Sound
     {
       virtual int read(Span<float> output)
       {
-        auto const N = min(output.len/2, maxSamples - sampleCount);
+        auto const N = min(output.len / 2, maxSamples - sampleCount);
 
         for(int i = 0; i < N; ++i)
         {
-          output[2*i+0] = mySin(2 * baseFreq * sampleCount / sampleRate) * 0.5;
-          output[2*i+1] = mySin(0.5 + 2 * baseFreq * sampleCount / sampleRate) * 0.5;
+          output[2 * i + 0] = mySin(2 * baseFreq * sampleCount / sampleRate) * 0.5;
+          output[2 * i + 1] = mySin(0.5 + 2 * baseFreq * sampleCount / sampleRate) * 0.5;
           ++sampleCount;
         }
 
