@@ -26,6 +26,7 @@ using namespace std;
 #include "engine/stats.h"
 #include "matrix4.h"
 #include "misc/file.h"
+
 #include "picture.h"
 
 #ifdef NDEBUG
@@ -279,6 +280,28 @@ struct Shader
   GLuint program;
 };
 
+struct RenderPass
+{
+  virtual ~RenderPass() = default;
+
+  struct FrameBuffer
+  {
+    GLuint id;
+    Size2i dim;
+  };
+
+  virtual FrameBuffer getInputFrameBuffer() = 0;
+  virtual void execute(FrameBuffer dst) = 0;
+};
+
+struct ScreenRenderPass : RenderPass
+{
+  Size2i screenSize {};
+
+  FrameBuffer getInputFrameBuffer() override { return { 0, screenSize }; }
+  void execute(FrameBuffer) override { /* nothing to do */ }
+};
+
 struct PostProcessing
 {
   PostProcessing(Size2i resolution)
@@ -454,6 +477,214 @@ struct PostProcessing
   GLuint m_hdrQuadVbo = 0;
 };
 
+struct PostProcessRenderPass : RenderPass
+{
+  FrameBuffer getInputFrameBuffer() override
+  {
+    return { postproc->m_hdrFramebuffer, postproc->m_resolution };
+  }
+
+  void execute(FrameBuffer dst) override
+  {
+    postproc->applyBloomFilter();
+
+    SAFE_GL(glBindFramebuffer(GL_FRAMEBUFFER, dst.id));
+    postproc->drawHdrBuffer(dst.dim);
+  }
+
+  PostProcessing* postproc;
+};
+
+struct MeshRenderPass : RenderPass
+{
+  FrameBuffer getInputFrameBuffer() override { return {}; }
+
+  void execute(FrameBuffer dst) override
+  {
+    SAFE_GL(glBindFramebuffer(GL_FRAMEBUFFER, dst.id));
+    SAFE_GL(glViewport(0, 0, dst.dim.width, dst.dim.height));
+
+    SAFE_GL(glClearColor(0, 0, 0, 1));
+    SAFE_GL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+
+    for(auto& cmd : m_drawCommands)
+      executeDrawCommand(cmd);
+
+    Stat("Draw calls", m_drawCommands.size());
+  }
+
+  void executeDrawCommand(const DrawCommand& cmd)
+  {
+    auto& model = *cmd.pMesh;
+    auto& where = cmd.where;
+
+    if(cmd.depthtest)
+    {
+      SAFE_GL(glUseProgram(m_meshShader));
+
+      glEnable(GL_DEPTH_TEST);
+      SAFE_GL(glUniform3f(MeshShader::Uniform::ambientLoc, m_ambientLight, m_ambientLight, m_ambientLight));
+      SAFE_GL(glUniform4f(MeshShader::Uniform::colorId, 0, 0, 0, 0));
+
+      assert(m_lights.size() < 32);
+      SAFE_GL(glUniform1i(MeshShader::Uniform::LightCountLoc, (int)m_lights.size()));
+
+      for(auto& light : m_lights)
+      {
+        const auto i = int(&light - m_lights.data());
+        SAFE_GL(glUniform3f(MeshShader::Uniform::LightPosLoc + i, light.pos.x, light.pos.y, light.pos.z));
+        SAFE_GL(glUniform3f(MeshShader::Uniform::LightColorLoc + i, light.color.x, light.color.y, light.color.z));
+      }
+
+      if(cmd.blinking)
+      {
+        if(SDL_GetTicks() % 100 < 50)
+          SAFE_GL(glUniform4f(MeshShader::Uniform::colorId, 0.8, 0.4, 0.4, 0));
+      }
+
+      // Texture Unit 0: Diffuse
+      SAFE_GL(glActiveTexture(GL_TEXTURE0));
+      SAFE_GL(glBindTexture(GL_TEXTURE_2D, model.diffuse));
+      SAFE_GL(glUniform1i(MeshShader::Uniform::DiffuseTex, 0));
+
+      // Texture Unit 1: Lightmap
+      SAFE_GL(glActiveTexture(GL_TEXTURE1));
+      SAFE_GL(glBindTexture(GL_TEXTURE_2D, model.lightmap));
+      SAFE_GL(glUniform1i(MeshShader::Uniform::LightmapTex, 1));
+
+      auto const forward = cmd.camera.dir.rotate(Vector3f(1, 0, 0));
+      auto const up = cmd.camera.dir.rotate(Vector3f(0, 0, 1));
+
+      auto const target = cmd.camera.pos + forward;
+      auto const view = ::lookAt(cmd.camera.pos, target, up);
+      auto const pos = ::translate(where.pos);
+      auto const scale = ::scale(Vector3f(where.size.cx, where.size.cy, where.size.cz));
+      auto const rotate = quaternionToMatrix(cmd.orientation);
+
+      static const float fovy = (float)((60.0f / 180) * PI);
+      static const float near_ = 0.1f;
+      static const float far_ = 1000.0f;
+      const auto perspective = ::perspective(fovy, m_aspectRatio, near_, far_);
+
+      auto MV = pos * rotate * scale;
+      auto MVP = perspective * view * MV;
+
+      SAFE_GL(glUniformMatrix4fv(MeshShader::Uniform::M, 1, GL_FALSE, &MV[0][0]));
+      SAFE_GL(glUniformMatrix4fv(MeshShader::Uniform::MVP, 1, GL_FALSE, &MVP[0][0]));
+      SAFE_GL(glUniform3f(MeshShader::Uniform::CameraPos, cmd.camera.pos.x, cmd.camera.pos.y, cmd.camera.pos.z));
+
+      SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, model.buffer));
+
+      SAFE_GL(glEnableVertexAttribArray(MeshShader::Attribute::positionLoc));
+      SAFE_GL(glVertexAttribPointer(MeshShader::Attribute::positionLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, x)));
+
+      SAFE_GL(glEnableVertexAttribArray(MeshShader::Attribute::normalLoc));
+      SAFE_GL(glVertexAttribPointer(MeshShader::Attribute::normalLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, nx)));
+
+      SAFE_GL(glEnableVertexAttribArray(MeshShader::Attribute::uvDiffuseLoc));
+      SAFE_GL(glVertexAttribPointer(MeshShader::Attribute::uvDiffuseLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, diffuse_u)));
+
+      SAFE_GL(glEnableVertexAttribArray(MeshShader::Attribute::uvLightmapLoc));
+      SAFE_GL(glVertexAttribPointer(MeshShader::Attribute::uvLightmapLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, lightmap_u)));
+
+      SAFE_GL(glDrawArrays(GL_TRIANGLES, 0, model.vertices.size()));
+    }
+    else
+    {
+      SAFE_GL(glUseProgram(m_textShader));
+
+      glDisable(GL_DEPTH_TEST);
+
+      // Texture Unit 0: Diffuse
+      SAFE_GL(glActiveTexture(GL_TEXTURE0));
+      SAFE_GL(glBindTexture(GL_TEXTURE_2D, model.diffuse));
+      SAFE_GL(glUniform1i(TextShader::Uniform::DiffuseTex, 0));
+
+      auto const forward = Vector3f(0, 1, 0);
+      auto const up = Vector3f(0, 0, 1);
+
+      auto const target = cmd.camera.pos + forward;
+      auto const view = ::lookAt(cmd.camera.pos, target, up);
+      auto const pos = ::translate(where.pos);
+      auto const scale = ::scale(Vector3f(where.size.cx, where.size.cy, where.size.cz));
+
+      static const float fovy = (float)((60.0f / 180) * PI);
+      static const float near_ = 0.1f;
+      static const float far_ = 100.0f;
+      const auto perspective = ::perspective(fovy, m_aspectRatio, near_, far_);
+
+      auto MV = pos * scale;
+      auto MVP = perspective * view * MV;
+
+      SAFE_GL(glUniformMatrix4fv(TextShader::Uniform::MVP, 1, GL_FALSE, &MVP[0][0]));
+
+      SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, model.buffer));
+
+      SAFE_GL(glEnableVertexAttribArray(TextShader::Attribute::positionLoc));
+      SAFE_GL(glEnableVertexAttribArray(TextShader::Attribute::uvDiffuseLoc));
+
+      SAFE_GL(glVertexAttribPointer(TextShader::Attribute::positionLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, x)));
+      SAFE_GL(glVertexAttribPointer(TextShader::Attribute::uvDiffuseLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, diffuse_u)));
+
+      SAFE_GL(glDrawArrays(GL_TRIANGLES, 0, model.vertices.size()));
+    }
+  }
+
+  struct TextShader
+  {
+    enum Uniform
+    {
+      MVP = 0,
+      DiffuseTex = 1,
+    };
+
+    enum Attribute
+    {
+      positionLoc = 0,
+      uvDiffuseLoc = 1,
+    };
+  };
+
+  struct MeshShader : Shader
+  {
+    enum Uniform
+    {
+      M = 0,
+      MVP = 1,
+      CameraPos = 2,
+      DiffuseTex = 4,
+      LightmapTex = 5,
+      colorId = 3,
+      ambientLoc = 6,
+      LightCountLoc = 7,
+      LightPosLoc = 8,
+      LightColorLoc = 40,
+    };
+
+    enum Attribute
+    {
+      positionLoc = 0,
+      uvDiffuseLoc = 1,
+      uvLightmapLoc = 2,
+      normalLoc = 3,
+    };
+  };
+
+  GLint m_textShader;
+  GLint m_meshShader;
+
+  struct Light
+  {
+    Vector3f pos;
+    Vector3f color;
+  };
+
+  std::vector<DrawCommand> m_drawCommands;
+  vector<Light> m_lights;
+  float m_ambientLight = 0;
+  float m_aspectRatio = 1.0;
+};
+
 struct OpenglDisplay : Display
 {
   OpenglDisplay(Size2i resolution)
@@ -514,8 +745,8 @@ struct OpenglDisplay : Display
       }
     }
 
-    m_textShader = loadShader("text");
-    m_meshShader = loadShader("mesh");
+    m_meshRenderPass.m_textShader = loadShader("text");
+    m_meshRenderPass.m_meshShader = loadShader("mesh");
 
     m_postProcessing = make_unique<PostProcessing>(resolution);
 
@@ -609,22 +840,26 @@ struct OpenglDisplay : Display
 
   void setAmbientLight(float ambientLight) override
   {
-    m_ambientLight = ambientLight;
+    m_meshRenderPass.m_ambientLight = ambientLight;
   }
 
   void setLight(int idx, Vector3f pos, Vector3f color) override
   {
-    if(idx >= (int)m_lights.size())
-      m_lights.resize(idx + 1);
+    if(idx >= (int)m_meshRenderPass.m_lights.size())
+      m_meshRenderPass.m_lights.resize(idx + 1);
 
-    m_lights[idx] = { pos, color };
+    m_meshRenderPass.m_lights[idx] = { pos, color };
   }
 
   void beginDraw() override
   {
     m_frameCount++;
-    m_drawCommands.clear();
+    m_meshRenderPass.m_drawCommands.clear();
   }
+
+  MeshRenderPass m_meshRenderPass;
+  PostProcessRenderPass m_postprocRenderPass;
+  ScreenRenderPass m_screenRenderPass;
 
   void endDraw() override
   {
@@ -632,25 +867,24 @@ struct OpenglDisplay : Display
 
     auto screenSize = getCurrentScreenSize();
 
-    m_aspectRatio = float(screenSize.width) / screenSize.height;
+    m_meshRenderPass.m_aspectRatio = float(screenSize.width) / screenSize.height;
+    m_postprocRenderPass.postproc = m_postProcessing.get();
+    m_screenRenderPass.screenSize = screenSize;
+
+    RenderPass* passes[16];
+    int count = 0;
+
+    passes[count++] = &m_meshRenderPass;
 
     if(m_enablePostProcessing)
-    {
-      // draw to the HDR buffer
-      SAFE_GL(glBindFramebuffer(GL_FRAMEBUFFER, m_postProcessing->m_hdrFramebuffer));
-      executeAllDrawCommands(m_postProcessing->m_resolution);
+      passes[count++] = &m_postprocRenderPass;
 
-      // draw to the bloom buffer
-      m_postProcessing->applyBloomFilter();
+    passes[count++] = &m_screenRenderPass;
 
-      // draw to screen
-      SAFE_GL(glBindFramebuffer(GL_FRAMEBUFFER, 0));
-      m_postProcessing->drawHdrBuffer(screenSize);
-    }
-    else
+    for(int i = 0; i + 1 < count; ++i)
     {
-      SAFE_GL(glBindFramebuffer(GL_FRAMEBUFFER, 0));
-      executeAllDrawCommands(screenSize);
+      auto framebuffer = passes[i + 1]->getInputFrameBuffer();
+      passes[i]->execute(framebuffer);
     }
 
     const auto t1 = chrono::high_resolution_clock::now();
@@ -725,142 +959,10 @@ private:
     return screenSize;
   }
 
-  void executeAllDrawCommands(Size2i screenSize)
-  {
-    SAFE_GL(glViewport(0, 0, screenSize.width, screenSize.height));
-
-    SAFE_GL(glClearColor(0, 0, 0, 1));
-    SAFE_GL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
-
-    Stat("Draw calls", m_drawCommands.size());
-
-    for(auto& cmd : m_drawCommands)
-      executeDrawCommand(cmd);
-
-    m_drawCommands.clear();
-  }
-
   void pushMesh(Rect3f where, Quaternion orientation, Camera const& camera, RenderMesh& model, bool blinking, bool depthtest)
   {
     for(auto& single : model.singleMeshes)
-      m_drawCommands.push_back({ &single, where, orientation, camera, blinking, depthtest });
-  }
-
-  void executeDrawCommand(const DrawCommand& cmd)
-  {
-    auto& model = *cmd.pMesh;
-    auto& where = cmd.where;
-
-    if(cmd.depthtest)
-    {
-      SAFE_GL(glUseProgram(m_meshShader));
-
-      glEnable(GL_DEPTH_TEST);
-      SAFE_GL(glUniform3f(MeshShader::Uniform::ambientLoc, m_ambientLight, m_ambientLight, m_ambientLight));
-      SAFE_GL(glUniform4f(MeshShader::Uniform::colorId, 0, 0, 0, 0));
-
-      assert(m_lights.size() < 32);
-      SAFE_GL(glUniform1i(MeshShader::Uniform::LightCountLoc, (int)m_lights.size()));
-
-      for(auto& light : m_lights)
-      {
-        const auto i = int(&light - m_lights.data());
-        SAFE_GL(glUniform3f(MeshShader::Uniform::LightPosLoc + i, light.pos.x, light.pos.y, light.pos.z));
-        SAFE_GL(glUniform3f(MeshShader::Uniform::LightColorLoc + i, light.color.x, light.color.y, light.color.z));
-      }
-
-      if(cmd.blinking)
-      {
-        if((m_frameCount / 4) % 2)
-          SAFE_GL(glUniform4f(MeshShader::Uniform::colorId, 0.8, 0.4, 0.4, 0));
-      }
-
-      // Texture Unit 0: Diffuse
-      SAFE_GL(glActiveTexture(GL_TEXTURE0));
-      SAFE_GL(glBindTexture(GL_TEXTURE_2D, model.diffuse));
-      SAFE_GL(glUniform1i(MeshShader::Uniform::DiffuseTex, 0));
-
-      // Texture Unit 1: Lightmap
-      SAFE_GL(glActiveTexture(GL_TEXTURE1));
-      SAFE_GL(glBindTexture(GL_TEXTURE_2D, model.lightmap));
-      SAFE_GL(glUniform1i(MeshShader::Uniform::LightmapTex, 1));
-
-      auto const forward = cmd.camera.dir.rotate(Vector3f(1, 0, 0));
-      auto const up = cmd.camera.dir.rotate(Vector3f(0, 0, 1));
-
-      auto const target = cmd.camera.pos + forward;
-      auto const view = ::lookAt(cmd.camera.pos, target, up);
-      auto const pos = ::translate(where.pos);
-      auto const scale = ::scale(Vector3f(where.size.cx, where.size.cy, where.size.cz));
-      auto const rotate = quaternionToMatrix(cmd.orientation);
-
-      static const float fovy = (float)((60.0f / 180) * PI);
-      static const float near_ = 0.1f;
-      static const float far_ = 1000.0f;
-      const auto perspective = ::perspective(fovy, m_aspectRatio, near_, far_);
-
-      auto MV = pos * rotate * scale;
-      auto MVP = perspective * view * MV;
-
-      SAFE_GL(glUniformMatrix4fv(MeshShader::Uniform::M, 1, GL_FALSE, &MV[0][0]));
-      SAFE_GL(glUniformMatrix4fv(MeshShader::Uniform::MVP, 1, GL_FALSE, &MVP[0][0]));
-      SAFE_GL(glUniform3f(MeshShader::Uniform::CameraPos, cmd.camera.pos.x, cmd.camera.pos.y, cmd.camera.pos.z));
-
-      SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, model.buffer));
-
-      SAFE_GL(glEnableVertexAttribArray(MeshShader::Attribute::positionLoc));
-      SAFE_GL(glVertexAttribPointer(MeshShader::Attribute::positionLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, x)));
-
-      SAFE_GL(glEnableVertexAttribArray(MeshShader::Attribute::normalLoc));
-      SAFE_GL(glVertexAttribPointer(MeshShader::Attribute::normalLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, nx)));
-
-      SAFE_GL(glEnableVertexAttribArray(MeshShader::Attribute::uvDiffuseLoc));
-      SAFE_GL(glVertexAttribPointer(MeshShader::Attribute::uvDiffuseLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, diffuse_u)));
-
-      SAFE_GL(glEnableVertexAttribArray(MeshShader::Attribute::uvLightmapLoc));
-      SAFE_GL(glVertexAttribPointer(MeshShader::Attribute::uvLightmapLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, lightmap_u)));
-
-      SAFE_GL(glDrawArrays(GL_TRIANGLES, 0, model.vertices.size()));
-    }
-    else
-    {
-      SAFE_GL(glUseProgram(m_textShader));
-
-      glDisable(GL_DEPTH_TEST);
-
-      // Texture Unit 0: Diffuse
-      SAFE_GL(glActiveTexture(GL_TEXTURE0));
-      SAFE_GL(glBindTexture(GL_TEXTURE_2D, model.diffuse));
-      SAFE_GL(glUniform1i(TextShader::Uniform::DiffuseTex, 0));
-
-      auto const forward = Vector3f(0, 1, 0);
-      auto const up = Vector3f(0, 0, 1);
-
-      auto const target = cmd.camera.pos + forward;
-      auto const view = ::lookAt(cmd.camera.pos, target, up);
-      auto const pos = ::translate(where.pos);
-      auto const scale = ::scale(Vector3f(where.size.cx, where.size.cy, where.size.cz));
-
-      static const float fovy = (float)((60.0f / 180) * PI);
-      static const float near_ = 0.1f;
-      static const float far_ = 100.0f;
-      const auto perspective = ::perspective(fovy, m_aspectRatio, near_, far_);
-
-      auto MV = pos * scale;
-      auto MVP = perspective * view * MV;
-
-      SAFE_GL(glUniformMatrix4fv(TextShader::Uniform::MVP, 1, GL_FALSE, &MVP[0][0]));
-
-      SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, model.buffer));
-
-      SAFE_GL(glEnableVertexAttribArray(TextShader::Attribute::positionLoc));
-      SAFE_GL(glEnableVertexAttribArray(TextShader::Attribute::uvDiffuseLoc));
-
-      SAFE_GL(glVertexAttribPointer(TextShader::Attribute::positionLoc, 3, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, x)));
-      SAFE_GL(glVertexAttribPointer(TextShader::Attribute::uvDiffuseLoc, 2, GL_FLOAT, GL_FALSE, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, diffuse_u)));
-
-      SAFE_GL(glDrawArrays(GL_TRIANGLES, 0, model.vertices.size()));
-    }
+      m_meshRenderPass.m_drawCommands.push_back({ &single, where, orientation, camera, blinking, depthtest });
   }
 
 private:
@@ -869,71 +971,15 @@ private:
 
   Camera m_camera;
 
-  // shader attribute/uniform locations
-  struct TextShader
-  {
-    enum Uniform
-    {
-      MVP = 0,
-      DiffuseTex = 1,
-    };
-
-    enum Attribute
-    {
-      positionLoc = 0,
-      uvDiffuseLoc = 1,
-    };
-  };
-
-  GLint m_textShader;
-
-  struct MeshShader : Shader
-  {
-    enum Uniform
-    {
-      M = 0,
-      MVP = 1,
-      CameraPos = 2,
-      DiffuseTex = 4,
-      LightmapTex = 5,
-      colorId = 3,
-      ambientLoc = 6,
-      LightCountLoc = 7,
-      LightPosLoc = 8,
-      LightColorLoc = 40,
-    };
-
-    enum Attribute
-    {
-      positionLoc = 0,
-      uvDiffuseLoc = 1,
-      uvLightmapLoc = 2,
-      normalLoc = 3,
-    };
-  };
-
-  struct Light
-  {
-    Vector3f pos;
-    Vector3f color;
-  };
-
-  GLint m_meshShader;
-
   vector<RenderMesh> m_Models;
   vector<RenderMesh> m_fontModel;
-  vector<Light> m_lights;
 
-  float m_aspectRatio = 1.0;
-  float m_ambientLight = 0;
   int m_frameCount = 0;
 
   bool m_enablePostProcessing = true;
   bool m_enableFsaa = false;
 
   std::unique_ptr<PostProcessing> m_postProcessing;
-
-  std::vector<DrawCommand> m_drawCommands;
 };
 }
 
