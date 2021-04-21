@@ -492,7 +492,7 @@ struct PostProcessRenderPass : RenderPass
     postproc->drawHdrBuffer(dst.dim);
   }
 
-  PostProcessing* postproc;
+  std::unique_ptr<PostProcessing> postproc;
 };
 
 struct MeshRenderPass : RenderPass
@@ -748,7 +748,7 @@ struct OpenglDisplay : Display
     m_meshRenderPass.m_textShader = loadShader("text");
     m_meshRenderPass.m_meshShader = loadShader("mesh");
 
-    m_postProcessing = make_unique<PostProcessing>(resolution);
+    m_postprocRenderPass.postproc = make_unique<PostProcessing>(resolution);
 
     printf("[display] init OK\n");
   }
@@ -757,7 +757,7 @@ struct OpenglDisplay : Display
   {
     SAFE_GL(glBindFramebuffer(GL_FRAMEBUFFER, 0));
 
-    m_postProcessing.reset();
+    m_postprocRenderPass.postproc.reset();
 
     SDL_GL_DeleteContext(m_context);
     SDL_DestroyWindow(m_window);
@@ -786,7 +786,7 @@ struct OpenglDisplay : Display
       if(enable)
         size = size * 2;
 
-      m_postProcessing = make_unique<PostProcessing>(size);
+      m_postprocRenderPass.postproc = make_unique<PostProcessing>(size);
     }
 
     m_enableFsaa = enable;
@@ -868,7 +868,6 @@ struct OpenglDisplay : Display
     auto screenSize = getCurrentScreenSize();
 
     m_meshRenderPass.m_aspectRatio = float(screenSize.width) / screenSize.height;
-    m_postprocRenderPass.postproc = m_postProcessing.get();
     m_screenRenderPass.screenSize = screenSize;
 
     RenderPass* passes[16];
@@ -978,8 +977,6 @@ private:
 
   bool m_enablePostProcessing = true;
   bool m_enableFsaa = false;
-
-  std::unique_ptr<PostProcessing> m_postProcessing;
 };
 }
 
