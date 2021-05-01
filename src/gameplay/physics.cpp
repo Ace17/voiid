@@ -12,7 +12,6 @@
 #include "body.h"
 #include "convex.h"
 #include "physics.h"
-#include <algorithm> // find
 #include <memory>
 #include <vector>
 
