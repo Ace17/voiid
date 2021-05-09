@@ -35,8 +35,5 @@ static const Resource resources[] =
   { ResourceType::Model, MDL_BONUS, "res/sprites/bonus.render" },
 };
 
-Span<const Resource> getResources()
-{
-  return resources;
-}
+extern const Span<const Resource> AllResources = resources;
 

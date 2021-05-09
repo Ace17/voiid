@@ -14,11 +14,11 @@
 
 using namespace std;
 
-Span<const Resource> getResources();
+extern const Span<const Resource> AllResources;
 
 void preloadResources(View* view)
 {
-  for(auto res : getResources())
+  for(auto res : AllResources)
     view->preload(res);
 }
 
