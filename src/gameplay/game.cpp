@@ -15,16 +15,12 @@ using namespace std;
 
 extern const Span<const Resource> AllResources;
 
-void preloadResources(View* view)
-{
-  for(auto res : AllResources)
-    view->preload(res);
-}
-
 Scene* createGame(View* view, Span<const string> args)
 {
   view->setTitle("Voiid");
-  preloadResources(view);
+
+  for(auto res : AllResources)
+    view->preload(res);
 
   if(args.len == 1)
   {
