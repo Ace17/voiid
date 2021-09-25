@@ -4,19 +4,15 @@
 // published by the Free Software Foundation, either version 3 of the
 // License, or (at your option) any later version.
 
-// OpenGL stuff
-
 #include "engine/display.h"
 
 #include <cassert>
 #include <chrono>
 #include <cstdio>
+#include <cstring>
 #include <stdexcept>
 #include <vector>
 using namespace std;
-
-#include "glad.h"
-#include "SDL.h" // SDL_INIT_VIDEO
 
 #include "base/geom.h"
 #include "base/scene.h"
@@ -27,7 +23,185 @@ using namespace std;
 #include "matrix4.h"
 #include "misc/file.h"
 
+#include "graphics_backend.h"
 #include "picture.h"
+
+struct Camera
+{
+  Vector3f pos;
+  Quaternion dir;
+  bool valid = false;
+};
+
+template<typename T>
+T blend(T a, T b, float alpha)
+{
+  return a * (1 - alpha) + b * alpha;
+}
+
+namespace
+{
+struct Renderer : Display
+{
+  Renderer(IGraphicsBackend* backend_) : backend(backend_)
+  {
+    m_fontModel = loadFontModels("res/font.png", 16, 16);
+  }
+
+  void setFullscreen(bool fs) { backend->setFullscreen(fs); }
+  void setHdr(bool enable) { backend->setHdr(enable); }
+  void setFsaa(bool enable) { backend->setFsaa(enable); }
+  void setCaption(String caption) { backend->setCaption(caption); }
+
+  void loadModel(int modelId, String path) override
+  {
+    if((int)m_Models.size() <= modelId)
+      m_Models.resize(modelId + 1);
+
+    m_Models[modelId] = loadRenderMesh(path);
+
+    int i = 0;
+
+    for(auto& single : m_Models[modelId].singleMeshes)
+    {
+      single.diffuse = loadTexture(setExtension(string(path.data), to_string(i) + ".diffuse.png"));
+      single.lightmap = loadTexture(setExtension(string(path.data), to_string(i) + ".lightmap.png"));
+      ++i;
+    }
+
+    backend->uploadVerticesToGPU(m_Models[modelId]);
+  }
+
+  void setCamera(Vector3f pos, Quaternion dir) override
+  {
+    auto cam = (Camera { pos, dir });
+
+    if(!m_camera.valid)
+    {
+      m_camera = cam;
+      m_camera.valid = true;
+    }
+
+    // avoid big camera jumps
+    {
+      auto delta = m_camera.pos - pos;
+
+      if(dotProduct(delta, delta) > 10)
+        m_camera = cam;
+    }
+
+    m_camera.pos = blend(m_camera.pos, cam.pos, 0.3);
+    m_camera.dir = cam.dir;
+  }
+
+  void setAmbientLight(float ambientLight) { backend->setAmbientLight(ambientLight); }
+  void setLight(int idx, Vector3f pos, Vector3f color) { backend->setLight(idx, pos, color); }
+  void readPixels(Span<uint8_t> dstRgbPixels) { backend->readPixels(dstRgbPixels); }
+  void enableGrab(bool enable) { backend->enableGrab(enable); }
+  void beginDraw() { backend->beginDraw(); }
+  void endDraw() { backend->endDraw(); }
+
+  void drawActor(Rect3f where, Quaternion orientation, int modelId, bool blinking, int actionIdx, float ratio) override
+  {
+    (void)actionIdx;
+    (void)ratio;
+    auto& model = m_Models.at(modelId);
+    backend->pushMesh(where, orientation, m_camera, model, blinking, true);
+  }
+
+  void drawText(Vector2f pos, char const* text) override
+  {
+    Rect3f rect;
+    rect.size.cx = 0.5;
+    rect.size.cy = 0;
+    rect.size.cz = 0.5;
+    rect.pos.x = pos.x - strlen(text) * rect.size.cx / 2;
+    rect.pos.y = 0;
+    rect.pos.z = pos.y;
+
+    auto cam = (Camera { Vector3f(0, -10, 0), Quaternion::fromEuler(PI / 2, 0, 0) });
+    auto orientation = Quaternion::fromEuler(0, 0, 0);
+
+    while(*text)
+    {
+      backend->pushMesh(rect, orientation, cam, m_fontModel[*text], false, false);
+      rect.pos.x += rect.size.cx;
+      ++text;
+    }
+  }
+
+private:
+  Camera m_camera;
+  std::unique_ptr<IGraphicsBackend> const backend;
+  vector<RenderMesh> m_Models;
+  vector<RenderMesh> m_fontModel;
+
+  std::vector<RenderMesh> loadFontModels(String path, int COLS, int ROWS)
+  {
+    std::vector<RenderMesh> r;
+
+    const int diffuse = backend->uploadTextureToGPU(addBorderToTiles(loadPicture(path), COLS, ROWS));
+    const int lightmap = loadTexture("res/white.png");
+
+    // don't GL_REPEAT fonts
+    backend->setTextureNoRepeat(diffuse);
+    backend->setTextureNoRepeat(lightmap);
+
+    for(int i = 0; i < COLS * ROWS; ++i)
+    {
+      const float col = (i % COLS);
+      const float row = (i / COLS);
+
+      const float u0 = (col + 0) / COLS;
+      const float u1 = (col + 1) / COLS;
+
+      const float v0 = 1.0f - (row + 1) / ROWS;
+      const float v1 = 1.0f - (row + 0) / ROWS;
+
+      const SingleRenderMesh::Vertex vertices[] =
+      {
+        { 0, 0, 0, /* N */ 0, 1, 0, /* uv diffuse */ u0, v0, /* uv lightmap */ u0, v0, },
+        { 1, 0, 1, /* N */ 0, 1, 0, /* uv diffuse */ u1, v1, /* uv lightmap */ u1, v1, },
+        { 0, 0, 1, /* N */ 0, 1, 0, /* uv diffuse */ u0, v1, /* uv lightmap */ u0, v1, },
+
+        { 0, 0, 0, /* N */ 0, 1, 0, /* uv diffuse */ u0, v0, /* uv lightmap */ u0, v0, },
+        { 1, 0, 0, /* N */ 0, 1, 0, /* uv diffuse */ u1, v0, /* uv lightmap */ u0, v1, },
+        { 1, 0, 1, /* N */ 0, 1, 0, /* uv diffuse */ u1, v1, /* uv lightmap */ u1, v1, },
+      };
+
+      SingleRenderMesh sm;
+      sm.diffuse = diffuse;
+      sm.lightmap = lightmap;
+
+      for(auto& v : vertices)
+        sm.vertices.push_back(v);
+
+      RenderMesh rm {};
+      rm.singleMeshes.push_back(sm);
+      r.push_back(rm);
+    }
+
+    for(auto& glyph : r)
+    {
+      backend->uploadVerticesToGPU(glyph);
+    }
+
+    return r;
+  }
+
+  int loadTexture(String path)
+  {
+    auto pic = loadPicture(path);
+    return backend->uploadTextureToGPU(pic);
+  }
+};
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// OpenGL stuff
+
+#include "glad.h"
+#include "SDL.h" // SDL_INIT_VIDEO
 
 #ifdef NDEBUG
 #define SAFE_GL(a) a
@@ -113,30 +287,6 @@ GLuint linkShaders(vector<GLuint> ids)
   return ProgramID;
 }
 
-GLuint uploadTextureToGPU(PictureView pic)
-{
-  GLuint texture;
-
-  glGenTextures(1, &texture);
-
-  glBindTexture(GL_TEXTURE_2D, texture);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, pic.dim.width, pic.dim.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pic.pixels);
-  SAFE_GL(glGenerateMipmap(GL_TEXTURE_2D));
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-  glBindTexture(GL_TEXTURE_2D, 0);
-
-  return texture;
-}
-
-int loadTexture(String path)
-{
-  auto pic = loadPicture(path);
-  return uploadTextureToGPU(pic);
-}
-
 GLuint loadShaders(Span<const uint8_t> vsCode, Span<const uint8_t> fsCode)
 {
   auto const vertexId = compileShader(vsCode, GL_VERTEX_SHADER);
@@ -164,13 +314,6 @@ GLuint createGpuProgram(std::string name)
   return loadShaders(toSpan(vsCode), toSpan(fsCode));
 }
 
-struct Camera
-{
-  Vector3f pos;
-  Quaternion dir;
-  bool valid = false;
-};
-
 struct DrawCommand
 {
   SingleRenderMesh* pMesh;
@@ -180,61 +323,6 @@ struct DrawCommand
   bool blinking;
   bool depthtest;
 };
-
-void uploadVerticesToGPU(RenderMesh& mesh)
-{
-  for(auto& model : mesh.singleMeshes)
-  {
-    SAFE_GL(glGenBuffers(1, &model.buffer));
-    SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, model.buffer));
-    SAFE_GL(glBufferData(GL_ARRAY_BUFFER, sizeof(model.vertices[0]) * model.vertices.size(), model.vertices.data(), GL_STATIC_DRAW));
-    SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, 0));
-  }
-}
-
-std::vector<RenderMesh> loadFontModels(String path, int COLS, int ROWS)
-{
-  std::vector<RenderMesh> r;
-
-  const int diffuse = uploadTextureToGPU(addBorderToTiles(loadPicture(path), COLS, ROWS));
-  const int lightmap = loadTexture("res/white.png");
-
-  for(int i = 0; i < COLS * ROWS; ++i)
-  {
-    const float col = (i % COLS);
-    const float row = (i / COLS);
-
-    const float u0 = (col + 0) / COLS;
-    const float u1 = (col + 1) / COLS;
-
-    const float v0 = 1.0f - (row + 1) / ROWS;
-    const float v1 = 1.0f - (row + 0) / ROWS;
-
-    const SingleRenderMesh::Vertex vertices[] =
-    {
-      { 0, 0, 0, /* N */ 0, 1, 0, /* uv diffuse */ u0, v0, /* uv lightmap */ u0, v0, },
-      { 1, 0, 1, /* N */ 0, 1, 0, /* uv diffuse */ u1, v1, /* uv lightmap */ u1, v1, },
-      { 0, 0, 1, /* N */ 0, 1, 0, /* uv diffuse */ u0, v1, /* uv lightmap */ u0, v1, },
-
-      { 0, 0, 0, /* N */ 0, 1, 0, /* uv diffuse */ u0, v0, /* uv lightmap */ u0, v0, },
-      { 1, 0, 0, /* N */ 0, 1, 0, /* uv diffuse */ u1, v0, /* uv lightmap */ u0, v1, },
-      { 1, 0, 1, /* N */ 0, 1, 0, /* uv diffuse */ u1, v1, /* uv lightmap */ u1, v1, },
-    };
-
-    SingleRenderMesh sm;
-    sm.diffuse = diffuse;
-    sm.lightmap = lightmap;
-
-    for(auto& v : vertices)
-      sm.vertices.push_back(v);
-
-    RenderMesh rm {};
-    rm.singleMeshes.push_back(sm);
-    r.push_back(rm);
-  }
-
-  return r;
-}
 
 void printOpenGlVersion()
 {
@@ -250,12 +338,6 @@ void printOpenGlVersion()
   printf("[display] GPU: %s [%s]\n",
          notNull(glGetString(GL_RENDERER)),
          notNull(glGetString(GL_VENDOR)));
-}
-
-template<typename T>
-T blend(T a, T b, float alpha)
-{
-  return a * (1 - alpha) + b * alpha;
 }
 
 struct Shader
@@ -691,9 +773,9 @@ struct MeshRenderPass : RenderPass
   float m_aspectRatio = 1.0;
 };
 
-struct OpenglDisplay : Display
+struct OpenGlGraphicsBackend : IGraphicsBackend
 {
-  OpenglDisplay(Size2i resolution)
+  OpenGlGraphicsBackend(Size2i resolution)
   {
     if(SDL_InitSubSystem(SDL_INIT_VIDEO))
       throw runtime_error(string("Can't init SDL video: ") + SDL_GetError());
@@ -736,21 +818,6 @@ struct OpenglDisplay : Display
     glEnable(GL_CULL_FACE);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    m_fontModel = loadFontModels("res/font.png", 16, 16);
-
-    for(auto& glyph : m_fontModel)
-    {
-      uploadVerticesToGPU(glyph);
-
-      // don't GL_REPEAT fonts
-      for(auto& single : glyph.singleMeshes)
-      {
-        glBindTexture(GL_TEXTURE_2D, single.diffuse);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-      }
-    }
-
     m_meshRenderPass.m_textShader = createGpuProgram("text");
     m_meshRenderPass.m_meshShader = createGpuProgram("mesh");
 
@@ -759,7 +826,7 @@ struct OpenglDisplay : Display
     printf("[display] init OK\n");
   }
 
-  ~OpenglDisplay()
+  ~OpenGlGraphicsBackend()
   {
     SAFE_GL(glBindFramebuffer(GL_FRAMEBUFFER, 0));
 
@@ -803,47 +870,6 @@ struct OpenglDisplay : Display
     SDL_SetWindowTitle(m_window, caption.data);
   }
 
-  void loadModel(int modelId, String path) override
-  {
-    if((int)m_Models.size() <= modelId)
-      m_Models.resize(modelId + 1);
-
-    m_Models[modelId] = loadRenderMesh(path);
-
-    int i = 0;
-
-    for(auto& single : m_Models[modelId].singleMeshes)
-    {
-      single.diffuse = loadTexture(setExtension(string(path.data), to_string(i) + ".diffuse.png"));
-      single.lightmap = loadTexture(setExtension(string(path.data), to_string(i) + ".lightmap.png"));
-      ++i;
-    }
-
-    uploadVerticesToGPU(m_Models[modelId]);
-  }
-
-  void setCamera(Vector3f pos, Quaternion dir) override
-  {
-    auto cam = (Camera { pos, dir });
-
-    if(!m_camera.valid)
-    {
-      m_camera = cam;
-      m_camera.valid = true;
-    }
-
-    // avoid big camera jumps
-    {
-      auto delta = m_camera.pos - pos;
-
-      if(dotProduct(delta, delta) > 10)
-        m_camera = cam;
-    }
-
-    m_camera.pos = blend(m_camera.pos, cam.pos, 0.3);
-    m_camera.dir = cam.dir;
-  }
-
   void setAmbientLight(float ambientLight) override
   {
     m_meshRenderPass.m_ambientLight = ambientLight;
@@ -859,7 +885,6 @@ struct OpenglDisplay : Display
 
   void beginDraw() override
   {
-    m_frameCount++;
     m_meshRenderPass.m_drawCommands.clear();
   }
 
@@ -903,35 +928,6 @@ struct OpenglDisplay : Display
     SDL_GL_SwapWindow(m_window);
   }
 
-  void drawActor(Rect3f where, Quaternion orientation, int modelId, bool blinking, int actionIdx, float ratio) override
-  {
-    (void)actionIdx;
-    (void)ratio;
-    auto& model = m_Models.at(modelId);
-    pushMesh(where, orientation, m_camera, model, blinking, true);
-  }
-
-  void drawText(Vector2f pos, char const* text) override
-  {
-    Rect3f rect;
-    rect.size.cx = 0.5;
-    rect.size.cy = 0;
-    rect.size.cz = 0.5;
-    rect.pos.x = pos.x - strlen(text) * rect.size.cx / 2;
-    rect.pos.y = 0;
-    rect.pos.z = pos.y;
-
-    auto cam = (Camera { Vector3f(0, -10, 0), Quaternion::fromEuler(PI / 2, 0, 0) });
-    auto orientation = Quaternion::fromEuler(0, 0, 0);
-
-    while(*text)
-    {
-      pushMesh(rect, orientation, cam, m_fontModel[*text], false, false);
-      rect.pos.x += rect.size.cx;
-      ++text;
-    }
-  }
-
   void readPixels(Span<uint8_t> dstRgbPixels) override
   {
     int width, height;
@@ -961,6 +957,42 @@ struct OpenglDisplay : Display
     SDL_ShowCursor(enable ? 0 : 1);
   }
 
+  uintptr_t uploadTextureToGPU(PictureView pic) override
+  {
+    GLuint texture;
+
+    glGenTextures(1, &texture);
+
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, pic.dim.width, pic.dim.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pic.pixels);
+    SAFE_GL(glGenerateMipmap(GL_TEXTURE_2D));
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    return texture;
+  }
+
+  void setTextureNoRepeat(uintptr_t texture) override
+  {
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  }
+
+  void uploadVerticesToGPU(RenderMesh& mesh) override
+  {
+    for(auto& model : mesh.singleMeshes)
+    {
+      SAFE_GL(glGenBuffers(1, &model.buffer));
+      SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, model.buffer));
+      SAFE_GL(glBufferData(GL_ARRAY_BUFFER, sizeof(model.vertices[0]) * model.vertices.size(), model.vertices.data(), GL_STATIC_DRAW));
+      SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, 0));
+    }
+  }
+
 private:
   Size2i getCurrentScreenSize()
   {
@@ -969,7 +1001,7 @@ private:
     return screenSize;
   }
 
-  void pushMesh(Rect3f where, Quaternion orientation, Camera const& camera, RenderMesh& model, bool blinking, bool depthtest)
+  void pushMesh(Rect3f where, Quaternion orientation, Camera const& camera, RenderMesh& model, bool blinking, bool depthtest) override
   {
     for(auto& single : model.singleMeshes)
       m_meshRenderPass.m_drawCommands.push_back({ &single, where, orientation, camera, blinking, depthtest });
@@ -979,20 +1011,14 @@ private:
   SDL_Window* m_window;
   SDL_GLContext m_context;
 
-  Camera m_camera;
-
-  vector<RenderMesh> m_Models;
-  vector<RenderMesh> m_fontModel;
-
-  int m_frameCount = 0;
-
   bool m_enablePostProcessing = true;
   bool m_enableFsaa = false;
 };
 }
 
+///////////////////////////////////////////////////////////////////////////////
 Display* createDisplay(Size2i resolution)
 {
-  return new OpenglDisplay(resolution);
+  return new Renderer(new OpenGlGraphicsBackend(resolution));
 }
 
