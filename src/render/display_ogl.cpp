@@ -150,7 +150,7 @@ GLuint loadShaders(Span<const uint8_t> vsCode, Span<const uint8_t> fsCode)
   return progId;
 }
 
-GLuint loadShader(std::string name)
+GLuint createGpuProgram(std::string name)
 {
   printf("[display] loading shader '%s'\n", name.c_str());
   auto vsCode = File::read("res/shaders/" + name + ".vert");
@@ -291,8 +291,8 @@ struct PostProcessing
   PostProcessing(Size2i resolution)
     : m_resolution(resolution)
   {
-    m_hdrShader.program = loadShader("hdr");
-    m_bloomShader.program = loadShader("bloom");
+    m_hdrShader.program = createGpuProgram("hdr");
+    m_bloomShader.program = createGpuProgram("bloom");
 
     SAFE_GL(glGenBuffers(1, &m_quadVbo));
 
@@ -751,8 +751,8 @@ struct OpenglDisplay : Display
       }
     }
 
-    m_meshRenderPass.m_textShader = loadShader("text");
-    m_meshRenderPass.m_meshShader = loadShader("mesh");
+    m_meshRenderPass.m_textShader = createGpuProgram("text");
+    m_meshRenderPass.m_meshShader = createGpuProgram("mesh");
 
     m_postprocRenderPass.postproc = make_unique<PostProcessing>(resolution);
 
