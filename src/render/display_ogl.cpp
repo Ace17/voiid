@@ -310,7 +310,7 @@ struct PostProcessing
     m_hdrShader.program = loadShader("hdr");
     m_bloomShader.program = loadShader("bloom");
 
-    SAFE_GL(glGenBuffers(1, &m_hdrQuadVbo));
+    SAFE_GL(glGenBuffers(1, &m_quadVbo));
 
     {
       SAFE_GL(glGenFramebuffers(1, &m_hdrFramebuffer));
@@ -358,8 +358,14 @@ struct PostProcessing
 
   ~PostProcessing()
   {
-    SAFE_GL(glDeleteBuffers(1, &m_hdrQuadVbo));
+    SAFE_GL(glDeleteBuffers(1, &m_quadVbo));
+
     SAFE_GL(glDeleteFramebuffers(1, &m_hdrFramebuffer));
+    SAFE_GL(glDeleteTextures(1, &m_hdrTexture));
+    SAFE_GL(glDeleteTextures(1, &m_hdrDepthTexture));
+
+    SAFE_GL(glDeleteFramebuffers(2, m_bloomFramebuffer));
+    SAFE_GL(glDeleteTextures(2, m_bloomTexture));
   }
 
   void applyBloomFilter()
@@ -369,7 +375,7 @@ struct PostProcessing
     SAFE_GL(glUseProgram(m_bloomShader));
     SAFE_GL(glDisable(GL_DEPTH_TEST));
 
-    SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, m_hdrQuadVbo));
+    SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, m_quadVbo));
     SAFE_GL(glBufferData(GL_ARRAY_BUFFER, sizeof screenQuad, screenQuad, GL_STATIC_DRAW));
 
     SAFE_GL(glEnableVertexAttribArray(BloomShader::Attribute::positionLoc));
@@ -420,7 +426,7 @@ struct PostProcessing
     SAFE_GL(glBindTexture(GL_TEXTURE_2D, m_bloomTexture[0]));
     SAFE_GL(glUniform1i(HdrShader::Uniform::InputTex2, 1));
 
-    SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, m_hdrQuadVbo));
+    SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, m_quadVbo));
     SAFE_GL(glBufferData(GL_ARRAY_BUFFER, sizeof screenQuad, screenQuad, GL_STATIC_DRAW));
 
     SAFE_GL(glEnableVertexAttribArray(HdrShader::Attribute::positionLoc));
@@ -474,7 +480,7 @@ struct PostProcessing
   GLuint m_bloomFramebuffer[2] {};
   GLuint m_bloomTexture[2] {};
 
-  GLuint m_hdrQuadVbo = 0;
+  GLuint m_quadVbo = 0;
 };
 
 struct PostProcessRenderPass : RenderPass
