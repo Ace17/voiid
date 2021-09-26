@@ -7,8 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // High-level renderer
 
-#include "engine/display.h"
-
+#include <chrono>
 #include <cstring>
 #include <memory>
 #include <vector>
@@ -17,13 +16,20 @@
 #include "base/scene.h"
 #include "base/span.h"
 #include "base/util.h" // setExtension
+#include "engine/display.h"
 #include "engine/graphics_backend.h"
 #include "engine/rendermesh.h"
-#include "matrix4.h"
+#include "engine/stats.h"
+#include "misc/time.h"
 
+#include "matrix4.h"
 #include "picture.h"
+#include "renderpass.h"
 
 using namespace std;
+
+#define OFFSET(VertexType, Attribute) \
+  (uintptr_t)(&(((VertexType*)nullptr)->Attribute))
 
 namespace
 {
@@ -33,16 +39,390 @@ T blend(T a, T b, float alpha)
   return a * (1 - alpha) + b * alpha;
 }
 
+struct QuadVertex
+{
+  float x, y, u, v;
+};
+
+const QuadVertex screenQuad[] =
+{
+  { -1, -1, 0, 0 },
+  { +1, +1, 1, 1 },
+  { -1, +1, 0, 1 },
+
+  { -1, -1, 0, 0 },
+  { +1, -1, 1, 0 },
+  { +1, +1, 1, 1 },
+};
+
+struct PostProcessing
+{
+  PostProcessing(IGraphicsBackend* backend, Size2i resolution)
+    : m_resolution(resolution), backend(backend)
+  {
+    m_hdrShader.program = backend->createGpuProgram("hdr");
+    m_bloomShader.program = backend->createGpuProgram("bloom");
+
+    m_quadVbo = backend->createVertexBuffer();
+    m_quadVbo->upload(screenQuad, sizeof screenQuad);
+
+    m_hdrFramebuffer = backend->createFrameBuffer(resolution, true);
+
+    for(int k = 0; k < 2; ++k)
+      m_bloomFramebuffer[k] = backend->createFrameBuffer(resolution, false);
+  }
+
+  void applyBloomFilter()
+  {
+    backend->useGpuProgram(m_bloomShader);
+    m_quadVbo->use();
+
+    backend->enableZTest(false);
+
+    backend->enableVertexAttribute(BloomShader::Attribute::positionLoc, 2, sizeof(QuadVertex), OFFSET(QuadVertex, x));
+    backend->enableVertexAttribute(BloomShader::Attribute::uvLoc, 2, sizeof(QuadVertex), OFFSET(QuadVertex, u));
+
+    auto oneBlurringPass = [&] (ITexture* inputTex, IFrameBuffer* outputFramebuffer, bool isThreshold = false)
+      {
+        backend->setUniformInt(BloomShader::Uniform::IsThreshold, isThreshold);
+
+        // Texture Unit 0
+        inputTex->bind(0);
+        backend->setUniformInt(BloomShader::Uniform::InputTex, 0);
+
+        outputFramebuffer->setTarget();
+        backend->draw(6);
+      };
+
+    oneBlurringPass(m_hdrFramebuffer->getColorTexture(), m_bloomFramebuffer[0].get(), true);
+    auto bloomTex0 = m_bloomFramebuffer[0]->getColorTexture();
+    auto bloomTex1 = m_bloomFramebuffer[1]->getColorTexture();
+    oneBlurringPass(bloomTex0, m_bloomFramebuffer[1].get());
+    oneBlurringPass(bloomTex1, m_bloomFramebuffer[0].get());
+    oneBlurringPass(bloomTex0, m_bloomFramebuffer[1].get());
+    oneBlurringPass(bloomTex1, m_bloomFramebuffer[0].get());
+    oneBlurringPass(bloomTex0, m_bloomFramebuffer[1].get());
+    oneBlurringPass(bloomTex1, m_bloomFramebuffer[0].get());
+  }
+
+  void drawHdrBuffer()
+  {
+    backend->useGpuProgram(m_hdrShader);
+
+    backend->enableZTest(false);
+
+    // Texture Unit 0
+    m_hdrFramebuffer->getColorTexture()->bind(0);
+    backend->setUniformInt(HdrShader::Uniform::InputTex1, 0);
+
+    // Texture Unit 1
+    m_bloomFramebuffer[0]->getColorTexture()->bind(1);
+    backend->setUniformInt(HdrShader::Uniform::InputTex2, 1);
+
+    m_quadVbo->use();
+
+    backend->enableVertexAttribute(HdrShader::Attribute::positionLoc, 2, sizeof(QuadVertex), OFFSET(QuadVertex, x));
+    backend->enableVertexAttribute(HdrShader::Attribute::uvLoc, 2, sizeof(QuadVertex), OFFSET(QuadVertex, u));
+
+    backend->draw(6);
+  }
+
+  struct HdrShader : Shader
+  {
+    enum Uniform
+    {
+      InputTex1 = 0,
+      InputTex2 = 1,
+    };
+
+    enum Attribute
+    {
+      positionLoc = 0,
+      uvLoc = 1,
+    };
+  };
+
+  struct BloomShader : Shader
+  {
+    enum Uniform
+    {
+      InputTex = 0,
+      IsThreshold = 1,
+    };
+
+    enum Attribute
+    {
+      positionLoc = 0,
+      uvLoc = 1,
+    };
+  };
+
+  const Size2i m_resolution;
+
+  IGraphicsBackend* const backend;
+
+  HdrShader m_hdrShader;
+  BloomShader m_bloomShader;
+
+  std::unique_ptr<IVertexBuffer> m_quadVbo;
+  std::unique_ptr<IFrameBuffer> m_hdrFramebuffer;
+  std::unique_ptr<IFrameBuffer> m_bloomFramebuffer[2];
+};
+
+struct PostProcessRenderPass : RenderPass
+{
+  FrameBuffer getInputFrameBuffer() override
+  {
+    return { postproc->m_hdrFramebuffer.get(), postproc->m_resolution };
+  }
+
+  void execute(FrameBuffer dst) override
+  {
+    postproc->applyBloomFilter();
+
+    dst.fb->setTarget();
+    postproc->drawHdrBuffer();
+  }
+
+  std::unique_ptr<PostProcessing> postproc;
+};
+
+struct DrawCommand
+{
+  SingleRenderMesh* pMesh;
+  Rect3f where;
+  Quaternion orientation;
+  Camera camera;
+  bool blinking;
+  bool depthtest;
+};
+
+struct MeshRenderPass : RenderPass
+{
+  FrameBuffer getInputFrameBuffer() override { return {}; }
+
+  void execute(FrameBuffer dst) override
+  {
+    dst.fb->setTarget();
+
+    backend->clear();
+
+    for(auto& cmd : m_drawCommands)
+      executeDrawCommand(cmd);
+
+    Stat("Draw calls", m_drawCommands.size());
+  }
+
+  void executeDrawCommand(const DrawCommand& cmd)
+  {
+    auto& model = *cmd.pMesh;
+    auto& where = cmd.where;
+
+    if(cmd.depthtest)
+    {
+      backend->useGpuProgram(m_meshShader);
+
+      backend->enableZTest(true);
+      backend->setUniformFloat3(MeshShader::Uniform::ambientLoc, m_ambientLight, m_ambientLight, m_ambientLight);
+      backend->setUniformFloat4(MeshShader::Uniform::colorId, 0, 0, 0, 0);
+
+      assert(m_lights.size() < 32);
+      backend->setUniformInt(MeshShader::Uniform::LightCountLoc, (int)m_lights.size());
+
+      for(auto& light : m_lights)
+      {
+        const auto i = int(&light - m_lights.data());
+        backend->setUniformFloat3(MeshShader::Uniform::LightPosLoc + i, light.pos.x, light.pos.y, light.pos.z);
+        backend->setUniformFloat3(MeshShader::Uniform::LightColorLoc + i, light.color.x, light.color.y, light.color.z);
+      }
+
+      if(cmd.blinking)
+      {
+        if(GetSteadyClockMs() % 100 < 50)
+          backend->setUniformFloat4(MeshShader::Uniform::colorId, 0.8, 0.4, 0.4, 0);
+      }
+
+      // Texture Unit 0: Diffuse
+      model.diffuse->bind(0);
+      backend->setUniformInt(MeshShader::Uniform::DiffuseTex, 0);
+
+      // Texture Unit 1: Lightmap
+      model.diffuse->bind(1);
+      backend->setUniformInt(MeshShader::Uniform::LightmapTex, 1);
+
+      auto const forward = cmd.camera.dir.rotate(Vector3f(1, 0, 0));
+      auto const up = cmd.camera.dir.rotate(Vector3f(0, 0, 1));
+
+      auto const target = cmd.camera.pos + forward;
+      auto const view = ::lookAt(cmd.camera.pos, target, up);
+      auto const pos = ::translate(where.pos);
+      auto const scale = ::scale(Vector3f(where.size.cx, where.size.cy, where.size.cz));
+      auto const rotate = quaternionToMatrix(cmd.orientation);
+
+      static const float fovy = (float)((60.0f / 180) * PI);
+      static const float near_ = 0.1f;
+      static const float far_ = 1000.0f;
+      const auto perspective = ::perspective(fovy, m_aspectRatio, near_, far_);
+
+      auto MV = pos * rotate * scale;
+      auto MVP = perspective * view * MV;
+
+      backend->setUniformMatrixFloat4(MeshShader::Uniform::M, &MV[0][0]);
+      backend->setUniformMatrixFloat4(MeshShader::Uniform::MVP, &MVP[0][0]);
+      backend->setUniformFloat3(MeshShader::Uniform::CameraPos, cmd.camera.pos.x, cmd.camera.pos.y, cmd.camera.pos.z);
+
+      model.vb->use();
+
+      backend->enableVertexAttribute(MeshShader::Attribute::positionLoc, 3, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, x));
+      backend->enableVertexAttribute(MeshShader::Attribute::normalLoc, 3, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, nx));
+      backend->enableVertexAttribute(MeshShader::Attribute::uvDiffuseLoc, 2, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, diffuse_u));
+      backend->enableVertexAttribute(MeshShader::Attribute::uvLightmapLoc, 2, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, lightmap_u));
+
+      backend->draw(model.vertices.size());
+    }
+    else
+    {
+      backend->useGpuProgram(m_textShader);
+
+      backend->enableZTest(false);
+
+      // Texture Unit 0: Diffuse
+      model.diffuse->bind(0);
+      backend->setUniformInt(TextShader::Uniform::DiffuseTex, 0);
+
+      auto const forward = Vector3f(0, 1, 0);
+      auto const up = Vector3f(0, 0, 1);
+
+      auto const target = cmd.camera.pos + forward;
+      auto const view = ::lookAt(cmd.camera.pos, target, up);
+      auto const pos = ::translate(where.pos);
+      auto const scale = ::scale(Vector3f(where.size.cx, where.size.cy, where.size.cz));
+
+      static const float fovy = (float)((60.0f / 180) * PI);
+      static const float near_ = 0.1f;
+      static const float far_ = 100.0f;
+      const auto perspective = ::perspective(fovy, m_aspectRatio, near_, far_);
+
+      auto MV = pos * scale;
+      auto MVP = perspective * view * MV;
+
+      backend->setUniformMatrixFloat4(TextShader::Uniform::MVP, &MVP[0][0]);
+
+      model.vb->use();
+
+      backend->enableVertexAttribute(TextShader::Attribute::positionLoc, 3, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, x));
+      backend->enableVertexAttribute(TextShader::Attribute::uvDiffuseLoc, 2, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, diffuse_u));
+
+      backend->draw(model.vertices.size());
+    }
+  }
+
+  struct TextShader
+  {
+    enum Uniform
+    {
+      MVP = 0,
+      DiffuseTex = 1,
+    };
+
+    enum Attribute
+    {
+      positionLoc = 0,
+      uvDiffuseLoc = 1,
+    };
+  };
+
+  struct MeshShader : Shader
+  {
+    enum Uniform
+    {
+      M = 0,
+      MVP = 1,
+      CameraPos = 2,
+      DiffuseTex = 4,
+      LightmapTex = 5,
+      colorId = 3,
+      ambientLoc = 6,
+      LightCountLoc = 7,
+      LightPosLoc = 8,
+      LightColorLoc = 40,
+    };
+
+    enum Attribute
+    {
+      positionLoc = 0,
+      uvDiffuseLoc = 1,
+      uvLightmapLoc = 2,
+      normalLoc = 3,
+    };
+  };
+
+  struct Light
+  {
+    Vector3f pos;
+    Vector3f color;
+  };
+
+  IGraphicsBackend* backend {};
+  uintptr_t m_textShader;
+  uintptr_t m_meshShader;
+  std::vector<DrawCommand> m_drawCommands;
+  vector<Light> m_lights;
+  float m_ambientLight = 0;
+  float m_aspectRatio = 1.0;
+};
+
+struct ScreenRenderPass : RenderPass
+{
+  Size2i screenSize {};
+  IGraphicsBackend* backend {};
+
+  FrameBuffer getInputFrameBuffer() override { return { backend->getScreenFrameBuffer(), screenSize }; }
+  void execute(FrameBuffer) override { /* nothing to do */ }
+};
+
 struct Renderer : Display
 {
   Renderer(IGraphicsBackend* backend_) : backend(backend_)
   {
+    auto resolution = backend->getCurrentScreenSize();
+
     m_fontModel = loadFontModels("res/font.png", 16, 16);
+
+    m_meshRenderPass.m_textShader = backend->createGpuProgram("text");
+    m_meshRenderPass.m_meshShader = backend->createGpuProgram("mesh");
+    m_meshRenderPass.backend = backend;
+
+    m_postprocRenderPass.postproc = make_unique<PostProcessing>(backend, resolution);
+  }
+
+  ~Renderer()
+  {
+    m_postprocRenderPass.postproc.reset();
   }
 
   void setFullscreen(bool fs) { backend->setFullscreen(fs); }
-  void setHdr(bool enable) { backend->setHdr(enable); }
-  void setFsaa(bool enable) { backend->setFsaa(enable); }
+
+  void setHdr(bool enable) override
+  {
+    m_enablePostProcessing = enable;
+  }
+
+  void setFsaa(bool enable) override
+  {
+    if(enable != m_enableFsaa)
+    {
+      Size2i size = backend->getCurrentScreenSize();
+
+      if(enable)
+        size = size * 2;
+
+      m_postprocRenderPass.postproc = make_unique<PostProcessing>(backend, size);
+    }
+
+    m_enableFsaa = enable;
+  }
+
   void setCaption(String caption) { backend->setCaption(caption); }
 
   void loadModel(int modelId, String path) override
@@ -56,12 +436,18 @@ struct Renderer : Display
 
     for(auto& single : m_Models[modelId].singleMeshes)
     {
-      single.diffuse = loadTexture(setExtension(string(path.data), to_string(i) + ".diffuse.png"));
-      single.lightmap = loadTexture(setExtension(string(path.data), to_string(i) + ".lightmap.png"));
+      auto diffuse = loadTexture(setExtension(string(path.data), to_string(i) + ".diffuse.png"));
+      auto lightmap = loadTexture(setExtension(string(path.data), to_string(i) + ".lightmap.png"));
+      single.diffuse = diffuse.get();
+      single.lightmap = lightmap.get();
+
+      m_textures.push_back(std::move(diffuse));
+      m_textures.push_back(std::move(lightmap));
+
       ++i;
     }
 
-    backend->uploadVerticesToGPU(m_Models[modelId]);
+    uploadVerticesToGPU(m_Models[modelId]);
   }
 
   void setCamera(Vector3f pos, Quaternion dir) override
@@ -86,17 +472,38 @@ struct Renderer : Display
     m_camera.dir = cam.dir;
   }
 
-  void setAmbientLight(float ambientLight) { backend->setAmbientLight(ambientLight); }
-  void setLight(int idx, Vector3f pos, Vector3f color) { backend->setLight(idx, pos, color); }
-  void beginDraw() { backend->beginDraw(); }
-  void endDraw() { backend->endDraw(); }
+  void beginDraw() override
+  {
+    m_meshRenderPass.m_drawCommands.clear();
+  }
+
+  void endDraw() override
+  {
+    auto screenSize = backend->getCurrentScreenSize();
+
+    m_meshRenderPass.m_aspectRatio = float(screenSize.width) / screenSize.height;
+    m_screenRenderPass.screenSize = screenSize;
+    m_screenRenderPass.backend = backend;
+
+    RenderPass* passes[16];
+    int count = 0;
+
+    passes[count++] = &m_meshRenderPass;
+
+    if(m_enablePostProcessing)
+      passes[count++] = &m_postprocRenderPass;
+
+    passes[count++] = &m_screenRenderPass;
+
+    renderPasses(Span<RenderPass*>(passes, count));
+  }
 
   void drawActor(Rect3f where, Quaternion orientation, int modelId, bool blinking, int actionIdx, float ratio) override
   {
     (void)actionIdx;
     (void)ratio;
     auto& model = m_Models.at(modelId);
-    backend->pushMesh(where, orientation, m_camera, model, blinking, true);
+    pushMesh(where, orientation, m_camera, model, blinking, true);
   }
 
   void drawText(Vector2f pos, char const* text) override
@@ -114,10 +521,23 @@ struct Renderer : Display
 
     while(*text)
     {
-      backend->pushMesh(rect, orientation, cam, m_fontModel[*text], false, false);
+      pushMesh(rect, orientation, cam, m_fontModel[*text], false, false);
       rect.pos.x += rect.size.cx;
       ++text;
     }
+  }
+
+  void setAmbientLight(float ambientLight) override
+  {
+    m_meshRenderPass.m_ambientLight = ambientLight;
+  }
+
+  void setLight(int idx, Vector3f pos, Vector3f color) override
+  {
+    if(idx >= (int)m_meshRenderPass.m_lights.size())
+      m_meshRenderPass.m_lights.resize(idx + 1);
+
+    m_meshRenderPass.m_lights[idx] = { pos, color };
   }
 
 private:
@@ -127,16 +547,26 @@ private:
   vector<RenderMesh> m_Models;
   vector<RenderMesh> m_fontModel;
 
+  bool m_enableFsaa = false;
+  bool m_enablePostProcessing = true;
+
+  MeshRenderPass m_meshRenderPass;
+  PostProcessRenderPass m_postprocRenderPass;
+  ScreenRenderPass m_screenRenderPass;
+
+  std::vector<std::unique_ptr<ITexture>> m_textures;
+  std::vector<std::unique_ptr<IVertexBuffer>> m_vbs;
+
   std::vector<RenderMesh> loadFontModels(String path, int COLS, int ROWS)
   {
     std::vector<RenderMesh> r;
 
-    const int diffuse = backend->uploadTextureToGPU(addBorderToTiles(loadPicture(path), COLS, ROWS));
-    const int lightmap = loadTexture("res/white.png");
+    auto diffuse = backend->createTexture(addBorderToTiles(loadPicture(path), COLS, ROWS));
+    auto lightmap = loadTexture("res/white.png");
 
-    // don't GL_REPEAT fonts
-    backend->setTextureNoRepeat(diffuse);
-    backend->setTextureNoRepeat(lightmap);
+    // don't repeat fonts
+    diffuse->setNoRepeat();
+    lightmap->setNoRepeat();
 
     for(int i = 0; i < COLS * ROWS; ++i)
     {
@@ -161,25 +591,62 @@ private:
       };
 
       SingleRenderMesh sm;
-      sm.diffuse = diffuse;
-      sm.lightmap = lightmap;
+      sm.diffuse = diffuse.get();
+      sm.lightmap = lightmap.get();
 
       for(auto& v : vertices)
         sm.vertices.push_back(v);
 
       RenderMesh glyph {};
       glyph.singleMeshes.push_back(sm);
-      backend->uploadVerticesToGPU(glyph);
+      uploadVerticesToGPU(glyph);
       r.push_back(glyph);
     }
+
+    m_textures.push_back(std::move(diffuse));
+    m_textures.push_back(std::move(lightmap));
 
     return r;
   }
 
-  int loadTexture(String path)
+  void uploadVerticesToGPU(RenderMesh& mesh)
+  {
+    for(auto& model : mesh.singleMeshes)
+    {
+      auto vb = backend->createVertexBuffer();
+      vb->upload((uint8_t*)model.vertices.data(), sizeof(model.vertices[0]) * model.vertices.size());
+      model.vb = vb.get();
+      m_vbs.push_back(std::move(vb));
+    }
+  }
+
+  std::unique_ptr<ITexture> loadTexture(String path)
   {
     auto pic = loadPicture(path);
-    return backend->uploadTextureToGPU(pic);
+    return backend->createTexture(pic);
+  }
+
+  void pushMesh(Rect3f where, Quaternion orientation, Camera const& camera, RenderMesh& model, bool blinking, bool depthtest)
+  {
+    for(auto& single : model.singleMeshes)
+      m_meshRenderPass.m_drawCommands.push_back({ &single, where, orientation, camera, blinking, depthtest });
+  }
+
+  void renderPasses(Span<RenderPass*> passes)
+  {
+    const auto t0 = chrono::high_resolution_clock::now();
+
+    for(int i = 0; i + 1 < passes.len; ++i)
+    {
+      auto framebuffer = passes[i + 1]->getInputFrameBuffer();
+      passes[i]->execute(framebuffer);
+    }
+
+    const auto t1 = chrono::high_resolution_clock::now();
+
+    Stat("Render time (ms)", chrono::duration_cast<chrono::microseconds>(t1 - t0).count() / 1000.0);
+
+    backend->swap();
   }
 };
 }

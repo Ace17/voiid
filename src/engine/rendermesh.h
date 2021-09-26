@@ -14,13 +14,15 @@ using namespace std;
 #include "base/geom.h"
 #include "base/string.h"
 
+struct IVertexBuffer;
+struct ITexture;
+
 struct SingleRenderMesh
 {
-  uint32_t buffer = 0;
-
-  // textures
-  int diffuse  {};
-  int lightmap {};
+  // renderer stuff
+  IVertexBuffer* vb {};
+  ITexture* diffuse {};
+  ITexture* lightmap {};
 
   // mesh data
   struct Vertex
