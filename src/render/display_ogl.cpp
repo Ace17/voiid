@@ -55,22 +55,6 @@ void ensureGl(char const* expr, const char* file, int line)
 
 namespace
 {
-struct QuadVertex
-{
-  float x, y, u, v;
-};
-
-const QuadVertex screenQuad[] =
-{
-  { -1, -1, 0, 0 },
-  { +1, +1, 1, 1 },
-  { -1, +1, 0, 1 },
-
-  { -1, -1, 0, 0 },
-  { +1, -1, 1, 0 },
-  { +1, +1, 1, 1 },
-};
-
 GLuint compileShader(Span<const uint8_t> code, int type)
 {
   auto shaderId = glCreateShader(type);
@@ -481,6 +465,22 @@ struct PostProcessing
   GLuint m_bloomTexture[2] {};
 
   GLuint m_quadVbo = 0;
+
+  struct QuadVertex
+  {
+    float x, y, u, v;
+  };
+
+  static constexpr QuadVertex screenQuad[] =
+  {
+    { -1, -1, 0, 0 },
+    { +1, +1, 1, 1 },
+    { -1, +1, 0, 1 },
+
+    { -1, -1, 0, 0 },
+    { +1, -1, 1, 0 },
+    { +1, +1, 1, 1 },
+  };
 };
 
 struct PostProcessRenderPass : RenderPass
