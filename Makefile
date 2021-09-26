@@ -51,6 +51,7 @@ SRCS_ENGINE:=\
 	src/misc/string.cpp\
 	src/misc/time.cpp\
 	src/render/display_ogl.cpp\
+	src/render/renderer.cpp\
 	src/render/glad.cpp\
 	src/render/rendermesh.cpp\
 	src/render/picture.cpp\

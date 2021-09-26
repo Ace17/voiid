@@ -1,5 +1,7 @@
 #pragma once
 
+#include "base/geom.h"
+
 struct RenderMesh;
 struct PictureView;
 struct Camera;
@@ -27,5 +29,11 @@ struct IGraphicsBackend
   virtual void endDraw() = 0;
 
   virtual void pushMesh(Rect3f where, Quaternion orientation, Camera const& camera, RenderMesh& model, bool blinking, bool depthtest) = 0;
+};
+
+struct Camera
+{
+  Vector3f pos;
+  Quaternion dir;
 };
 

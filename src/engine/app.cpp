@@ -24,6 +24,7 @@
 #include "audio.h"
 #include "audio_backend.h"
 #include "display.h"
+#include "graphics_backend.h"
 #include "input.h"
 #include "ratecounter.h"
 #include "stats.h"
@@ -33,7 +34,8 @@ using namespace std;
 auto const TIMESTEP = 10;
 auto const RESOLUTION = Size2i(1280, 720);
 
-Display* createDisplay(Size2i resolution);
+IGraphicsBackend* createGraphicsBackend(Size2i resolution);
+Display* createRenderer(IGraphicsBackend* backend);
 MixableAudio* createAudio();
 UserInput* createUserInput();
 
@@ -45,14 +47,15 @@ public:
   App(Span<char*> args)
     : m_args({ args.data, args.data + args.len })
   {
-    m_display.reset(createDisplay(RESOLUTION));
+    m_graphicsBackend.reset(createGraphicsBackend(RESOLUTION));
+    m_display.reset(createRenderer(m_graphicsBackend.get()));
     m_audio.reset(createAudio());
     m_audioBackend.reset(createAudioBackend(m_audio.get()));
     m_input.reset(createUserInput());
 
     m_scene.reset(createGame(this, m_args));
 
-    m_display->enableGrab(m_doGrab);
+    m_graphicsBackend->enableGrab(m_doGrab);
 
     m_lastTime = GetSteadyClockMs();
     m_lastDisplayFrameTime = GetSteadyClockMs();
@@ -112,7 +115,7 @@ private:
     if(m_captureFile || m_mustScreenshot)
     {
       vector<uint8_t> pixels(RESOLUTION.width * RESOLUTION.height * 4);
-      m_display->readPixels({ pixels.data(), (int)pixels.size() });
+      m_graphicsBackend->readPixels({ pixels.data(), (int)pixels.size() });
 
       if(m_captureFile)
         fwrite(pixels.data(), 1, pixels.size(), m_captureFile);
@@ -275,7 +278,7 @@ private:
   void onMouseClick()
   {
     m_doGrab = true;
-    m_display->enableGrab(m_doGrab);
+    m_graphicsBackend->enableGrab(m_doGrab);
   }
 
   void onMouseMotion(int dx, int dy)
@@ -303,7 +306,7 @@ private:
   void toggleGrab()
   {
     m_doGrab = !m_doGrab;
-    m_display->enableGrab(m_doGrab);
+    m_graphicsBackend->enableGrab(m_doGrab);
   }
 
   void toggleFsaa()
@@ -422,6 +425,7 @@ private:
   unique_ptr<MixableAudio> m_audio;
   unique_ptr<IAudioBackend> m_audioBackend;
   unique_ptr<Display> m_display;
+  unique_ptr<IGraphicsBackend> m_graphicsBackend;
   vector<Actor> m_actors;
   unique_ptr<UserInput> m_input;
 
