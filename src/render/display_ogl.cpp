@@ -869,8 +869,6 @@ struct OpenglDisplay : Display
 
   void endDraw() override
   {
-    const auto t0 = chrono::high_resolution_clock::now();
-
     auto screenSize = getCurrentScreenSize();
 
     m_meshRenderPass.m_aspectRatio = float(screenSize.width) / screenSize.height;
@@ -886,7 +884,14 @@ struct OpenglDisplay : Display
 
     passes[count++] = &m_screenRenderPass;
 
-    for(int i = 0; i + 1 < count; ++i)
+    renderPasses(Span<RenderPass*>(passes, count));
+  }
+
+  void renderPasses(Span<RenderPass*> passes)
+  {
+    const auto t0 = chrono::high_resolution_clock::now();
+
+    for(int i = 0; i + 1 < passes.len; ++i)
     {
       auto framebuffer = passes[i + 1]->getInputFrameBuffer();
       passes[i]->execute(framebuffer);
