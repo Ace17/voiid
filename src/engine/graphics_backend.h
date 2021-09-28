@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <memory>
 
 #include "base/geom.h"
@@ -8,6 +9,12 @@
 struct RenderMesh;
 struct PictureView;
 struct Camera;
+
+struct IScreenSizeListener
+{
+  virtual ~IScreenSizeListener() = default;
+  virtual void onScreenSizeChanged(Size2i size) = 0;
+};
 
 struct ITexture
 {
@@ -59,7 +66,7 @@ struct IGraphicsBackend
 
   virtual IFrameBuffer* getScreenFrameBuffer() = 0;
 
-  virtual Size2i getCurrentScreenSize() const = 0;
+  virtual void setScreenSizeListener(IScreenSizeListener* listener) = 0;
 
   // draw functions
   virtual void swap() = 0;

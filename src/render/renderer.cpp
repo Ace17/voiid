@@ -231,23 +231,27 @@ struct ScreenRenderPass : RenderPass
   void execute(FrameBuffer) override { /* nothing to do */ }
 };
 
-struct Renderer : Display
+struct Renderer : Display, IScreenSizeListener
 {
   Renderer(IGraphicsBackend* backend_) : backend(backend_)
   {
-    auto resolution = backend->getCurrentScreenSize();
-
     m_fontModel = loadFontModels("res/font.png", 16, 16);
+
+    backend->setScreenSizeListener(this);
 
     m_meshRenderPass.m_textShader = backend->createGpuProgram("text");
     m_meshRenderPass.m_meshShader = backend->createGpuProgram("mesh");
     m_meshRenderPass.backend = backend;
 
-    m_postprocRenderPass.setup(backend, resolution);
+    m_postprocRenderPass.setup(backend, m_screenSize);
   }
 
-  ~Renderer()
+  void onScreenSizeChanged(Size2i screenSize) override
   {
+    m_screenSize = screenSize;
+    m_postprocRenderPass.setup(backend, screenSize);
+
+    printf("[renderer] Screen size changed to: %dx%d\n", screenSize.width, screenSize.height);
   }
 
   void setFullscreen(bool fs) { backend->setFullscreen(fs); }
@@ -261,7 +265,7 @@ struct Renderer : Display
   {
     if(enable != m_enableFsaa)
     {
-      Size2i size = backend->getCurrentScreenSize();
+      Size2i size = m_screenSize;
 
       if(enable)
         size = size * 2;
@@ -328,10 +332,8 @@ struct Renderer : Display
 
   void endDraw() override
   {
-    auto screenSize = backend->getCurrentScreenSize();
-
-    m_meshRenderPass.m_aspectRatio = float(screenSize.width) / screenSize.height;
-    m_screenRenderPass.screenSize = screenSize;
+    m_meshRenderPass.m_aspectRatio = float(m_screenSize.width) / m_screenSize.height;
+    m_screenRenderPass.screenSize = m_screenSize;
     m_screenRenderPass.backend = backend;
 
     RenderPass* passes[16];
@@ -390,6 +392,7 @@ struct Renderer : Display
   }
 
 private:
+  Size2i m_screenSize;
   Camera m_camera;
   bool m_cameraValid = false;
   IGraphicsBackend* const backend;

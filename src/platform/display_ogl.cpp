@@ -224,7 +224,9 @@ struct OpenGlGraphicsBackend : IGraphicsBackend
     glEnable(GL_CULL_FACE);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    printf("[display] init OK\n");
+    updateScreenSize();
+
+    printf("[display] init OK ( %dx%d )\n", m_screenSize.width, m_screenSize.height);
   }
 
   ~OpenGlGraphicsBackend()
@@ -446,6 +448,21 @@ struct OpenGlGraphicsBackend : IGraphicsBackend
   void swap() override
   {
     SDL_GL_SwapWindow(m_window);
+    updateScreenSize();
+  }
+
+  void updateScreenSize()
+  {
+    Size2i screenSize {};
+    SDL_GL_GetDrawableSize(m_window, &screenSize.width, &screenSize.height);
+
+    if(screenSize != m_screenSize)
+    {
+      m_screenSize = screenSize;
+
+      if(m_screenSizeListener)
+        m_screenSizeListener->onScreenSizeChanged(screenSize);
+    }
   }
 
   IFrameBuffer* getScreenFrameBuffer()
@@ -454,13 +471,13 @@ struct OpenGlGraphicsBackend : IGraphicsBackend
     {
       void setTarget() override
       {
-        auto screenSize = backend->getCurrentScreenSize();
+        auto screenSize = backend->m_screenSize;
         SAFE_GL(glViewport(0, 0, screenSize.width, screenSize.height));
         SAFE_GL(glBindFramebuffer(GL_FRAMEBUFFER, 0));
       }
 
       ITexture* getColorTexture() { return nullptr; }
-      IGraphicsBackend* backend;
+      OpenGlGraphicsBackend* backend;
     };
 
     static ScreenFrameBuffer screenFrameBuffer;
@@ -468,14 +485,16 @@ struct OpenGlGraphicsBackend : IGraphicsBackend
     return &screenFrameBuffer;
   }
 
-  Size2i getCurrentScreenSize() const override
+  void setScreenSizeListener(IScreenSizeListener* listener) override
   {
-    Size2i screenSize {};
-    SDL_GL_GetDrawableSize(m_window, &screenSize.width, &screenSize.height);
-    return screenSize;
+    m_screenSizeListener = listener;
+    updateScreenSize();
+    m_screenSizeListener->onScreenSizeChanged(m_screenSize);
   }
 
 private:
+  Size2i m_screenSize {};
+  IScreenSizeListener* m_screenSizeListener {};
   SDL_Window* m_window;
   SDL_GLContext m_context;
 };
