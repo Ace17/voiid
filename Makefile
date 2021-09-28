@@ -53,6 +53,7 @@ SRCS_ENGINE:=\
 	src/render/renderer.cpp\
 	src/render/rendermesh.cpp\
 	src/render/picture.cpp\
+	src/render/postprocess.cpp\
 	src/render/png.cpp\
 	src/render/mesh_import.cpp\
 

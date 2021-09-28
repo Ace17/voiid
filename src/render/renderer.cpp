@@ -24,12 +24,10 @@
 
 #include "matrix4.h"
 #include "picture.h"
+#include "postprocess.h"
 #include "renderpass.h"
 
 using namespace std;
-
-#define OFFSET(VertexType, Attribute) \
-  (uintptr_t)(&(((VertexType*)nullptr)->Attribute))
 
 namespace
 {
@@ -38,154 +36,6 @@ T blend(T a, T b, float alpha)
 {
   return a * (1 - alpha) + b * alpha;
 }
-
-struct QuadVertex
-{
-  float x, y, u, v;
-};
-
-const QuadVertex screenQuad[] =
-{
-  { -1, -1, 0, 0 },
-  { +1, +1, 1, 1 },
-  { -1, +1, 0, 1 },
-
-  { -1, -1, 0, 0 },
-  { +1, -1, 1, 0 },
-  { +1, +1, 1, 1 },
-};
-
-struct PostProcessing
-{
-  PostProcessing(IGraphicsBackend* backend, Size2i resolution)
-    : m_resolution(resolution), backend(backend)
-  {
-    m_hdrShader.program = backend->createGpuProgram("hdr");
-    m_bloomShader.program = backend->createGpuProgram("bloom");
-
-    m_quadVbo = backend->createVertexBuffer();
-    m_quadVbo->upload(screenQuad, sizeof screenQuad);
-
-    m_hdrFramebuffer = backend->createFrameBuffer(resolution, true);
-
-    for(int k = 0; k < 2; ++k)
-      m_bloomFramebuffer[k] = backend->createFrameBuffer(resolution, false);
-  }
-
-  void applyBloomFilter()
-  {
-    backend->useGpuProgram(m_bloomShader);
-    m_quadVbo->use();
-
-    backend->enableZTest(false);
-
-    backend->enableVertexAttribute(BloomShader::Attribute::positionLoc, 2, sizeof(QuadVertex), OFFSET(QuadVertex, x));
-    backend->enableVertexAttribute(BloomShader::Attribute::uvLoc, 2, sizeof(QuadVertex), OFFSET(QuadVertex, u));
-
-    auto oneBlurringPass = [&] (ITexture* inputTex, IFrameBuffer* outputFramebuffer, bool isThreshold = false)
-      {
-        backend->setUniformInt(BloomShader::Uniform::IsThreshold, isThreshold);
-
-        // Texture Unit 0
-        inputTex->bind(0);
-        backend->setUniformInt(BloomShader::Uniform::InputTex, 0);
-
-        outputFramebuffer->setTarget();
-        backend->draw(6);
-      };
-
-    oneBlurringPass(m_hdrFramebuffer->getColorTexture(), m_bloomFramebuffer[0].get(), true);
-    auto bloomTex0 = m_bloomFramebuffer[0]->getColorTexture();
-    auto bloomTex1 = m_bloomFramebuffer[1]->getColorTexture();
-    oneBlurringPass(bloomTex0, m_bloomFramebuffer[1].get());
-    oneBlurringPass(bloomTex1, m_bloomFramebuffer[0].get());
-    oneBlurringPass(bloomTex0, m_bloomFramebuffer[1].get());
-    oneBlurringPass(bloomTex1, m_bloomFramebuffer[0].get());
-    oneBlurringPass(bloomTex0, m_bloomFramebuffer[1].get());
-    oneBlurringPass(bloomTex1, m_bloomFramebuffer[0].get());
-  }
-
-  void drawHdrBuffer()
-  {
-    backend->useGpuProgram(m_hdrShader);
-
-    backend->enableZTest(false);
-
-    // Texture Unit 0
-    m_hdrFramebuffer->getColorTexture()->bind(0);
-    backend->setUniformInt(HdrShader::Uniform::InputTex1, 0);
-
-    // Texture Unit 1
-    m_bloomFramebuffer[0]->getColorTexture()->bind(1);
-    backend->setUniformInt(HdrShader::Uniform::InputTex2, 1);
-
-    m_quadVbo->use();
-
-    backend->enableVertexAttribute(HdrShader::Attribute::positionLoc, 2, sizeof(QuadVertex), OFFSET(QuadVertex, x));
-    backend->enableVertexAttribute(HdrShader::Attribute::uvLoc, 2, sizeof(QuadVertex), OFFSET(QuadVertex, u));
-
-    backend->draw(6);
-  }
-
-  struct HdrShader : Shader
-  {
-    enum Uniform
-    {
-      InputTex1 = 0,
-      InputTex2 = 1,
-    };
-
-    enum Attribute
-    {
-      positionLoc = 0,
-      uvLoc = 1,
-    };
-  };
-
-  struct BloomShader : Shader
-  {
-    enum Uniform
-    {
-      InputTex = 0,
-      IsThreshold = 1,
-    };
-
-    enum Attribute
-    {
-      positionLoc = 0,
-      uvLoc = 1,
-    };
-  };
-
-  const Size2i m_resolution;
-
-  IGraphicsBackend* const backend;
-
-  HdrShader m_hdrShader;
-  BloomShader m_bloomShader;
-
-  std::unique_ptr<IVertexBuffer> m_quadVbo;
-  std::unique_ptr<IFrameBuffer> m_hdrFramebuffer;
-  std::unique_ptr<IFrameBuffer> m_bloomFramebuffer[2];
-};
-
-struct PostProcessRenderPass : RenderPass
-{
-  FrameBuffer getInputFrameBuffer() override
-  {
-    return { postproc->m_hdrFramebuffer.get(), postproc->m_resolution };
-  }
-
-  void execute(FrameBuffer dst) override
-  {
-    postproc->applyBloomFilter();
-
-    dst.fb->setTarget();
-    postproc->drawHdrBuffer();
-  }
-
-  std::unique_ptr<PostProcessing> postproc;
-};
 
 struct DrawCommand
 {
@@ -393,12 +243,11 @@ struct Renderer : Display
     m_meshRenderPass.m_meshShader = backend->createGpuProgram("mesh");
     m_meshRenderPass.backend = backend;
 
-    m_postprocRenderPass.postproc = make_unique<PostProcessing>(backend, resolution);
+    m_postprocRenderPass.setup(backend, resolution);
   }
 
   ~Renderer()
   {
-    m_postprocRenderPass.postproc.reset();
   }
 
   void setFullscreen(bool fs) { backend->setFullscreen(fs); }
@@ -417,7 +266,7 @@ struct Renderer : Display
       if(enable)
         size = size * 2;
 
-      m_postprocRenderPass.postproc = make_unique<PostProcessing>(backend, size);
+      m_postprocRenderPass.setup(backend, size);
     }
 
     m_enableFsaa = enable;

@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "base/geom.h"
+#include "base/string.h"
 
 struct RenderMesh;
 struct PictureView;

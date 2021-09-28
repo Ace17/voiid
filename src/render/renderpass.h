@@ -1,6 +1,10 @@
 #pragma once
 
+#include "base/geom.h"
 #include <cstdint>
+
+#define OFFSET(VertexType, Attribute) \
+  (uintptr_t)(&(((VertexType*)nullptr)->Attribute))
 
 struct Shader
 {
