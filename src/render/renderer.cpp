@@ -413,7 +413,8 @@ private:
   {
     std::vector<RenderMesh> r;
 
-    auto diffuse = backend->createTexture(addBorderToTiles(loadPicture(path), COLS, ROWS));
+    auto diffuse = backend->createTexture();
+    diffuse->upload(addBorderToTiles(loadPicture(path), COLS, ROWS));
     auto lightmap = loadTexture("res/white.png");
 
     // don't repeat fonts
@@ -475,7 +476,9 @@ private:
   std::unique_ptr<ITexture> loadTexture(String path)
   {
     auto pic = loadPicture(path);
-    return backend->createTexture(pic);
+    auto texture = backend->createTexture();
+    texture->upload(pic);
+    return texture;
   }
 
   void pushMesh(Rect3f where, Quaternion orientation, Camera const& camera, RenderMesh& model, bool blinking, bool depthtest)

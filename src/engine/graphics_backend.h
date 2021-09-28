@@ -48,7 +48,7 @@ struct IGraphicsBackend
 
   virtual void readPixels(Span<uint8_t> dstRgbPixels) = 0;
 
-  virtual std::unique_ptr<ITexture> createTexture(PictureView pic) = 0;
+  virtual std::unique_ptr<ITexture> createTexture() = 0;
   virtual std::unique_ptr<IVertexBuffer> createVertexBuffer() = 0;
   virtual std::unique_ptr<IFrameBuffer> createFrameBuffer(Size2i resolution, bool depth = true) = 0;
   virtual uintptr_t createGpuProgram(String name) = 0;

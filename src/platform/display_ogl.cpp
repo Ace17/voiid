@@ -280,11 +280,9 @@ struct OpenGlGraphicsBackend : IGraphicsBackend
     SDL_ShowCursor(enable ? 0 : 1);
   }
 
-  std::unique_ptr<ITexture> createTexture(PictureView pic) override
+  std::unique_ptr<ITexture> createTexture() override
   {
-    auto result = std::make_unique<OpenglTexture>();
-    result->upload(pic);
-    return result;
+    return std::make_unique<OpenglTexture>();
   }
 
   uintptr_t createGpuProgram(String name_) override
