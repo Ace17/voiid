@@ -44,16 +44,19 @@ struct IGraphicsBackend
 
   virtual void setFullscreen(bool fs) = 0;
   virtual void setCaption(String caption) = 0;
-  virtual void readPixels(Span<uint8_t> dstRgbPixels) = 0;
   virtual void enableGrab(bool enable) = 0;
 
+  virtual void readPixels(Span<uint8_t> dstRgbPixels) = 0;
+
   virtual std::unique_ptr<ITexture> createTexture(PictureView pic) = 0;
-
-  virtual uintptr_t createGpuProgram(String name) = 0;
-
   virtual std::unique_ptr<IVertexBuffer> createVertexBuffer() = 0;
   virtual std::unique_ptr<IFrameBuffer> createFrameBuffer(Size2i resolution, bool depth = true) = 0;
+  virtual uintptr_t createGpuProgram(String name) = 0;
+  virtual IFrameBuffer* getScreenFrameBuffer() = 0;
 
+  virtual void setScreenSizeListener(IScreenSizeListener* listener) = 0;
+
+  // draw functions
   virtual void enableZTest(bool enable) = 0;
   virtual void useGpuProgram(uintptr_t program) = 0;
   virtual void enableVertexAttribute(int id, int dim, int stride, int offset) = 0;
@@ -63,12 +66,6 @@ struct IGraphicsBackend
   virtual void setUniformMatrixFloat4(int id, float* matrix) = 0;
   virtual void draw(int vertexCount) = 0;
   virtual void clear() = 0;
-
-  virtual IFrameBuffer* getScreenFrameBuffer() = 0;
-
-  virtual void setScreenSizeListener(IScreenSizeListener* listener) = 0;
-
-  // draw functions
   virtual void swap() = 0;
 };
 
