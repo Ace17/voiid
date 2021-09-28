@@ -50,9 +50,7 @@ SRCS_ENGINE:=\
 	src/misc/json.cpp\
 	src/misc/string.cpp\
 	src/misc/time.cpp\
-	src/render/display_ogl.cpp\
 	src/render/renderer.cpp\
-	src/render/glad.cpp\
 	src/render/rendermesh.cpp\
 	src/render/picture.cpp\
 	src/render/png.cpp\
@@ -61,6 +59,8 @@ SRCS_ENGINE:=\
 SRCS_ENGINE+=\
 	src/platform/audio_sdl.cpp\
 	src/platform/input_sdl.cpp\
+	src/platform/display_ogl.cpp\
+	src/platform/glad.cpp\
 
 SRCS_MESHCOOKER:=\
 	src/engine/main_meshcooker.cpp\
