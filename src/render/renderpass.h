@@ -6,12 +6,6 @@
 #define OFFSET(VertexType, Attribute) \
   (uintptr_t)(&(((VertexType*)nullptr)->Attribute))
 
-struct Shader
-{
-  operator uintptr_t () { return program; }
-  uintptr_t program;
-};
-
 struct IFrameBuffer;
 
 struct RenderPass

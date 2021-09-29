@@ -26,6 +26,36 @@ const QuadVertex screenQuad[] =
   { +1, -1, 1, 0 },
   { +1, +1, 1, 1 },
 };
+
+namespace HdrShader
+{
+enum Uniform
+{
+  InputTex1 = 0,
+  InputTex2 = 1,
+};
+
+enum Attribute
+{
+  positionLoc = 0,
+  uvLoc = 1,
+};
+}
+
+namespace BloomShader
+{
+enum Uniform
+{
+  InputTex = 0,
+  IsThreshold = 1,
+};
+
+enum Attribute
+{
+  positionLoc = 0,
+  uvLoc = 1,
+};
+}
 }
 
 struct PostProcessing
@@ -33,8 +63,8 @@ struct PostProcessing
   PostProcessing(IGraphicsBackend* backend, Size2i resolution)
     : m_resolution(resolution), backend(backend)
   {
-    m_hdrShader.program = backend->createGpuProgram("hdr");
-    m_bloomShader.program = backend->createGpuProgram("bloom");
+    m_hdrShader = backend->createGpuProgram("hdr");
+    m_bloomShader = backend->createGpuProgram("bloom");
 
     m_quadVbo = backend->createVertexBuffer();
     m_quadVbo->upload(screenQuad, sizeof screenQuad);
@@ -100,42 +130,12 @@ struct PostProcessing
     backend->draw(6);
   }
 
-  struct HdrShader : Shader
-  {
-    enum Uniform
-    {
-      InputTex1 = 0,
-      InputTex2 = 1,
-    };
-
-    enum Attribute
-    {
-      positionLoc = 0,
-      uvLoc = 1,
-    };
-  };
-
-  struct BloomShader : Shader
-  {
-    enum Uniform
-    {
-      InputTex = 0,
-      IsThreshold = 1,
-    };
-
-    enum Attribute
-    {
-      positionLoc = 0,
-      uvLoc = 1,
-    };
-  };
-
   const Size2i m_resolution;
 
   IGraphicsBackend* const backend;
 
-  HdrShader m_hdrShader;
-  BloomShader m_bloomShader;
+  uintptr_t m_hdrShader;
+  uintptr_t m_bloomShader;
 
   std::unique_ptr<IVertexBuffer> m_quadVbo;
   std::unique_ptr<IFrameBuffer> m_hdrFramebuffer;

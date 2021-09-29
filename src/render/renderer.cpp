@@ -182,7 +182,7 @@ struct MeshRenderPass : RenderPass
     };
   };
 
-  struct MeshShader : Shader
+  struct MeshShader
   {
     enum Uniform
     {
