@@ -98,14 +98,15 @@ struct PostProcessing
       };
 
     oneBlurringPass(m_hdrFramebuffer->getColorTexture(), m_bloomFramebuffer[0].get(), true);
-    auto bloomTex0 = m_bloomFramebuffer[0]->getColorTexture();
-    auto bloomTex1 = m_bloomFramebuffer[1]->getColorTexture();
-    oneBlurringPass(bloomTex0, m_bloomFramebuffer[1].get());
-    oneBlurringPass(bloomTex1, m_bloomFramebuffer[0].get());
-    oneBlurringPass(bloomTex0, m_bloomFramebuffer[1].get());
-    oneBlurringPass(bloomTex1, m_bloomFramebuffer[0].get());
-    oneBlurringPass(bloomTex0, m_bloomFramebuffer[1].get());
-    oneBlurringPass(bloomTex1, m_bloomFramebuffer[0].get());
+
+    auto srcFb = m_bloomFramebuffer[0].get();
+    auto dstFb = m_bloomFramebuffer[1].get();
+
+    for(int k = 0; k < 6; ++k)
+    {
+      oneBlurringPass(srcFb->getColorTexture(), dstFb);
+      std::swap(srcFb, dstFb);
+    }
   }
 
   void drawHdrBuffer()
