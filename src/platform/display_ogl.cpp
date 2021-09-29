@@ -19,6 +19,7 @@
 #include "base/span.h"
 #include "engine/graphics_backend.h"
 #include "engine/rendermesh.h"
+#include "engine/stats.h"
 #include "misc/file.h"
 #include "render/matrix4.h"
 #include "render/picture.h"
@@ -435,6 +436,7 @@ struct OpenGlGraphicsBackend : IGraphicsBackend
   void draw(int vertexCount) override
   {
     SAFE_GL(glDrawArrays(GL_TRIANGLES, 0, vertexCount));
+    ++m_drawCallCount;
   }
 
   void clear() override
@@ -447,6 +449,8 @@ struct OpenGlGraphicsBackend : IGraphicsBackend
   {
     SDL_GL_SwapWindow(m_window);
     updateScreenSize();
+    Stat("Draw calls", m_drawCallCount);
+    m_drawCallCount = 0;
   }
 
   void updateScreenSize()
@@ -491,6 +495,7 @@ struct OpenGlGraphicsBackend : IGraphicsBackend
   }
 
 private:
+  int m_drawCallCount = 0;
   Size2i m_screenSize {};
   IScreenSizeListener* m_screenSizeListener {};
   SDL_Window* m_window;

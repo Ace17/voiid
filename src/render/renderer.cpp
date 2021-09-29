@@ -65,8 +65,6 @@ struct MeshRenderPass : RenderPass
 
     for(auto& cmd : m_drawCommands)
       executeDrawCommand(cmd);
-
-    Stat("Draw calls", m_drawCommands.size());
   }
 
   void executeDrawCommand(const DrawCommand& cmd)
