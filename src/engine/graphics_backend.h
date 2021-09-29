@@ -14,9 +14,7 @@
 #include "base/geom.h"
 #include "base/string.h"
 
-struct RenderMesh;
 struct PictureView;
-struct Camera;
 
 struct IScreenSizeListener
 {
@@ -75,11 +73,5 @@ struct IGraphicsBackend
   virtual void draw(int vertexCount) = 0;
   virtual void clear() = 0;
   virtual void swap() = 0;
-};
-
-struct Camera
-{
-  Vector3f pos;
-  Quaternion dir;
 };
 

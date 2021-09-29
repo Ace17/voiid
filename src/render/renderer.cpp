@@ -37,6 +37,12 @@ T blend(T a, T b, float alpha)
   return a * (1 - alpha) + b * alpha;
 }
 
+struct Camera
+{
+  Vector3f pos;
+  Quaternion dir;
+};
+
 struct DrawCommand
 {
   SingleRenderMesh* pMesh;
