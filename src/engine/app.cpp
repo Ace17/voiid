@@ -272,7 +272,7 @@ private:
     }
 
     m_fullscreen = !m_fullscreen;
-    m_display->setFullscreen(m_fullscreen);
+    m_graphicsBackend->setFullscreen(m_fullscreen);
   }
 
   void onMouseClick()
@@ -324,7 +324,7 @@ private:
   // View implementation
   void setTitle(String gameTitle) override
   {
-    m_display->setCaption(gameTitle);
+    m_graphicsBackend->setCaption(gameTitle);
   }
 
   void preload(Resource res) override

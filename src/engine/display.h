@@ -16,10 +16,8 @@ struct Display
 {
   virtual ~Display() = default;
 
-  virtual void setFullscreen(bool fs) = 0;
   virtual void setHdr(bool enable) = 0;
   virtual void setFsaa(bool enable) = 0;
-  virtual void setCaption(String caption) = 0;
   virtual void loadModel(int modelId, String path) = 0;
   virtual void setCamera(Vector3f pos, Quaternion dir) = 0;
   virtual void setAmbientLight(float ambientLight) = 0;

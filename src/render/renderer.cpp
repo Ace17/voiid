@@ -254,8 +254,6 @@ struct Renderer : Display, IScreenSizeListener
     printf("[renderer] Screen size changed to: %dx%d\n", screenSize.width, screenSize.height);
   }
 
-  void setFullscreen(bool fs) { backend->setFullscreen(fs); }
-
   void setHdr(bool enable) override
   {
     m_enablePostProcessing = enable;
@@ -275,8 +273,6 @@ struct Renderer : Display, IScreenSizeListener
 
     m_enableFsaa = enable;
   }
-
-  void setCaption(String caption) { backend->setCaption(caption); }
 
   void loadModel(int modelId, String path) override
   {
