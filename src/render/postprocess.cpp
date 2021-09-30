@@ -77,9 +77,9 @@ struct PostProcessing
 
   void applyBloomFilter()
   {
+    backend->useGpuProgram(m_bloomShader);
     backend->enableZTest(false);
 
-    backend->useGpuProgram(m_bloomShader);
     backend->useVertexBuffer(m_quadVbo.get());
 
     backend->enableVertexAttribute(BloomShader::Attribute::positionLoc, 2, sizeof(QuadVertex), OFFSET(QuadVertex, x));
@@ -112,7 +112,6 @@ struct PostProcessing
   void drawHdrBuffer()
   {
     backend->useGpuProgram(m_hdrShader);
-
     backend->enableZTest(false);
 
     // Texture Unit 0

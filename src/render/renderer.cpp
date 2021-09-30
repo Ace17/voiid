@@ -75,8 +75,8 @@ struct MeshRenderPass : RenderPass
     if(cmd.depthtest)
     {
       backend->useGpuProgram(m_meshShader);
-
       backend->enableZTest(true);
+
       backend->setUniformFloat3(MeshShader::Uniform::ambientLoc, m_ambientLight, m_ambientLight, m_ambientLight);
       backend->setUniformFloat4(MeshShader::Uniform::colorId, 0, 0, 0, 0);
 
@@ -137,7 +137,6 @@ struct MeshRenderPass : RenderPass
     else
     {
       backend->useGpuProgram(m_textShader);
-
       backend->enableZTest(false);
 
       // Texture Unit 0: Diffuse
