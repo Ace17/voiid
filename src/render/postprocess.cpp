@@ -63,8 +63,8 @@ struct PostProcessing
   PostProcessing(IGraphicsBackend* backend, Size2i resolution)
     : m_resolution(resolution), backend(backend)
   {
-    m_hdrShader = backend->createGpuProgram("hdr");
-    m_bloomShader = backend->createGpuProgram("bloom");
+    m_hdrShader = backend->createGpuProgram("hdr", false);
+    m_bloomShader = backend->createGpuProgram("bloom", false);
 
     m_quadVbo = backend->createVertexBuffer();
     m_quadVbo->upload(screenQuad, sizeof screenQuad);
@@ -78,7 +78,6 @@ struct PostProcessing
   void applyBloomFilter()
   {
     backend->useGpuProgram(m_bloomShader.get());
-    backend->enableZTest(false);
 
     backend->useVertexBuffer(m_quadVbo.get());
 
@@ -112,7 +111,6 @@ struct PostProcessing
   void drawHdrBuffer()
   {
     backend->useGpuProgram(m_hdrShader.get());
-    backend->enableZTest(false);
 
     // Texture Unit 0
     m_hdrFramebuffer->getColorTexture()->bind(0);

@@ -60,14 +60,13 @@ struct IGraphicsBackend
   virtual std::unique_ptr<ITexture> createTexture() = 0;
   virtual std::unique_ptr<IVertexBuffer> createVertexBuffer() = 0;
   virtual std::unique_ptr<IFrameBuffer> createFrameBuffer(Size2i resolution, bool depth = true) = 0;
-  virtual std::unique_ptr<IGpuProgram> createGpuProgram(String name) = 0;
+  virtual std::unique_ptr<IGpuProgram> createGpuProgram(String name, bool zTest) = 0;
   virtual IFrameBuffer* getScreenFrameBuffer() = 0;
 
   virtual void setScreenSizeListener(IScreenSizeListener* listener) = 0;
 
   // draw functions
   virtual void setRenderTarget(IFrameBuffer* fb) = 0;
-  virtual void enableZTest(bool enable) = 0;
   virtual void useGpuProgram(IGpuProgram* program) = 0;
   virtual void useVertexBuffer(IVertexBuffer* vb) = 0;
   virtual void enableVertexAttribute(int id, int dim, int stride, int offset) = 0;

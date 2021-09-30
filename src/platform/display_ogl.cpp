@@ -142,7 +142,7 @@ void printOpenGlVersion()
 
 struct OpenGlProgram : IGpuProgram
 {
-  OpenGlProgram(GLuint program_) : program(program_)
+  OpenGlProgram(GLuint program_, bool zTest_) : program(program_), zTest(zTest_)
   {
   }
 
@@ -152,6 +152,7 @@ struct OpenGlProgram : IGpuProgram
   }
 
   const GLuint program;
+  const bool zTest;
 };
 
 struct OpenglTexture : ITexture
@@ -373,7 +374,7 @@ struct OpenGlGraphicsBackend : IGraphicsBackend
     return std::make_unique<OpenglTexture>();
   }
 
-  std::unique_ptr<IGpuProgram> createGpuProgram(String name_) override
+  std::unique_ptr<IGpuProgram> createGpuProgram(String name_, bool zTest) override
   {
     const std::string name(name_.data, name_.len);
     printf("[display] loading shader '%s'\n", name.c_str());
@@ -385,13 +386,14 @@ struct OpenGlGraphicsBackend : IGraphicsBackend
         return Span<const uint8_t>((const uint8_t*)s.c_str(), s.size());
       };
 
-    return std::make_unique<OpenGlProgram>(loadShaders(toSpan(vsCode), toSpan(fsCode)));
+    return std::make_unique<OpenGlProgram>(loadShaders(toSpan(vsCode), toSpan(fsCode)), zTest);
   }
 
   void useGpuProgram(IGpuProgram* iprogram) override
   {
     auto program = dynamic_cast<OpenGlProgram*>(iprogram);
     SAFE_GL(glUseProgram(program->program));
+    enableZTest(program->zTest);
   }
 
   void useVertexBuffer(IVertexBuffer* ivb) override

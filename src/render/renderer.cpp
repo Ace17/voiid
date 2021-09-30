@@ -75,7 +75,6 @@ struct MeshRenderPass : RenderPass
     if(cmd.depthtest)
     {
       backend->useGpuProgram(m_meshShader.get());
-      backend->enableZTest(true);
 
       backend->setUniformFloat3(MeshShader::Uniform::ambientLoc, m_ambientLight, m_ambientLight, m_ambientLight);
       backend->setUniformFloat4(MeshShader::Uniform::colorId, 0, 0, 0, 0);
@@ -137,7 +136,6 @@ struct MeshRenderPass : RenderPass
     else
     {
       backend->useGpuProgram(m_textShader.get());
-      backend->enableZTest(false);
 
       // Texture Unit 0: Diffuse
       model.diffuse->bind(0);
@@ -242,8 +240,8 @@ struct Renderer : Display, IScreenSizeListener
 
     backend->setScreenSizeListener(this);
 
-    m_meshRenderPass.m_textShader = backend->createGpuProgram("text");
-    m_meshRenderPass.m_meshShader = backend->createGpuProgram("mesh");
+    m_meshRenderPass.m_textShader = backend->createGpuProgram("text", false);
+    m_meshRenderPass.m_meshShader = backend->createGpuProgram("mesh", true);
     m_meshRenderPass.backend = backend;
 
     m_postprocRenderPass.setup(backend, m_screenSize);
