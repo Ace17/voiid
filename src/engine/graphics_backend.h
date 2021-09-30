@@ -39,7 +39,6 @@ struct IVertexBuffer
 struct IFrameBuffer
 {
   virtual ~IFrameBuffer() = default;
-  virtual void setTarget() = 0;
   virtual ITexture* getColorTexture() = 0;
 };
 
@@ -62,6 +61,7 @@ struct IGraphicsBackend
   virtual void setScreenSizeListener(IScreenSizeListener* listener) = 0;
 
   // draw functions
+  virtual void setRenderTarget(IFrameBuffer* fb) = 0;
   virtual void enableZTest(bool enable) = 0;
   virtual void useGpuProgram(uintptr_t program) = 0;
   virtual void useVertexBuffer(IVertexBuffer* vb) = 0;

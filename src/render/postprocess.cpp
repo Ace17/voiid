@@ -93,7 +93,7 @@ struct PostProcessing
         inputTex->bind(0);
         backend->setUniformInt(BloomShader::Uniform::InputTex, 0);
 
-        outputFramebuffer->setTarget();
+        backend->setRenderTarget(outputFramebuffer);
         backend->draw(6);
       };
 
@@ -151,8 +151,7 @@ RenderPass::FrameBuffer PostProcessRenderPass::getInputFrameBuffer()
 void PostProcessRenderPass::execute(RenderPass::FrameBuffer dst)
 {
   postproc->applyBloomFilter();
-
-  dst.fb->setTarget();
+  postproc->backend->setRenderTarget(dst.fb);
   postproc->drawHdrBuffer();
 }
 

@@ -59,7 +59,7 @@ struct MeshRenderPass : RenderPass
 
   void execute(FrameBuffer dst) override
   {
-    dst.fb->setTarget();
+    backend->setRenderTarget(dst.fb);
 
     backend->clear();
 

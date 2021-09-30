@@ -180,6 +180,57 @@ struct OpenglTexture : ITexture
   GLuint texture;
 };
 
+struct OpenGlFrameBuffer : IFrameBuffer
+{
+  OpenGlFrameBuffer(Size2i resolution, bool depth) : resolution(resolution)
+  {
+    SAFE_GL(glGenFramebuffers(1, &framebuffer));
+    SAFE_GL(glBindFramebuffer(GL_FRAMEBUFFER, framebuffer));
+
+    // Z-buffer
+    if(depth)
+    {
+      auto depthTexture = std::make_unique<OpenglTexture>();
+
+      SAFE_GL(glBindTexture(GL_TEXTURE_2D, depthTexture->texture));
+      SAFE_GL(glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, resolution.width, resolution.height, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL));
+      SAFE_GL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, depthTexture->texture, 0));
+
+      this->depthTexture = std::move(depthTexture);
+    }
+
+    // color buffer
+    {
+      auto colorTexture = std::make_unique<OpenglTexture>();
+
+      SAFE_GL(glBindTexture(GL_TEXTURE_2D, colorTexture->texture));
+      SAFE_GL(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, resolution.width, resolution.height, 0, GL_RGBA, GL_FLOAT, nullptr));
+      SAFE_GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+      SAFE_GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+      SAFE_GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+      SAFE_GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+      SAFE_GL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorTexture->texture, 0));
+
+      this->colorTexture = std::move(colorTexture);
+    }
+  }
+
+  ~OpenGlFrameBuffer()
+  {
+    SAFE_GL(glDeleteFramebuffers(1, &framebuffer));
+  }
+
+  ITexture* getColorTexture() override
+  {
+    return colorTexture.get();
+  }
+
+  const Size2i resolution;
+  GLuint framebuffer;
+  std::unique_ptr<ITexture> colorTexture;
+  std::unique_ptr<ITexture> depthTexture;
+};
+
 struct OpenGlVertexBuffer : IVertexBuffer
 {
   OpenGlVertexBuffer()
@@ -367,64 +418,24 @@ struct OpenGlGraphicsBackend : IGraphicsBackend
 
   std::unique_ptr<IFrameBuffer> createFrameBuffer(Size2i resolution, bool depth) override
   {
-    struct FrameBuffer : IFrameBuffer
+    return std::make_unique<OpenGlFrameBuffer>(resolution, depth);
+  }
+
+  void setRenderTarget(IFrameBuffer* ifb) override
+  {
+    auto fb = dynamic_cast<OpenGlFrameBuffer*>(ifb);
+
+    if(!fb)
     {
-      FrameBuffer(Size2i resolution, bool depth) : resolution(resolution)
-      {
-        SAFE_GL(glGenFramebuffers(1, &framebuffer));
-        SAFE_GL(glBindFramebuffer(GL_FRAMEBUFFER, framebuffer));
-
-        // Z-buffer
-        if(depth)
-        {
-          auto depthTexture = std::make_unique<OpenglTexture>();
-
-          SAFE_GL(glBindTexture(GL_TEXTURE_2D, depthTexture->texture));
-          SAFE_GL(glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, resolution.width, resolution.height, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL));
-          SAFE_GL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, depthTexture->texture, 0));
-
-          this->depthTexture = std::move(depthTexture);
-        }
-
-        // color buffer
-        {
-          auto colorTexture = std::make_unique<OpenglTexture>();
-
-          SAFE_GL(glBindTexture(GL_TEXTURE_2D, colorTexture->texture));
-          SAFE_GL(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, resolution.width, resolution.height, 0, GL_RGBA, GL_FLOAT, nullptr));
-          SAFE_GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
-          SAFE_GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
-          SAFE_GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
-          SAFE_GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
-          SAFE_GL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorTexture->texture, 0));
-
-          this->colorTexture = std::move(colorTexture);
-        }
-      }
-
-      ~FrameBuffer()
-      {
-        SAFE_GL(glDeleteFramebuffers(1, &framebuffer));
-      }
-
-      void setTarget() override
-      {
-        SAFE_GL(glViewport(0, 0, resolution.width, resolution.height));
-        SAFE_GL(glBindFramebuffer(GL_FRAMEBUFFER, framebuffer));
-      }
-
-      ITexture* getColorTexture() override
-      {
-        return colorTexture.get();
-      }
-
-      const Size2i resolution;
-      GLuint framebuffer;
-      std::unique_ptr<ITexture> colorTexture;
-      std::unique_ptr<ITexture> depthTexture;
-    };
-
-    return std::make_unique<FrameBuffer>(resolution, depth);
+      auto screenSize = m_screenSize;
+      SAFE_GL(glViewport(0, 0, screenSize.width, screenSize.height));
+      SAFE_GL(glBindFramebuffer(GL_FRAMEBUFFER, 0));
+    }
+    else
+    {
+      SAFE_GL(glViewport(0, 0, fb->resolution.width, fb->resolution.height));
+      SAFE_GL(glBindFramebuffer(GL_FRAMEBUFFER, fb->framebuffer));
+    }
   }
 
   void enableZTest(bool enable)
@@ -471,22 +482,7 @@ struct OpenGlGraphicsBackend : IGraphicsBackend
 
   IFrameBuffer* getScreenFrameBuffer()
   {
-    struct ScreenFrameBuffer : IFrameBuffer
-    {
-      void setTarget() override
-      {
-        auto screenSize = backend->m_screenSize;
-        SAFE_GL(glViewport(0, 0, screenSize.width, screenSize.height));
-        SAFE_GL(glBindFramebuffer(GL_FRAMEBUFFER, 0));
-      }
-
-      ITexture* getColorTexture() { return nullptr; }
-      OpenGlGraphicsBackend* backend;
-    };
-
-    static ScreenFrameBuffer screenFrameBuffer;
-    screenFrameBuffer.backend = this;
-    return &screenFrameBuffer;
+    return nullptr;
   }
 
   void setScreenSizeListener(IScreenSizeListener* listener) override
