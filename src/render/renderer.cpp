@@ -74,7 +74,7 @@ struct MeshRenderPass : RenderPass
 
     if(cmd.depthtest)
     {
-      backend->useGpuProgram(m_meshShader);
+      backend->useGpuProgram(m_meshShader.get());
       backend->enableZTest(true);
 
       backend->setUniformFloat3(MeshShader::Uniform::ambientLoc, m_ambientLight, m_ambientLight, m_ambientLight);
@@ -136,7 +136,7 @@ struct MeshRenderPass : RenderPass
     }
     else
     {
-      backend->useGpuProgram(m_textShader);
+      backend->useGpuProgram(m_textShader.get());
       backend->enableZTest(false);
 
       // Texture Unit 0: Diffuse
@@ -217,8 +217,8 @@ struct MeshRenderPass : RenderPass
   };
 
   IGraphicsBackend* backend {};
-  uintptr_t m_textShader;
-  uintptr_t m_meshShader;
+  std::unique_ptr<IGpuProgram> m_textShader;
+  std::unique_ptr<IGpuProgram> m_meshShader;
   std::vector<DrawCommand> m_drawCommands;
   vector<Light> m_lights;
   float m_ambientLight = 0;

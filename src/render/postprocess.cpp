@@ -77,7 +77,7 @@ struct PostProcessing
 
   void applyBloomFilter()
   {
-    backend->useGpuProgram(m_bloomShader);
+    backend->useGpuProgram(m_bloomShader.get());
     backend->enableZTest(false);
 
     backend->useVertexBuffer(m_quadVbo.get());
@@ -111,7 +111,7 @@ struct PostProcessing
 
   void drawHdrBuffer()
   {
-    backend->useGpuProgram(m_hdrShader);
+    backend->useGpuProgram(m_hdrShader.get());
     backend->enableZTest(false);
 
     // Texture Unit 0
@@ -134,8 +134,8 @@ struct PostProcessing
 
   IGraphicsBackend* const backend;
 
-  uintptr_t m_hdrShader;
-  uintptr_t m_bloomShader;
+  std::unique_ptr<IGpuProgram> m_hdrShader;
+  std::unique_ptr<IGpuProgram> m_bloomShader;
 
   std::unique_ptr<IVertexBuffer> m_quadVbo;
   std::unique_ptr<IFrameBuffer> m_hdrFramebuffer;
