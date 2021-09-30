@@ -34,7 +34,6 @@ struct IVertexBuffer
 {
   virtual ~IVertexBuffer() = default;
   virtual void upload(const void* data, size_t len) = 0;
-  virtual void use() = 0;
 };
 
 struct IFrameBuffer
@@ -65,6 +64,7 @@ struct IGraphicsBackend
   // draw functions
   virtual void enableZTest(bool enable) = 0;
   virtual void useGpuProgram(uintptr_t program) = 0;
+  virtual void useVertexBuffer(IVertexBuffer* vb) = 0;
   virtual void enableVertexAttribute(int id, int dim, int stride, int offset) = 0;
   virtual void setUniformInt(int id, int value) = 0;
   virtual void setUniformFloat3(int id, float x, float y, float z) = 0;

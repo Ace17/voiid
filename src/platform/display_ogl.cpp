@@ -180,6 +180,28 @@ struct OpenglTexture : ITexture
   GLuint texture;
 };
 
+struct OpenGlVertexBuffer : IVertexBuffer
+{
+  OpenGlVertexBuffer()
+  {
+    SAFE_GL(glGenBuffers(1, &vbo));
+  }
+
+  ~OpenGlVertexBuffer()
+  {
+    glDeleteBuffers(1, &vbo);
+  }
+
+  void upload(const void* data, size_t len) override
+  {
+    SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, vbo));
+    SAFE_GL(glBufferData(GL_ARRAY_BUFFER, len, data, GL_STATIC_DRAW));
+    SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, 0));
+  }
+
+  GLuint vbo;
+};
+
 struct OpenGlGraphicsBackend : IGraphicsBackend
 {
   OpenGlGraphicsBackend(Size2i resolution)
@@ -306,6 +328,12 @@ struct OpenGlGraphicsBackend : IGraphicsBackend
     SAFE_GL(glUseProgram(program));
   }
 
+  void useVertexBuffer(IVertexBuffer* ivb) override
+  {
+    auto vb = dynamic_cast<OpenGlVertexBuffer*>(ivb);
+    SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, vb->vbo));
+  }
+
   void enableVertexAttribute(int id, int dim, int stride, int offset) override
   {
     SAFE_GL(glEnableVertexAttribArray(id));
@@ -334,33 +362,7 @@ struct OpenGlGraphicsBackend : IGraphicsBackend
 
   std::unique_ptr<IVertexBuffer> createVertexBuffer() override
   {
-    struct VertexBuffer : IVertexBuffer
-    {
-      VertexBuffer()
-      {
-        SAFE_GL(glGenBuffers(1, &vbo));
-      }
-
-      ~VertexBuffer()
-      {
-        glDeleteBuffers(1, &vbo);
-      }
-
-      void upload(const void* data, size_t len) override
-      {
-        SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, vbo));
-        SAFE_GL(glBufferData(GL_ARRAY_BUFFER, len, data, GL_STATIC_DRAW));
-        SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, 0));
-      }
-
-      void use() override
-      {
-        SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, vbo));
-      }
-
-      GLuint vbo;
-    };
-    return std::make_unique<VertexBuffer>();
+    return std::make_unique<OpenGlVertexBuffer>();
   }
 
   std::unique_ptr<IFrameBuffer> createFrameBuffer(Size2i resolution, bool depth) override

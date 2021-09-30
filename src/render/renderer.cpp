@@ -125,7 +125,7 @@ struct MeshRenderPass : RenderPass
       backend->setUniformMatrixFloat4(MeshShader::Uniform::MVP, &MVP[0][0]);
       backend->setUniformFloat3(MeshShader::Uniform::CameraPos, cmd.camera.pos.x, cmd.camera.pos.y, cmd.camera.pos.z);
 
-      model.vb->use();
+      backend->useVertexBuffer(model.vb);
 
       backend->enableVertexAttribute(MeshShader::Attribute::positionLoc, 3, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, x));
       backend->enableVertexAttribute(MeshShader::Attribute::normalLoc, 3, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, nx));
@@ -162,7 +162,7 @@ struct MeshRenderPass : RenderPass
 
       backend->setUniformMatrixFloat4(TextShader::Uniform::MVP, &MVP[0][0]);
 
-      model.vb->use();
+      backend->useVertexBuffer(model.vb);
 
       backend->enableVertexAttribute(TextShader::Attribute::positionLoc, 3, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, x));
       backend->enableVertexAttribute(TextShader::Attribute::uvDiffuseLoc, 2, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, diffuse_u));

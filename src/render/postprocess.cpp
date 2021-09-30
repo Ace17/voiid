@@ -77,10 +77,10 @@ struct PostProcessing
 
   void applyBloomFilter()
   {
-    backend->useGpuProgram(m_bloomShader);
-    m_quadVbo->use();
-
     backend->enableZTest(false);
+
+    backend->useGpuProgram(m_bloomShader);
+    backend->useVertexBuffer(m_quadVbo.get());
 
     backend->enableVertexAttribute(BloomShader::Attribute::positionLoc, 2, sizeof(QuadVertex), OFFSET(QuadVertex, x));
     backend->enableVertexAttribute(BloomShader::Attribute::uvLoc, 2, sizeof(QuadVertex), OFFSET(QuadVertex, u));
@@ -123,7 +123,7 @@ struct PostProcessing
     m_bloomFramebuffer[0]->getColorTexture()->bind(1);
     backend->setUniformInt(HdrShader::Uniform::InputTex2, 1);
 
-    m_quadVbo->use();
+    backend->useVertexBuffer(m_quadVbo.get());
 
     backend->enableVertexAttribute(HdrShader::Attribute::positionLoc, 2, sizeof(QuadVertex), OFFSET(QuadVertex, x));
     backend->enableVertexAttribute(HdrShader::Attribute::uvLoc, 2, sizeof(QuadVertex), OFFSET(QuadVertex, u));
