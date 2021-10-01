@@ -61,7 +61,6 @@ struct IGraphicsBackend
   virtual std::unique_ptr<IVertexBuffer> createVertexBuffer() = 0;
   virtual std::unique_ptr<IFrameBuffer> createFrameBuffer(Size2i resolution, bool depth = true) = 0;
   virtual std::unique_ptr<IGpuProgram> createGpuProgram(String name, bool zTest) = 0;
-  virtual IFrameBuffer* getScreenFrameBuffer() = 0;
 
   virtual void setScreenSizeListener(IScreenSizeListener* listener) = 0;
 

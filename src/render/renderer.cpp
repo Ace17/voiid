@@ -226,9 +226,8 @@ struct MeshRenderPass : RenderPass
 struct ScreenRenderPass : RenderPass
 {
   Size2i screenSize {};
-  IGraphicsBackend* backend {};
 
-  FrameBuffer getInputFrameBuffer() override { return { backend->getScreenFrameBuffer(), screenSize }; }
+  FrameBuffer getInputFrameBuffer() override { return { nullptr, screenSize }; }
   void execute(FrameBuffer) override { /* nothing to do */ }
 };
 
@@ -331,7 +330,6 @@ struct Renderer : Display, IScreenSizeListener
   {
     m_meshRenderPass.m_aspectRatio = float(m_screenSize.width) / m_screenSize.height;
     m_screenRenderPass.screenSize = m_screenSize;
-    m_screenRenderPass.backend = backend;
 
     RenderPass* passes[16];
     int count = 0;

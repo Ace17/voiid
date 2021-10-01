@@ -497,11 +497,6 @@ struct OpenGlGraphicsBackend : IGraphicsBackend
     }
   }
 
-  IFrameBuffer* getScreenFrameBuffer()
-  {
-    return nullptr;
-  }
-
   void setScreenSizeListener(IScreenSizeListener* listener) override
   {
     m_screenSizeListener = listener;
