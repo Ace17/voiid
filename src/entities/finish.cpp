@@ -16,11 +16,13 @@
 
 #include "collision_groups.h"
 
+namespace
+{
 struct FinishLine : Entity
 {
   FinishLine()
   {
-    size = Size(2, 2, 2);
+    size = Size(1, 1, 2);
     solid = false;
     collisionGroup = 0; // dont' trigger other detectors
     collidesWith = CG_PLAYER | CG_SOLIDPLAYER;
@@ -32,6 +34,9 @@ struct FinishLine : Entity
     r.scale = size;
     r.effect = touchDelay > 0 ? Effect::Blinking : Effect::Normal;
     view->sendActor(r);
+
+    if(touchDelay)
+      view->sendLight({ pos + Vector3f(0.5, 0.5, 1), Vector3f(5, 5, 5) });
   }
 
   virtual void tick() override
@@ -45,13 +50,14 @@ struct FinishLine : Entity
     if(touchDelay)
       return;
 
-    game->playSound(SND_TELEPORT);
-    touchDelay = 100;
+    game->playSound(SND_SWITCH);
+    touchDelay = 200;
   }
 
   int id = 0;
   int touchDelay = 0;
 };
 
-static auto const reg3_ = registerEntity("finish", [] (IEntityConfig*) -> unique_ptr<Entity> { return make_unique<FinishLine>(); });
+auto const reg3_ = registerEntity("finish", [] (IEntityConfig*) -> unique_ptr<Entity> { return make_unique<FinishLine>(); });
+}
 

@@ -61,6 +61,8 @@ public:
     m_lastDisplayFrameTime = GetSteadyClockMs();
 
     registerUserInputActions();
+
+    toggleFullScreen();
   }
 
   bool tick() override
@@ -101,6 +103,7 @@ private:
 
     // draw the frame
     m_actors.clear();
+    m_lightActors.clear();
     m_scene->draw();
     draw();
 
@@ -196,6 +199,12 @@ private:
         actor.pos.x, actor.pos.y, actor.pos.z,
         actor.scale.cx, actor.scale.cy, actor.scale.cz);
       m_display->drawActor(where, actor.orientation, (int)actor.model, actor.effect == Effect::Blinking, actor.action, actor.ratio);
+    }
+
+    for(auto& actor : m_lightActors)
+    {
+      const int idx = int(&actor - m_lightActors.data());
+      m_display->setLight(idx, actor.pos, actor.color);
     }
 
     if(m_running == 2)
@@ -393,9 +402,9 @@ private:
     m_display->setAmbientLight(amount);
   }
 
-  void setLight(int idx, Vector3f pos, Vector3f color) override
+  void sendLight(LightActor const& actor) override
   {
-    m_display->setLight(idx, pos, color);
+    m_lightActors.push_back(actor);
   }
 
   void sendActor(Actor const& actor) override
@@ -427,6 +436,7 @@ private:
   unique_ptr<Display> m_display;
   unique_ptr<IGraphicsBackend> m_graphicsBackend;
   vector<Actor> m_actors;
+  vector<LightActor> m_lightActors;
   unique_ptr<UserInput> m_input;
 
   string m_textbox;

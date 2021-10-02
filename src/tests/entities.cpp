@@ -17,9 +17,7 @@ static Actor getActor(Entity* entity)
     virtual void playSound(int) {}
     virtual void setCameraPos(Vector3f, Quaternion) {}
     virtual void setAmbientLight(float) {}
-    virtual void setLight(int, Vector3f, Vector3f) {}
-
-    // adds a displayable object to the current frame
+    virtual void sendLight(LightActor const&) {}
     virtual void sendActor(Actor const& actor) { this->actor = actor; }
 
     Actor actor;

@@ -4,34 +4,24 @@
 // published by the Free Software Foundation, either version 3 of the
 // License, or (at your option) any later version.
 
-// splash menu
+// ending screen
 
 #include "base/scene.h"
 #include "base/view.h"
 #include <memory>
 
-#include "models.h" // MDL_SPLASH
-#include "sounds.h" // SND_PAUSE
+#include "models.h" // MDL_ENDING
 #include "state_machine.h"
 #include "toggle.h"
+#include "vec.h"
 
-static const float LIGHT_ON = 4;
-static const float LIGHT_OFF = 0;
+static const float LIGHT_ON = 1;
 
-template<typename T>
-T blend(T a, T b, float alpha)
+struct EndingState : Scene
 {
-  return a * (1 - alpha) + b * alpha;
-}
-
-struct SplashState : Scene
-{
-  SplashState(View* view_) : view(view_)
+  EndingState(View* view_) : view(view_)
   {
     view->setAmbientLight(LIGHT_ON);
-
-    for(auto& value : randomSequence)
-      value = (rand() % 2) / 2.0;
   }
 
   ////////////////////////////////////////////////////////////////
@@ -39,37 +29,31 @@ struct SplashState : Scene
 
   Scene* tick(Control c) override
   {
-    time++;
-    auto const FADE_TIME = 200;
+    auto const FADE_TIME = 500;
 
     view->playMusic(1);
 
     if(!activated)
     {
-      if(c.fire || c.jump || c.dash)
+      delay = FADE_TIME;
+
+      if(c.fire || c.jump || c.dash || c.use)
       {
         activated = true;
-        delay = FADE_TIME;
-        view->playSound(SND_SPARK);
       }
     }
+
+    // view->setAmbientLight(delay / float(FADE_TIME) - 1.0);
 
     if(activated)
     {
-      const float alpha = clamp(1.0 - delay / float(FADE_TIME), 0.0, 1.0);
-      view->setAmbientLight(blend(LIGHT_ON, LIGHT_OFF, alpha));
+      time++;
 
       if(decrement(delay))
       {
-        view->textBox("");
         activated = false;
-        return createPlayingState(view);
+        return createSplashState(view);
       }
-    }
-    else
-    {
-      int idx = (time / 10) % (sizeof(randomSequence) / sizeof(*randomSequence));
-      view->setAmbientLight(randomSequence[idx] * 2 + 0.1);
     }
 
     return this;
@@ -77,8 +61,11 @@ struct SplashState : Scene
 
   void draw() override
   {
+    double t = time * 0.01;
     view->setCameraPos(Vector3f(0, 0, 0), Quaternion::fromEuler(0, 0, 0));
-    Actor panel = Actor(Vector3f(2.5, 0, +0.15), MDL_SPLASH);
+    Actor panel = Actor(Vector3f(2.5, 0, +0.15), MDL_ENDING);
+    panel.scale = panel.scale * (1.0 / (1.0 + t));
+    panel.orientation = Quaternion::fromEuler(0, 0, t * 5.0);
     view->sendActor(panel);
   }
 
@@ -87,11 +74,10 @@ private:
   bool activated = false;
   int delay = 0;
   int time = 0;
-  float randomSequence[128];
 };
 
-Scene* createSplashState(View* view)
+Scene* createEndingState(View* view)
 {
-  return new SplashState(view);
+  return new EndingState(view);
 }
 

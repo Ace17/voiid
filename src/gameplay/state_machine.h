@@ -5,5 +5,6 @@
 
 Scene* createSplashState(View* view);
 Scene* createPlayingState(View* view);
+Scene* createEndingState(View* view);
 Scene* createPlayingStateAtLevel(View* view, int level);
 

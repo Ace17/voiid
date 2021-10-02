@@ -17,7 +17,7 @@ extern const Span<const Resource> AllResources;
 
 Scene* createGame(View* view, Span<const string> args)
 {
-  view->setTitle("Voiid");
+  view->setTitle("SHIINE");
 
   for(auto res : AllResources)
     view->preload(res);

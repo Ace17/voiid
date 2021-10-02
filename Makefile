@@ -93,6 +93,7 @@ SRCS_GAME:=\
 	src/entities/editor.cpp\
 	src/entities/explosion.cpp\
 	src/entities/hero.cpp\
+	src/entities/light.cpp\
 	src/entities/move.cpp\
 	src/entities/moving_platform.cpp\
 	src/entities/finish.cpp\
@@ -105,6 +106,7 @@ SRCS_GAME:=\
 	src/gameplay/room_loader.cpp\
 	src/gameplay/state_playing.cpp\
 	src/gameplay/state_splash.cpp\
+	src/gameplay/state_ending.cpp\
 
 #------------------------------------------------------------------------------
 

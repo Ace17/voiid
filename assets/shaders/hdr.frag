@@ -14,8 +14,15 @@ layout(location = 0) out vec4 color;
 
 void main()
 {
+  vec2 pUV = UV;
+
+  // pixelize
+  const float q = 10000.0f;
+  pUV.x = floor(UV.x * q)/q;
+  pUV.y = floor(UV.y * q)/q;
+
   const float gamma = 1.2;
-  vec3 hdrColor = texture(InputTex1, UV).rgb + texture(InputTex2, UV).rgb;
+  vec3 hdrColor = texture(InputTex1, pUV).rgb + texture(InputTex2, pUV).rgb;
 
   // reinhard tone mapping
   vec3 mapped = hdrColor / (hdrColor + vec3(1.0));

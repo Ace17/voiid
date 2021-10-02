@@ -91,11 +91,7 @@ struct GameState : Scene, private IGame
 
   Scene* tick(Control c) override
   {
-    if(!m_levelIsLoaded)
-    {
-      loadLevel(m_level);
-      m_levelIsLoaded = true;
-    }
+    loadLevelIfNeeded();
 
     m_player->think(c);
 
@@ -105,12 +101,13 @@ struct GameState : Scene, private IGame
     m_physics->checkForOverlaps();
     removeDeadThings();
 
-    m_debug = c.debug;
+    processEvents();
 
-    if(c.debug && m_debugFirstTime)
+    updateDebugFlag(c.debug);
+
+    if(m_gameFinished)
     {
-      m_debugFirstTime = false;
-      m_player->addUpgrade(-1);
+      return createEndingState(m_view);
     }
 
     return this;
@@ -123,12 +120,54 @@ struct GameState : Scene, private IGame
 
     m_view->sendActor(Actor(Vector(0, 0, 0), MDL_ROOMS));
 
+    {
+      auto playerLight = LightActor{ m_player->getCenter() + Vector3f(0, 0, 1), Vector3f(0.3, 0.3, 0.3) };
+      m_view->sendLight(playerLight);
+
+      for(auto light: m_staticLevelLights)
+        m_view->sendLight(light);
+    }
+
     for(auto& entity : m_entities)
     {
       entity->onDraw(m_view);
 
       if(m_debug)
         m_view->sendActor(getDebugActor(entity.get()));
+    }
+  }
+
+  ////////////////////////////////////////////////////////////////
+  // internals
+
+  void loadLevelIfNeeded()
+  {
+    if(!m_levelIsLoaded)
+    {
+      loadLevel(m_level);
+      m_levelIsLoaded = true;
+    }
+  }
+
+  void updateDebugFlag(float debugFlag)
+  {
+    m_debug = debugFlag;
+
+    if(debugFlag && m_debugFirstTime)
+    {
+      m_debugFirstTime = false;
+      m_player->addUpgrade(-1);
+    }
+  }
+
+  void processEvents()
+  {
+    auto events = move(m_eventQueue);
+
+    for(auto& event : events)
+    {
+      for(auto& listener : m_listeners)
+        listener->notify(event.get());
     }
   }
 
@@ -208,11 +247,10 @@ struct GameState : Scene, private IGame
 
       spawnEntities(level, this, levelIdx);
 
+      m_staticLevelLights.clear();
+
       for(auto& light : level.lights)
-      {
-        const int idx = int(&light - level.lights.data());
-        m_view->setLight(idx, light.pos, light.color);
-      }
+        m_staticLevelLights.push_back({ light.pos, light.color });
     }
 
     m_view->playMusic(levelIdx);
@@ -226,10 +264,15 @@ struct GameState : Scene, private IGame
   {
     m_levelIsLoaded = false;
     m_level++;
+
+    m_gameFinished = true;
   }
 
   int m_level = 1;
   bool m_levelIsLoaded = false;
+  std::vector<LightActor> m_staticLevelLights;
+
+  vector<unique_ptr<Event>> m_eventQueue;
 
   ////////////////////////////////////////////////////////////////
   // IGame: game, as seen by the entities
@@ -246,8 +289,7 @@ struct GameState : Scene, private IGame
 
   void postEvent(unique_ptr<Event> event) override
   {
-    for(auto& listener : m_listeners)
-      listener->notify(event.get());
+    m_eventQueue.push_back(move(event));
   }
 
   unique_ptr<Handle> subscribeForEvents(IEventSink* sink) override
@@ -273,6 +315,7 @@ struct GameState : Scene, private IGame
   uvector<Entity> m_spawned;
   View* const m_view;
   unique_ptr<IPhysics> m_physics;
+  bool m_gameFinished = false;
 
   list<IEventSink*> m_listeners;
 

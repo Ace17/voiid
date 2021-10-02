@@ -39,15 +39,15 @@ void main()
   {
     vec3 lightDir = normalize(LightPos[i] - vPos);
     float lightDist = length(LightPos[i] - vPos);
-    float attenuation = 10.0/(lightDist*lightDist*lightDist);
+    float attenuation = min(10.0, 10.0/(lightDist*lightDist));
     float incidenceRatio = max(0.0, dot(lightDir, vNormal));
 
     // diffuse
     totalLight += LightColor[i] * incidenceRatio * attenuation * texture(DiffuseTex, UV).rgb;
 
     // specular
-    const float material_shininess = 2048.0;
-    const float material_specular = 0.001;
+    const float material_shininess = 512.0;
+    const float material_specular = 0.0;
     vec3 viewDir = normalize(CameraPos - vPos);
     vec3 halfwayDir = normalize((viewDir + lightDir) * 0.5);
     float angle = max(dot(vNormal, halfwayDir), 0.0);

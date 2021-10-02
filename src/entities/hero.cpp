@@ -18,7 +18,7 @@
 #include "hero.h"
 #include "move.h"
 
-auto const GRAVITY = 0.005;
+auto const GRAVITY = Vector3f(0, 0, -0.005);
 auto const JUMP_SPEED = 0.15;
 auto const WALK_SPEED = 0.075f;
 auto const MAX_HORZ_SPEED = 0.2f;
@@ -78,7 +78,7 @@ struct Hero : Player, Damageable
   {
     airMove(c);
 
-    vel.z -= GRAVITY;
+    vel += GRAVITY;
 
     if(jumpbutton.toggle(c.jump) && ground)
     {
@@ -135,8 +135,8 @@ struct Hero : Player, Damageable
     if(hurtDelay || life <= 0)
       control = Control {};
 
-    lookAngleVert -= control.look_vert * 1.0;
-    lookAngleHorz -= control.look_horz * 1.0;
+    lookAngleVert -= control.look_vert * 1.5;
+    lookAngleHorz -= control.look_horz * 1.5;
 
     lookAngleHorz = fmod(lookAngleHorz, PI * 2.0);
     lookAngleVert = ::clamp<float>(lookAngleVert, -PI * 0.4, PI * 0.4);
@@ -150,9 +150,7 @@ struct Hero : Player, Damageable
 
     computeVelocity(control);
 
-    physics->moveBody(this, Vector3f(0, 0, STAIR_CLIMB));
     slideMove(physics, this, vel);
-    physics->moveBody(this, Vector3f(0, 0, -STAIR_CLIMB));
 
     auto const onGround = isOnGround(physics, this);
 
@@ -177,16 +175,17 @@ struct Hero : Player, Damageable
 
     if(control.use && debounceUse == 0)
     {
-      debounceUse = 200;
-
       // look in front of us for a body to switch,
       // and switch it.
-      auto const forward = vectorFromAngles(lookAngleHorz, 0);
+      auto const forward = vectorFromAngles(lookAngleHorz, 0) * 1.5;
       Box box = getBox();
       auto body = physics->traceBox(box, forward, this).blocker;
 
       if(auto switchable = dynamic_cast<Switchable*>(body))
+      {
+        debounceUse = 20;
         switchable->onSwitch();
+      }
     }
 
     if(control.restart)
