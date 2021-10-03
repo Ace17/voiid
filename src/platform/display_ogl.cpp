@@ -155,14 +155,14 @@ struct OpenGlProgram : IGpuProgram
   const bool zTest;
 };
 
-struct OpenglTexture : ITexture
+struct OpenGlTexture : ITexture
 {
-  OpenglTexture()
+  OpenGlTexture()
   {
     SAFE_GL(glGenTextures(1, &texture));
   }
 
-  ~OpenglTexture()
+  ~OpenGlTexture()
   {
     glDeleteTextures(1, &texture);
   }
@@ -205,7 +205,7 @@ struct OpenGlFrameBuffer : IFrameBuffer
     // Z-buffer
     if(depth)
     {
-      auto depthTexture = std::make_unique<OpenglTexture>();
+      auto depthTexture = std::make_unique<OpenGlTexture>();
 
       SAFE_GL(glBindTexture(GL_TEXTURE_2D, depthTexture->texture));
       SAFE_GL(glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, resolution.width, resolution.height, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL));
@@ -216,7 +216,7 @@ struct OpenGlFrameBuffer : IFrameBuffer
 
     // color buffer
     {
-      auto colorTexture = std::make_unique<OpenglTexture>();
+      auto colorTexture = std::make_unique<OpenGlTexture>();
 
       SAFE_GL(glBindTexture(GL_TEXTURE_2D, colorTexture->texture));
       SAFE_GL(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, resolution.width, resolution.height, 0, GL_RGBA, GL_FLOAT, nullptr));
@@ -371,7 +371,7 @@ struct OpenGlGraphicsBackend : IGraphicsBackend
 
   std::unique_ptr<ITexture> createTexture() override
   {
-    return std::make_unique<OpenglTexture>();
+    return std::make_unique<OpenGlTexture>();
   }
 
   std::unique_ptr<IGpuProgram> createGpuProgram(String name_, bool zTest) override
