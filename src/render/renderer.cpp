@@ -52,13 +52,104 @@ struct DrawCommand
   bool blinking;
 };
 
+struct CubeVertex
+{
+  float x, y, z;
+};
+
+const CubeVertex UnitCube[] =
+{
+  { -1, -1, -1, },
+  { -1, -1, 1, },
+  { -1, 1, 1, },
+  { 1, 1, -1, },
+  { -1, -1, -1, },
+  { -1, 1, -1, },
+  { 1, -1, 1, },
+  { -1, -1, -1, },
+  { 1, -1, -1, },
+  { 1, 1, -1, },
+  { 1, -1, -1, },
+  { -1, -1, -1, },
+  { -1, -1, -1, },
+  { -1, 1, 1, },
+  { -1, 1, -1, },
+  { 1, -1, 1, },
+  { -1, -1, 1, },
+  { -1, -1, -1, },
+  { -1, 1, 1, },
+  { -1, -1, 1, },
+  { 1, -1, 1, },
+  { 1, 1, 1, },
+  { 1, -1, -1, },
+  { 1, 1, -1, },
+  { 1, -1, -1, },
+  { 1, 1, 1, },
+  { 1, -1, 1, },
+  { 1, 1, 1, },
+  { 1, 1, -1, },
+  { -1, 1, -1, },
+  { 1, 1, 1, },
+  { -1, 1, -1, },
+  { -1, 1, 1, },
+  { 1, 1, 1, },
+  { -1, 1, 1, },
+  { 1, -1, 1 },
+};
+
+struct SkyboxPass : RenderPass
+{
+  SkyboxPass(IGraphicsBackend* backend) : backend(backend)
+  {
+    m_shader = backend->createGpuProgram("skybox", false);
+    m_vb = backend->createVertexBuffer();
+    m_vb->upload(UnitCube, sizeof UnitCube);
+  }
+
+  void execute(FrameBuffer dst) override
+  {
+    backend->setRenderTarget(dst.fb);
+
+    backend->useGpuProgram(m_shader.get());
+    backend->clear();
+
+    auto const forward = camera.dir.rotate(Vector3f(1, 0, 0));
+    auto const up = camera.dir.rotate(Vector3f(0, 0, 1));
+
+    auto const target = forward;
+    auto const view = ::lookAt(Vector3f(0, 0, 0), target, up);
+    auto const pos = ::translate({});
+
+    static const float fovy = (float)((60.0f / 180) * PI);
+    static const float near_ = 0.1f;
+    static const float far_ = 1000.0f;
+    const auto perspective = ::perspective(fovy, 16.0 / 9.0, near_, far_);
+
+    auto M = pos;
+    auto MVP = perspective * view * M;
+
+    backend->setUniformMatrixFloat4(0, &M[0][0]);
+    backend->setUniformMatrixFloat4(1, &MVP[0][0]);
+
+    backend->useVertexBuffer(m_vb.get());
+    backend->enableVertexAttribute(0, 3, sizeof(CubeVertex), OFFSET(CubeVertex, x));
+
+    backend->draw(std::size(UnitCube));
+  }
+
+  IGraphicsBackend* const backend;
+  std::unique_ptr<IGpuProgram> m_shader;
+  std::unique_ptr<IVertexBuffer> m_vb;
+  Camera camera;
+};
+
 struct MeshRenderPass : RenderPass
 {
   void execute(FrameBuffer dst) override
   {
     backend->setRenderTarget(dst.fb);
 
-    backend->clear();
+    //backend->clear();
 
     for(auto& cmd : m_drawCommands)
       executeDrawCommand(cmd);
@@ -238,7 +329,7 @@ struct UiRenderPass : RenderPass
 
 struct Renderer : Display, IScreenSizeListener
 {
-  Renderer(IGraphicsBackend* backend_) : backend(backend_)
+  Renderer(IGraphicsBackend* backend_) : backend(backend_), m_skyboxPass(backend_)
   {
     m_fontModel = loadFontModels("res/font.png", 16, 16);
 
@@ -354,6 +445,12 @@ struct Renderer : Display, IScreenSizeListener
     auto screen = RenderPass::FrameBuffer{ nullptr, m_screenSize };
     auto meshRenderTarget = m_enablePostProcessing ? m_postprocRenderPass.getInputFrameBuffer() : screen;
 
+    backend->setRenderTarget(meshRenderTarget.fb);
+    backend->clear();
+
+    m_skyboxPass.camera = m_camera;
+    m_skyboxPass.execute(meshRenderTarget);
+
     m_meshRenderPass.m_aspectRatio = aspectRatio;
     m_meshRenderPass.execute(meshRenderTarget);
 
@@ -419,6 +516,7 @@ private:
   bool m_enableFsaa = false;
   bool m_enablePostProcessing = true;
 
+  SkyboxPass m_skyboxPass;
   MeshRenderPass m_meshRenderPass;
   UiRenderPass m_uiRenderPass;
   PostProcessRenderPass m_postprocRenderPass;
