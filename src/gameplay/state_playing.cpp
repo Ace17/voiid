@@ -101,6 +101,8 @@ struct GameState : Scene, private IGame
     m_physics->checkForOverlaps();
     removeDeadThings();
 
+    processEvents();
+
     updateDebugFlag(c.debug);
 
     if(m_gameFinished)
@@ -155,6 +157,17 @@ struct GameState : Scene, private IGame
     {
       m_debugFirstTime = false;
       m_player->addUpgrade(-1);
+    }
+  }
+
+  void processEvents()
+  {
+    auto events = move(m_eventQueue);
+
+    for(auto& event : events)
+    {
+      for(auto& listener : m_listeners)
+        listener->notify(event.get());
     }
   }
 
@@ -259,6 +272,8 @@ struct GameState : Scene, private IGame
   bool m_levelIsLoaded = false;
   std::vector<LightActor> m_staticLevelLights;
 
+  vector<unique_ptr<Event>> m_eventQueue;
+
   ////////////////////////////////////////////////////////////////
   // IGame: game, as seen by the entities
 
@@ -274,8 +289,7 @@ struct GameState : Scene, private IGame
 
   void postEvent(unique_ptr<Event> event) override
   {
-    for(auto& listener : m_listeners)
-      listener->notify(event.get());
+    m_eventQueue.push_back(move(event));
   }
 
   unique_ptr<Handle> subscribeForEvents(IEventSink* sink) override
