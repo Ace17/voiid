@@ -91,11 +91,7 @@ struct GameState : Scene, private IGame
 
   Scene* tick(Control c) override
   {
-    if(!m_levelIsLoaded)
-    {
-      loadLevel(m_level);
-      m_levelIsLoaded = true;
-    }
+    loadLevelIfNeeded();
 
     m_player->think(c);
 
@@ -105,13 +101,7 @@ struct GameState : Scene, private IGame
     m_physics->checkForOverlaps();
     removeDeadThings();
 
-    m_debug = c.debug;
-
-    if(c.debug && m_debugFirstTime)
-    {
-      m_debugFirstTime = false;
-      m_player->addUpgrade(-1);
-    }
+    updateDebugFlag(c.debug);
 
     return this;
   }
@@ -137,6 +127,29 @@ struct GameState : Scene, private IGame
 
       if(m_debug)
         m_view->sendActor(getDebugActor(entity.get()));
+    }
+  }
+
+  ////////////////////////////////////////////////////////////////
+  // internals
+
+  void loadLevelIfNeeded()
+  {
+    if(!m_levelIsLoaded)
+    {
+      loadLevel(m_level);
+      m_levelIsLoaded = true;
+    }
+  }
+
+  void updateDebugFlag(float debugFlag)
+  {
+    m_debug = debugFlag;
+
+    if(debugFlag && m_debugFirstTime)
+    {
+      m_debugFirstTime = false;
+      m_player->addUpgrade(-1);
     }
   }
 
