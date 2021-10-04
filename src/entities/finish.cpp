@@ -32,6 +32,9 @@ struct FinishLine : Entity
     r.scale = size;
     r.effect = touchDelay > 0 ? Effect::Blinking : Effect::Normal;
     view->sendActor(r);
+
+    if(touchDelay)
+      view->sendLight({ pos + Vector3f(0.5, 0.5, 1), Vector3f(5, 5, 5) });
   }
 
   virtual void tick() override
