@@ -103,6 +103,11 @@ struct GameState : Scene, private IGame
 
     updateDebugFlag(c.debug);
 
+    if(m_gameFinished)
+    {
+      return createEndingState(m_view);
+    }
+
     return this;
   }
 
@@ -246,6 +251,8 @@ struct GameState : Scene, private IGame
   {
     m_levelIsLoaded = false;
     m_level++;
+
+    m_gameFinished = true;
   }
 
   int m_level = 1;
@@ -294,6 +301,7 @@ struct GameState : Scene, private IGame
   uvector<Entity> m_spawned;
   View* const m_view;
   unique_ptr<IPhysics> m_physics;
+  bool m_gameFinished = false;
 
   list<IEventSink*> m_listeners;
 

@@ -106,6 +106,7 @@ SRCS_GAME:=\
 	src/gameplay/room_loader.cpp\
 	src/gameplay/state_playing.cpp\
 	src/gameplay/state_splash.cpp\
+	src/gameplay/state_ending.cpp\
 
 #------------------------------------------------------------------------------
 

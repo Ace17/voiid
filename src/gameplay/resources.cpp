@@ -27,6 +27,7 @@ static const Resource resources[] =
   { ResourceType::Sound, SND_TELEPORT, "res/sounds/teleport.ogg" },
 
   { ResourceType::Model, MDL_SPLASH, "res/sprites/splash.render" },
+  { ResourceType::Model, MDL_ENDING, "res/sprites/ending.render" },
   { ResourceType::Model, MDL_DOOR, "res/sprites/door.render" },
   { ResourceType::Model, MDL_RECT, "res/sprites/rect.render" },
   { ResourceType::Model, MDL_AMULET, "res/sprites/amulet.render" },
