@@ -31,12 +31,12 @@ Directory structure
 -------------------
 
 ```
+src/gameplay:   source files for the game logic (agnostic to the engine implementation).
+src/engine:     I/O code (=engine), mostly game-agnostic.
+src/base:       interfaces for communication between the game logic and the I/O code. Also contains shared low-level utilities (e.g Vector2f, Span, etc.).
+assets:         source files for game resources.
 bin:            output directory for architecture-specific executable binaries.
 res:            output directory for generated game resources (e.g. sounds, music, sprites, tilesets).
-assets:         source files for game resources.
-src:            source files for the game logic (agnostic to the engine implementation).
-engine/src:     I/O code (=engine), mostly game-agnostic.
-engine/include: interfaces for communication between the game logic and the I/O code. Also contains shared low-level utilities (e.g Vector2f, Span, etc.).
 ./check:        main check script. Call this to build native and asmjs versions and to launch the unit tests.
 ```
 
