@@ -123,6 +123,14 @@ struct GameState : Scene, private IGame
 
     m_view->sendActor(Actor(Vector(0, 0, 0), MDL_ROOMS));
 
+    {
+      auto playerLight = LightActor{ m_player->getCenter() + Vector3f(0, 0, 1), Vector3f(0.3, 0.3, 0.3) };
+      m_view->sendLight(playerLight);
+
+      for(auto light: m_staticLevelLights)
+        m_view->sendLight(light);
+    }
+
     for(auto& entity : m_entities)
     {
       entity->onDraw(m_view);
@@ -208,11 +216,10 @@ struct GameState : Scene, private IGame
 
       spawnEntities(level, this, levelIdx);
 
+      m_staticLevelLights.clear();
+
       for(auto& light : level.lights)
-      {
-        const int idx = int(&light - level.lights.data());
-        m_view->setLight(idx, light.pos, light.color);
-      }
+        m_staticLevelLights.push_back({ light.pos, light.color });
     }
 
     m_view->playMusic(levelIdx);
@@ -230,6 +237,7 @@ struct GameState : Scene, private IGame
 
   int m_level = 1;
   bool m_levelIsLoaded = false;
+  std::vector<LightActor> m_staticLevelLights;
 
   ////////////////////////////////////////////////////////////////
   // IGame: game, as seen by the entities

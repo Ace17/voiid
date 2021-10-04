@@ -324,6 +324,7 @@ struct Renderer : Display, IScreenSizeListener
   void beginDraw() override
   {
     m_meshRenderPass.m_drawCommands.clear();
+    m_meshRenderPass.m_lights.clear();
   }
 
   void endDraw() override
