@@ -15,6 +15,7 @@ static const Resource resources[] =
   { ResourceType::Sound, SND_FIRE, "res/sounds/fire.ogg" },
   { ResourceType::Sound, SND_JUMP, "res/sounds/jump.ogg" },
   { ResourceType::Sound, SND_LAND, "res/sounds/land.ogg" },
+  { ResourceType::Sound, SND_SPARK, "res/sounds/electric.ogg" },
   { ResourceType::Sound, SND_SWITCH, "res/sounds/switch.ogg" },
   { ResourceType::Sound, SND_DOOR, "res/sounds/door.ogg" },
   { ResourceType::Sound, SND_HURT, "res/sounds/hurt.ogg" },

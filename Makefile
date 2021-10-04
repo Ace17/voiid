@@ -93,6 +93,7 @@ SRCS_GAME:=\
 	src/entities/editor.cpp\
 	src/entities/explosion.cpp\
 	src/entities/hero.cpp\
+	src/entities/lamp.cpp\
 	src/entities/move.cpp\
 	src/entities/moving_platform.cpp\
 	src/entities/finish.cpp\
