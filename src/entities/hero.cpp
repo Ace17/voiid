@@ -177,8 +177,6 @@ struct Hero : Player, Damageable
 
     if(control.use && debounceUse == 0)
     {
-      debounceUse = 200;
-
       // look in front of us for a body to switch,
       // and switch it.
       auto const forward = vectorFromAngles(lookAngleHorz, 0);
@@ -186,7 +184,10 @@ struct Hero : Player, Damageable
       auto body = physics->traceBox(box, forward, this).blocker;
 
       if(auto switchable = dynamic_cast<Switchable*>(body))
+      {
+        debounceUse = 20;
         switchable->onSwitch();
+      }
     }
 
     if(control.restart)
