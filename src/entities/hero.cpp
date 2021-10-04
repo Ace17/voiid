@@ -18,7 +18,7 @@
 #include "hero.h"
 #include "move.h"
 
-auto const GRAVITY = 0.005;
+auto const GRAVITY = Vector3f(0, 0, -0.005);
 auto const JUMP_SPEED = 0.15;
 auto const WALK_SPEED = 0.075f;
 auto const MAX_HORZ_SPEED = 0.2f;
@@ -78,7 +78,7 @@ struct Hero : Player, Damageable
   {
     airMove(c);
 
-    vel.z -= GRAVITY;
+    vel += GRAVITY;
 
     if(jumpbutton.toggle(c.jump) && ground)
     {
