@@ -18,7 +18,6 @@ struct RenderPass
     Size2i dim;
   };
 
-  virtual FrameBuffer getInputFrameBuffer() = 0;
   virtual void execute(FrameBuffer dst) = 0;
 };
 

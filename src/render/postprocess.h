@@ -22,9 +22,9 @@ struct PostProcessRenderPass : RenderPass
   ~PostProcessRenderPass();
 
   void setup(IGraphicsBackend* backend, Size2i resolution);
-  FrameBuffer getInputFrameBuffer() override;
   void execute(FrameBuffer dst) override;
 
+  RenderPass::FrameBuffer getInputFrameBuffer();
   std::unique_ptr<PostProcessing> postproc;
 };
 

@@ -55,8 +55,6 @@ struct DrawCommand
 
 struct MeshRenderPass : RenderPass
 {
-  FrameBuffer getInputFrameBuffer() override { return {}; }
-
   void execute(FrameBuffer dst) override
   {
     backend->setRenderTarget(dst.fb);
@@ -223,14 +221,6 @@ struct MeshRenderPass : RenderPass
   float m_aspectRatio = 1.0;
 };
 
-struct ScreenRenderPass : RenderPass
-{
-  Size2i screenSize {};
-
-  FrameBuffer getInputFrameBuffer() override { return { nullptr, screenSize }; }
-  void execute(FrameBuffer) override { /* nothing to do */ }
-};
-
 struct Renderer : Display, IScreenSizeListener
 {
   Renderer(IGraphicsBackend* backend_) : backend(backend_)
@@ -329,20 +319,22 @@ struct Renderer : Display, IScreenSizeListener
 
   void endDraw() override
   {
+    const auto t0 = chrono::high_resolution_clock::now();
+
+    auto screen = RenderPass::FrameBuffer{ nullptr, m_screenSize };
+    auto meshBuffer = m_enablePostProcessing ? m_postprocRenderPass.getInputFrameBuffer() : screen;
+
     m_meshRenderPass.m_aspectRatio = float(m_screenSize.width) / m_screenSize.height;
-    m_screenRenderPass.screenSize = m_screenSize;
-
-    RenderPass* passes[16];
-    int count = 0;
-
-    passes[count++] = &m_meshRenderPass;
+    m_meshRenderPass.execute(meshBuffer);
 
     if(m_enablePostProcessing)
-      passes[count++] = &m_postprocRenderPass;
+      m_postprocRenderPass.execute(screen);
 
-    passes[count++] = &m_screenRenderPass;
+    const auto t1 = chrono::high_resolution_clock::now();
 
-    renderPasses(Span<RenderPass*>(passes, count));
+    Stat("Render time (ms)", chrono::duration_cast<chrono::microseconds>(t1 - t0).count() / 1000.0);
+
+    backend->swap();
   }
 
   void drawActor(Rect3f where, Quaternion orientation, int modelId, bool blinking, int actionIdx, float ratio) override
@@ -400,7 +392,6 @@ private:
 
   MeshRenderPass m_meshRenderPass;
   PostProcessRenderPass m_postprocRenderPass;
-  ScreenRenderPass m_screenRenderPass;
 
   std::vector<std::unique_ptr<ITexture>> m_textures;
   std::vector<std::unique_ptr<IVertexBuffer>> m_vbs;
@@ -481,23 +472,6 @@ private:
   {
     for(auto& single : model.singleMeshes)
       m_meshRenderPass.m_drawCommands.push_back({ &single, where, orientation, camera, blinking, depthtest });
-  }
-
-  void renderPasses(Span<RenderPass*> passes)
-  {
-    const auto t0 = chrono::high_resolution_clock::now();
-
-    for(int i = 0; i + 1 < passes.len; ++i)
-    {
-      auto framebuffer = passes[i + 1]->getInputFrameBuffer();
-      passes[i]->execute(framebuffer);
-    }
-
-    const auto t1 = chrono::high_resolution_clock::now();
-
-    Stat("Render time (ms)", chrono::duration_cast<chrono::microseconds>(t1 - t0).count() / 1000.0);
-
-    backend->swap();
   }
 };
 }
