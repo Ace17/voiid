@@ -70,116 +70,65 @@ struct MeshRenderPass : RenderPass
     auto& model = *cmd.pMesh;
     auto& where = cmd.where;
 
-    if(cmd.depthtest)
+    backend->useGpuProgram(m_meshShader.get());
+
+    backend->setUniformFloat3(MeshShader::Uniform::ambientLoc, m_ambientLight, m_ambientLight, m_ambientLight);
+    backend->setUniformFloat4(MeshShader::Uniform::colorId, 0, 0, 0, 0);
+
+    assert(m_lights.size() < 32);
+    backend->setUniformInt(MeshShader::Uniform::LightCountLoc, (int)m_lights.size());
+
+    for(auto& light : m_lights)
     {
-      backend->useGpuProgram(m_meshShader.get());
-
-      backend->setUniformFloat3(MeshShader::Uniform::ambientLoc, m_ambientLight, m_ambientLight, m_ambientLight);
-      backend->setUniformFloat4(MeshShader::Uniform::colorId, 0, 0, 0, 0);
-
-      assert(m_lights.size() < 32);
-      backend->setUniformInt(MeshShader::Uniform::LightCountLoc, (int)m_lights.size());
-
-      for(auto& light : m_lights)
-      {
-        const auto i = int(&light - m_lights.data());
-        backend->setUniformFloat3(MeshShader::Uniform::LightPosLoc + i, light.pos.x, light.pos.y, light.pos.z);
-        backend->setUniformFloat3(MeshShader::Uniform::LightColorLoc + i, light.color.x, light.color.y, light.color.z);
-      }
-
-      if(cmd.blinking)
-      {
-        if(GetSteadyClockMs() % 100 < 50)
-          backend->setUniformFloat4(MeshShader::Uniform::colorId, 0.8, 0.4, 0.4, 0);
-      }
-
-      // Texture Unit 0: Diffuse
-      model.diffuse->bind(0);
-      backend->setUniformInt(MeshShader::Uniform::DiffuseTex, 0);
-
-      // Texture Unit 1: Lightmap
-      model.diffuse->bind(1);
-      backend->setUniformInt(MeshShader::Uniform::LightmapTex, 1);
-
-      auto const forward = cmd.camera.dir.rotate(Vector3f(1, 0, 0));
-      auto const up = cmd.camera.dir.rotate(Vector3f(0, 0, 1));
-
-      auto const target = cmd.camera.pos + forward;
-      auto const view = ::lookAt(cmd.camera.pos, target, up);
-      auto const pos = ::translate(where.pos);
-      auto const scale = ::scale(Vector3f(where.size.cx, where.size.cy, where.size.cz));
-      auto const rotate = quaternionToMatrix(cmd.orientation);
-
-      static const float fovy = (float)((60.0f / 180) * PI);
-      static const float near_ = 0.1f;
-      static const float far_ = 1000.0f;
-      const auto perspective = ::perspective(fovy, m_aspectRatio, near_, far_);
-
-      auto MV = pos * rotate * scale;
-      auto MVP = perspective * view * MV;
-
-      backend->setUniformMatrixFloat4(MeshShader::Uniform::M, &MV[0][0]);
-      backend->setUniformMatrixFloat4(MeshShader::Uniform::MVP, &MVP[0][0]);
-      backend->setUniformFloat3(MeshShader::Uniform::CameraPos, cmd.camera.pos.x, cmd.camera.pos.y, cmd.camera.pos.z);
-
-      backend->useVertexBuffer(model.vb);
-
-      backend->enableVertexAttribute(MeshShader::Attribute::positionLoc, 3, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, x));
-      backend->enableVertexAttribute(MeshShader::Attribute::normalLoc, 3, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, nx));
-      backend->enableVertexAttribute(MeshShader::Attribute::uvDiffuseLoc, 2, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, diffuse_u));
-      backend->enableVertexAttribute(MeshShader::Attribute::uvLightmapLoc, 2, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, lightmap_u));
-
-      backend->draw(model.vertices.size());
+      const auto i = int(&light - m_lights.data());
+      backend->setUniformFloat3(MeshShader::Uniform::LightPosLoc + i, light.pos.x, light.pos.y, light.pos.z);
+      backend->setUniformFloat3(MeshShader::Uniform::LightColorLoc + i, light.color.x, light.color.y, light.color.z);
     }
-    else
+
+    if(cmd.blinking)
     {
-      backend->useGpuProgram(m_textShader.get());
-
-      // Texture Unit 0: Diffuse
-      model.diffuse->bind(0);
-      backend->setUniformInt(TextShader::Uniform::DiffuseTex, 0);
-
-      auto const forward = Vector3f(0, 1, 0);
-      auto const up = Vector3f(0, 0, 1);
-
-      auto const target = cmd.camera.pos + forward;
-      auto const view = ::lookAt(cmd.camera.pos, target, up);
-      auto const pos = ::translate(where.pos);
-      auto const scale = ::scale(Vector3f(where.size.cx, where.size.cy, where.size.cz));
-
-      static const float fovy = (float)((60.0f / 180) * PI);
-      static const float near_ = 0.1f;
-      static const float far_ = 100.0f;
-      const auto perspective = ::perspective(fovy, m_aspectRatio, near_, far_);
-
-      auto MV = pos * scale;
-      auto MVP = perspective * view * MV;
-
-      backend->setUniformMatrixFloat4(TextShader::Uniform::MVP, &MVP[0][0]);
-
-      backend->useVertexBuffer(model.vb);
-
-      backend->enableVertexAttribute(TextShader::Attribute::positionLoc, 3, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, x));
-      backend->enableVertexAttribute(TextShader::Attribute::uvDiffuseLoc, 2, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, diffuse_u));
-
-      backend->draw(model.vertices.size());
+      if(GetSteadyClockMs() % 100 < 50)
+        backend->setUniformFloat4(MeshShader::Uniform::colorId, 0.8, 0.4, 0.4, 0);
     }
+
+    // Texture Unit 0: Diffuse
+    model.diffuse->bind(0);
+    backend->setUniformInt(MeshShader::Uniform::DiffuseTex, 0);
+
+    // Texture Unit 1: Lightmap
+    model.diffuse->bind(1);
+    backend->setUniformInt(MeshShader::Uniform::LightmapTex, 1);
+
+    auto const forward = cmd.camera.dir.rotate(Vector3f(1, 0, 0));
+    auto const up = cmd.camera.dir.rotate(Vector3f(0, 0, 1));
+
+    auto const target = cmd.camera.pos + forward;
+    auto const view = ::lookAt(cmd.camera.pos, target, up);
+    auto const pos = ::translate(where.pos);
+    auto const scale = ::scale(Vector3f(where.size.cx, where.size.cy, where.size.cz));
+    auto const rotate = quaternionToMatrix(cmd.orientation);
+
+    static const float fovy = (float)((60.0f / 180) * PI);
+    static const float near_ = 0.1f;
+    static const float far_ = 1000.0f;
+    const auto perspective = ::perspective(fovy, m_aspectRatio, near_, far_);
+
+    auto MV = pos * rotate * scale;
+    auto MVP = perspective * view * MV;
+
+    backend->setUniformMatrixFloat4(MeshShader::Uniform::M, &MV[0][0]);
+    backend->setUniformMatrixFloat4(MeshShader::Uniform::MVP, &MVP[0][0]);
+    backend->setUniformFloat3(MeshShader::Uniform::CameraPos, cmd.camera.pos.x, cmd.camera.pos.y, cmd.camera.pos.z);
+
+    backend->useVertexBuffer(model.vb);
+
+    backend->enableVertexAttribute(MeshShader::Attribute::positionLoc, 3, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, x));
+    backend->enableVertexAttribute(MeshShader::Attribute::normalLoc, 3, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, nx));
+    backend->enableVertexAttribute(MeshShader::Attribute::uvDiffuseLoc, 2, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, diffuse_u));
+    backend->enableVertexAttribute(MeshShader::Attribute::uvLightmapLoc, 2, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, lightmap_u));
+
+    backend->draw(model.vertices.size());
   }
-
-  struct TextShader
-  {
-    enum Uniform
-    {
-      MVP = 0,
-      DiffuseTex = 1,
-    };
-
-    enum Attribute
-    {
-      positionLoc = 0,
-      uvDiffuseLoc = 1,
-    };
-  };
 
   struct MeshShader
   {
@@ -213,11 +162,78 @@ struct MeshRenderPass : RenderPass
   };
 
   IGraphicsBackend* backend {};
-  std::unique_ptr<IGpuProgram> m_textShader;
   std::unique_ptr<IGpuProgram> m_meshShader;
   std::vector<DrawCommand> m_drawCommands;
   vector<Light> m_lights;
   float m_ambientLight = 0;
+  float m_aspectRatio = 1.0;
+};
+
+struct UiRenderPass : RenderPass
+{
+  void execute(FrameBuffer dst) override
+  {
+    backend->setRenderTarget(dst.fb);
+
+    for(auto& cmd : m_drawCommands)
+      executeDrawCommand(cmd);
+  }
+
+  void executeDrawCommand(const DrawCommand& cmd)
+  {
+    auto& model = *cmd.pMesh;
+    auto& where = cmd.where;
+
+    backend->useGpuProgram(m_textShader.get());
+
+    // Texture Unit 0: Diffuse
+    model.diffuse->bind(0);
+    backend->setUniformInt(TextShader::Uniform::DiffuseTex, 0);
+
+    auto const forward = Vector3f(0, 1, 0);
+    auto const up = Vector3f(0, 0, 1);
+
+    auto const target = cmd.camera.pos + forward;
+    auto const view = ::lookAt(cmd.camera.pos, target, up);
+    auto const pos = ::translate(where.pos);
+    auto const scale = ::scale(Vector3f(where.size.cx, where.size.cy, where.size.cz));
+
+    static const float fovy = (float)((60.0f / 180) * PI);
+    static const float near_ = 0.1f;
+    static const float far_ = 100.0f;
+    const auto perspective = ::perspective(fovy, m_aspectRatio, near_, far_);
+
+    auto MV = pos * scale;
+    auto MVP = perspective * view * MV;
+
+    backend->setUniformMatrixFloat4(TextShader::Uniform::MVP, &MVP[0][0]);
+
+    backend->useVertexBuffer(model.vb);
+
+    backend->enableVertexAttribute(TextShader::Attribute::positionLoc, 3, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, x));
+    backend->enableVertexAttribute(TextShader::Attribute::uvDiffuseLoc, 2, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, diffuse_u));
+
+    backend->draw(model.vertices.size());
+  }
+
+  struct TextShader
+  {
+    enum Uniform
+    {
+      MVP = 0,
+      DiffuseTex = 1,
+    };
+
+    enum Attribute
+    {
+      positionLoc = 0,
+      uvDiffuseLoc = 1,
+    };
+  };
+
+  IGraphicsBackend* backend {};
+  std::unique_ptr<IGpuProgram> m_textShader;
+  std::vector<DrawCommand> m_drawCommands;
   float m_aspectRatio = 1.0;
 };
 
@@ -229,9 +245,11 @@ struct Renderer : Display, IScreenSizeListener
 
     backend->setScreenSizeListener(this);
 
-    m_meshRenderPass.m_textShader = backend->createGpuProgram("text", false);
     m_meshRenderPass.m_meshShader = backend->createGpuProgram("mesh", true);
     m_meshRenderPass.backend = backend;
+
+    m_uiRenderPass.m_textShader = backend->createGpuProgram("text", false);
+    m_uiRenderPass.backend = backend;
 
     m_postprocRenderPass.setup(backend, m_screenSize);
   }
@@ -313,6 +331,7 @@ struct Renderer : Display, IScreenSizeListener
 
   void beginDraw() override
   {
+    m_uiRenderPass.m_drawCommands.clear();
     m_meshRenderPass.m_drawCommands.clear();
     m_meshRenderPass.m_lights.clear();
   }
@@ -332,14 +351,18 @@ struct Renderer : Display, IScreenSizeListener
 
   void doRender()
   {
+    const auto aspectRatio = float(m_screenSize.width) / m_screenSize.height;
     auto screen = RenderPass::FrameBuffer{ nullptr, m_screenSize };
-    auto meshBuffer = m_enablePostProcessing ? m_postprocRenderPass.getInputFrameBuffer() : screen;
+    auto meshRenderTarget = m_enablePostProcessing ? m_postprocRenderPass.getInputFrameBuffer() : screen;
 
-    m_meshRenderPass.m_aspectRatio = float(m_screenSize.width) / m_screenSize.height;
-    m_meshRenderPass.execute(meshBuffer);
+    m_meshRenderPass.m_aspectRatio = aspectRatio;
+    m_meshRenderPass.execute(meshRenderTarget);
 
     if(m_enablePostProcessing)
       m_postprocRenderPass.execute(screen);
+
+    m_uiRenderPass.m_aspectRatio = aspectRatio;
+    m_uiRenderPass.execute(screen);
   }
 
   void drawActor(Rect3f where, Quaternion orientation, int modelId, bool blinking, int actionIdx, float ratio) override
@@ -365,7 +388,9 @@ struct Renderer : Display, IScreenSizeListener
 
     while(*text)
     {
-      pushMesh(rect, orientation, cam, m_fontModel[*text], false, false);
+      for(auto& single : m_fontModel[*text].singleMeshes)
+        m_uiRenderPass.m_drawCommands.push_back({ &single, rect, orientation, cam, false, false });
+
       rect.pos.x += rect.size.cx;
       ++text;
     }
@@ -396,6 +421,7 @@ private:
   bool m_enablePostProcessing = true;
 
   MeshRenderPass m_meshRenderPass;
+  UiRenderPass m_uiRenderPass;
   PostProcessRenderPass m_postprocRenderPass;
 
   std::vector<std::unique_ptr<ITexture>> m_textures;
