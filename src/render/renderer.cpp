@@ -480,7 +480,7 @@ struct Renderer : Display, IScreenSizeListener
     rect.pos.z = pos.y;
 
     auto cam = (Camera { Vector3f(0, -10, 0), Quaternion::fromEuler(PI / 2, 0, 0) });
-    auto orientation = Quaternion::fromEuler(0, 0, 0);
+    auto orientation = Quaternion::identity();
 
     while(*text)
     {

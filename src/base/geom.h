@@ -537,6 +537,11 @@ struct Quaternion
   Vector3f v = Vector3f(0, 0, 0);
   float s = 0;
 
+  static Quaternion identity()
+  {
+    return Quaternion { { 0, 0, 0 }, 1 };
+  }
+
   static Quaternion rotation(Vector3f axis, float angle)
   {
     Quaternion r;
