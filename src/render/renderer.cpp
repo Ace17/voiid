@@ -50,7 +50,6 @@ struct DrawCommand
   Quaternion orientation;
   Camera camera;
   bool blinking;
-  bool depthtest;
 };
 
 struct MeshRenderPass : RenderPass
@@ -370,7 +369,7 @@ struct Renderer : Display, IScreenSizeListener
     (void)actionIdx;
     (void)ratio;
     auto& model = m_Models.at(modelId);
-    pushMesh(where, orientation, m_camera, model, blinking, true);
+    pushMesh(where, orientation, m_camera, model, blinking);
   }
 
   void drawText(Vector2f pos, char const* text) override
@@ -389,7 +388,7 @@ struct Renderer : Display, IScreenSizeListener
     while(*text)
     {
       for(auto& single : m_fontModel[*text].singleMeshes)
-        m_uiRenderPass.m_drawCommands.push_back({ &single, rect, orientation, cam, false, false });
+        m_uiRenderPass.m_drawCommands.push_back({ &single, rect, orientation, cam, false });
 
       rect.pos.x += rect.size.cx;
       ++text;
@@ -499,10 +498,10 @@ private:
     return texture;
   }
 
-  void pushMesh(Rect3f where, Quaternion orientation, Camera const& camera, RenderMesh& model, bool blinking, bool depthtest)
+  void pushMesh(Rect3f where, Quaternion orientation, Camera const& camera, RenderMesh& model, bool blinking)
   {
     for(auto& single : model.singleMeshes)
-      m_meshRenderPass.m_drawCommands.push_back({ &single, where, orientation, camera, blinking, depthtest });
+      m_meshRenderPass.m_drawCommands.push_back({ &single, where, orientation, camera, blinking });
   }
 };
 }
