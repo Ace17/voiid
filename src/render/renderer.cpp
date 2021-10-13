@@ -321,6 +321,17 @@ struct Renderer : Display, IScreenSizeListener
   {
     const auto t0 = chrono::high_resolution_clock::now();
 
+    doRender();
+
+    const auto t1 = chrono::high_resolution_clock::now();
+
+    Stat("Render time (ms)", chrono::duration_cast<chrono::microseconds>(t1 - t0).count() / 1000.0);
+
+    backend->swap();
+  }
+
+  void doRender()
+  {
     auto screen = RenderPass::FrameBuffer{ nullptr, m_screenSize };
     auto meshBuffer = m_enablePostProcessing ? m_postprocRenderPass.getInputFrameBuffer() : screen;
 
@@ -329,12 +340,6 @@ struct Renderer : Display, IScreenSizeListener
 
     if(m_enablePostProcessing)
       m_postprocRenderPass.execute(screen);
-
-    const auto t1 = chrono::high_resolution_clock::now();
-
-    Stat("Render time (ms)", chrono::duration_cast<chrono::microseconds>(t1 - t0).count() / 1000.0);
-
-    backend->swap();
   }
 
   void drawActor(Rect3f where, Quaternion orientation, int modelId, bool blinking, int actionIdx, float ratio) override
