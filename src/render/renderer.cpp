@@ -111,7 +111,6 @@ struct SkyboxPass : RenderPass
     backend->setRenderTarget(dst.fb);
 
     backend->useGpuProgram(m_shader.get());
-    backend->clear();
 
     auto const forward = camera.dir.rotate(Vector3f(1, 0, 0));
     auto const up = camera.dir.rotate(Vector3f(0, 0, 1));
@@ -148,8 +147,6 @@ struct MeshRenderPass : RenderPass
   void execute(FrameBuffer dst) override
   {
     backend->setRenderTarget(dst.fb);
-
-    //backend->clear();
 
     for(auto& cmd : m_drawCommands)
       executeDrawCommand(cmd);
