@@ -85,7 +85,7 @@ public:
       tickOneDisplayFrame(now);
     }
 
-    return m_running;
+    return m_running != AppState::Exit;
   }
 
 private:
@@ -97,7 +97,7 @@ private:
     {
       m_lastTime += timeStep;
 
-      if(!m_paused && m_running == 1)
+      if(!m_paused && m_running == AppState::Running)
         tickGameplay();
     }
 
@@ -126,7 +126,7 @@ private:
   void registerUserInputActions()
   {
     // App keys
-    m_input->listenToQuit([&] () { m_running = 0; });
+    m_input->listenToQuit([&] () { m_running = AppState::Exit; });
 
     m_input->listenToKey(Key::RightControl, [&] (bool isDown) { if(isDown) toggleGrab(); }, true);
     m_input->listenToKey(Key::PrintScreen, [&] (bool isDown) { if(isDown) toggleVideoCapture(); }, true);
@@ -136,8 +136,8 @@ private:
     m_input->listenToKey(Key::F3, [&] (bool isDown) { if(isDown) toggleFsaa(); });
     m_input->listenToKey(Key::F4, [&] (bool isDown) { if(isDown) toggleHdr(); });
 
-    m_input->listenToKey(Key::Y, [&] (bool isDown) { if(isDown && m_running == 2) m_running = 0; });
-    m_input->listenToKey(Key::N, [&] (bool isDown) { if(isDown && m_running == 2) m_running = 1; });
+    m_input->listenToKey(Key::Y, [&] (bool isDown) { if(isDown && m_running == AppState::ConfirmExit) m_running = AppState::Exit; });
+    m_input->listenToKey(Key::N, [&] (bool isDown) { if(isDown && m_running == AppState::ConfirmExit) m_running = AppState::Running; });
 
     // Player keys
     m_input->listenToKey(Key::Esc, [&] (bool isDown) { if(isDown) onQuit(); });
@@ -185,7 +185,7 @@ private:
       m_display->setLight(idx, actor.pos, actor.color);
     }
 
-    if(m_running == 2)
+    if(m_running == AppState::ConfirmExit)
       m_display->drawText(Vector2f(0, 0), "QUIT? [Y/N]");
     else if(m_paused)
       m_display->drawText(Vector2f(0, 0), "PAUSE");
@@ -216,10 +216,10 @@ private:
 
   void onQuit()
   {
-    if(m_running == 2)
-      m_running = 1;
+    if(m_running == AppState::ConfirmExit)
+      m_running = AppState::Running;
     else
-      m_running = 2;
+      m_running = AppState::ConfirmExit;
   }
 
   void toggleVideoCapture()
@@ -381,7 +381,14 @@ private:
     m_actors.push_back(actor);
   }
 
-  int m_running = 1;
+  enum class AppState
+  {
+    Exit = 0,
+    Running = 1,
+    ConfirmExit = 2,
+  };
+
+  AppState m_running = AppState::Running;
   int m_fixedDisplayFramePeriod = 0;
 
   VideoCapture m_recorder;
