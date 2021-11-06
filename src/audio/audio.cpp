@@ -7,7 +7,6 @@
 // Playlist management, sound loading
 
 #include "engine/audio.h"
-#include "engine/audio_backend.h"
 #include "engine/stats.h"
 
 #include "sound.h"
