@@ -163,8 +163,8 @@ private:
     // Debug keys
     m_input->listenToKey(Key::F2, [&] (bool isDown) { if(isDown) m_scene.reset(createGame(this, m_args)); });
     m_input->listenToKey(Key::Tab, [&] (bool isDown) { if(isDown) m_slowMotion = !m_slowMotion; });
-    m_input->listenToKey(Key::ScrollLock, [&] (bool isDown) { if(isDown) m_debugMode = !m_debugMode; });
-    m_input->listenToKey(Key::Pause, [&] (bool isDown) { if(isDown){ playSound(0); m_paused = !m_paused; } });
+    m_input->listenToKey(Key::ScrollLock, [&] (bool isDown) { if(isDown) toggleDebug(); });
+    m_input->listenToKey(Key::Pause, [&] (bool isDown) { if(isDown){ playSound(0); togglePause(); } });
   }
 
   void draw()
@@ -320,7 +320,7 @@ private:
 
   void textBox(String msg) override
   {
-    m_textbox = msg.data;
+    m_textbox.assign(msg.data, msg.len);
     m_textboxDelay = 60 * 2;
   }
 
