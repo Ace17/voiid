@@ -133,7 +133,9 @@ struct Hero : Player, Damageable
     decrement(hurtDelay);
 
     if(hurtDelay || life <= 0)
+    {
       control = Control {};
+    }
 
     lookAngleVert -= control.look_vert * 1.0;
     lookAngleHorz -= control.look_horz * 1.0;

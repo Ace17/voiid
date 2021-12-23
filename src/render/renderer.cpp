@@ -482,7 +482,7 @@ struct Renderer : Display, IScreenSizeListener
     while(*text)
     {
       for(auto& single : m_fontModel[*text].singleMeshes)
-        m_uiRenderPass.m_drawCommands.push_back({ &single, rect, orientation, cam, false });
+        m_uiRenderPass.m_drawCommands.push_back({& single, rect, orientation, cam, false });
 
       rect.pos.x += rect.size.cx;
       ++text;
@@ -596,7 +596,7 @@ private:
   void pushMesh(Rect3f where, Quaternion orientation, Camera const& camera, RenderMesh& model, bool blinking)
   {
     for(auto& single : model.singleMeshes)
-      m_meshRenderPass.m_drawCommands.push_back({ &single, where, orientation, camera, blinking });
+      m_meshRenderPass.m_drawCommands.push_back({& single, where, orientation, camera, blinking });
   }
 };
 }
