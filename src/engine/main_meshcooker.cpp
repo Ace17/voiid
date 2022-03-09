@@ -134,6 +134,7 @@ int main(int argc, const char* argv[])
         }
         else
         {
+          fprintf(stderr, "File doesn't exist: '%s'\n", inputPathDiffuse.c_str());
           File::write(outputPathDiffuse, gray_png);
         }
       }

@@ -20,12 +20,12 @@ TARGETS+=res/font.png res/white.png
 
 ROOMS+=$(wildcard assets/rooms/*)
 TARGETS+=$(ROOMS:assets/%=res/%/room.settings)
-TARGETS+=$(ROOMS:assets/%=res/%/room.mesh)
+TARGETS+=$(ROOMS:assets/%=res/%/room.fbx)
 TARGETS+=$(ROOMS:assets/%=res/%/room.render)
 
-res/%/room.mesh: assets/%/room.blend ./scripts/export_from_blender.py
+res/%/room.fbx: assets/%/room.blend ./scripts/export_from_blender_to_fbx.py
 	@mkdir -p $(dir $@)
-	./scripts/export_from_blender "$<" "$@"
+	./scripts/export_from_blender_to_fbx "$<" "$@"
 
 #-----------------------------------
 # Meshes
@@ -33,11 +33,11 @@ res/%/room.mesh: assets/%/room.blend ./scripts/export_from_blender.py
 SPRITES_SRC+=$(wildcard assets/sprites/*.blend)
 TARGETS+=$(SPRITES_SRC:assets/%.blend=res/%.render)
 
-res/%.mesh: assets/%.blend ./scripts/export_from_blender.py
+res/%.fbx: assets/%.blend ./scripts/export_from_blender_to_fbx.py
 	@mkdir -p $(dir $@)
-	./scripts/export_from_blender "$<" "$@"
+	./scripts/export_from_blender_to_fbx "$<" "$@"
 
-res/%.render: res/%.mesh $(BIN_HOST)/meshcooker.exe
+res/%.render: res/%.fbx $(BIN_HOST)/meshcooker.exe
 	@mkdir -p $(dir $@)
 	$(BIN_HOST)/meshcooker.exe "$<" "$(dir assets/$*)" "res/$*.render"
 

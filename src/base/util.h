@@ -12,6 +12,8 @@
 #include <string>
 #include <vector>
 
+#include "string.h"
+
 using namespace std;
 
 template<typename T>
@@ -41,6 +43,22 @@ inline string dirName(string path)
     return ".";
 
   return path.substr(0, n);
+}
+
+inline String baseName(String path)
+{
+  auto left = path.data;
+  auto right = path.data + path.len;
+
+  auto p = right - 1;
+
+  while(p > left && *p != '/')
+    --p;
+
+  String r;
+  r.data = p;
+  r.len = right - p;
+  return r;
 }
 
 template<typename T>

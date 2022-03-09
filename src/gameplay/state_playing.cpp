@@ -235,7 +235,7 @@ struct GameState : Scene, private IGame
     assert(m_listeners.empty());
 
     {
-      const auto filename = format(buf, "res/rooms/%02d/room.mesh", levelIdx);
+      const auto filename = format(buf, "res/rooms/%02d/room.fbx", levelIdx);
 
       auto level = loadRoom(filename);
       world = level.colliders;

@@ -56,6 +56,7 @@ SRCS_ENGINE:=\
 	src/render/postprocess.cpp\
 	src/render/png.cpp\
 	src/render/mesh_import.cpp\
+	src/render/fbx_import.cpp\
 
 SRCS_ENGINE+=\
 	src/platform/audio_sdl.cpp\
@@ -67,7 +68,9 @@ SRCS_MESHCOOKER:=\
 	src/engine/main_meshcooker.cpp\
 	src/misc/decompress.cpp\
 	src/misc/file.cpp\
+	src/misc/string.cpp\
 	src/render/mesh_import.cpp\
+	src/render/fbx_import.cpp\
 
 #-----------------------------------
 $(BIN_HOST):
@@ -133,6 +136,7 @@ SRCS_TESTS:=\
 	src/tests/audio.cpp\
 	src/tests/base64.cpp\
 	src/tests/decompress.cpp\
+	src/tests/fbx.cpp\
 	src/tests/json.cpp\
 	src/tests/util.cpp\
 	src/tests/png.cpp\
