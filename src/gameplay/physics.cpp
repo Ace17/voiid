@@ -54,6 +54,9 @@ struct Physics : IPhysics
         if(otherBody == body)
           continue;
 
+        if(otherBody->pusher)
+          continue;
+
         // move stacked bodies
         // push potential non-solid bodies
         if(otherBody->ground == body || overlaps(rect, otherBody->getBox()))
