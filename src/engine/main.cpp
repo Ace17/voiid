@@ -11,6 +11,7 @@
 #include <exception>
 
 #include "app.h"
+#include "base/error.h"
 
 #define SDL_MAIN_HANDLED
 #include "SDL.h"
@@ -58,6 +59,12 @@ int main(int argc, char* argv[])
   {
     fflush(stdout);
     fprintf(stderr, "Fatal: %s\n", e.what());
+    return 1;
+  }
+  catch(Error const& e)
+  {
+    fflush(stdout);
+    fprintf(stderr, "Fatal: %.*s\n", e.message().len, e.message().data);
     return 1;
   }
 }

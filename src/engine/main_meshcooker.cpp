@@ -1,6 +1,7 @@
 #include <map>
 #include <string.h> // memcpy
 
+#include "base/error.h"
 #include "base/mesh.h"
 #include "base/span.h"
 #include "base/util.h" // setExtension
@@ -92,52 +93,61 @@ void writeRenderMesh(string path, const RenderMesh& renderMesh)
 
 int main(int argc, const char* argv[])
 {
-  if(argc != 4)
-    return 1;
-
-  const auto input = string(argv[1]);
-  const auto textureDir = string(argv[2]);
-  const auto outputPathMesh = argv[3];
-
-  auto importedMesh = importMesh(input);
-
-  std::vector<string> textureFiles;
-  auto renderMesh = convertToRenderMesh(importedMesh.meshes, textureFiles);
-  writeRenderMesh(outputPathMesh, renderMesh);
-
-  int meshIndex = 0;
-
-  for(auto& single : renderMesh.singleMeshes)
+  try
   {
-    static uint8_t gray_png[] = { 0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x08, 0x08, 0x06, 0x00, 0x00, 0x00, 0xc4, 0x0f, 0xbe, 0x8b, 0x00, 0x00, 0x00, 0x16, 0x49, 0x44, 0x41, 0x54, 0x18, 0xd3, 0x63, 0x6c, 0x68, 0x68, 0xf8, 0xcf, 0x80, 0x07, 0x30, 0x31, 0x10, 0x00, 0xc3, 0x43, 0x01, 0x00, 0x95, 0x62, 0x02, 0x8f, 0x72, 0x61, 0x0a, 0x14, 0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82 };
+    if(argc != 4)
+      return 1;
 
+    const auto input = string(argv[1]);
+    const auto textureDir = string(argv[2]);
+    const auto outputPathMesh = argv[3];
+
+    auto scene = importMesh(input);
+
+    std::vector<string> textureFiles;
+    auto renderMesh = convertToRenderMesh(scene.meshes, textureFiles);
+    writeRenderMesh(outputPathMesh, renderMesh);
+
+    int meshIndex = 0;
+
+    for(auto& single : renderMesh.singleMeshes)
     {
-      auto outputPathLightmap = setExtension(outputPathMesh, to_string(meshIndex) + ".lightmap.png");
-      File::write(outputPathLightmap, gray_png);
+      static uint8_t gray_png[] = { 0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x08, 0x08, 0x06, 0x00, 0x00, 0x00, 0xc4, 0x0f, 0xbe, 0x8b, 0x00, 0x00, 0x00, 0x16, 0x49, 0x44, 0x41, 0x54, 0x18, 0xd3, 0x63, 0x6c, 0x68, 0x68, 0xf8, 0xcf, 0x80, 0x07, 0x30, 0x31, 0x10, 0x00, 0xc3, 0x43, 0x01, 0x00, 0x95, 0x62, 0x02, 0x8f, 0x72, 0x61, 0x0a, 0x14, 0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82 };
+
+      {
+        auto outputPathLightmap = setExtension(outputPathMesh, to_string(meshIndex) + ".lightmap.png");
+        File::write(outputPathLightmap, gray_png);
+      }
+
+      {
+        auto const outputPathDiffuse = setExtension(outputPathMesh, to_string(meshIndex) + ".diffuse.png");
+
+        if(textureFiles[meshIndex] == "")
+          textureFiles[meshIndex] = "mesh.png";
+
+        auto const inputPathDiffuse = textureDir + "/" + textureFiles[meshIndex];
+
+        if(File::exists(inputPathDiffuse))
+        {
+          auto diffusePngData = File::read(inputPathDiffuse);
+          File::write(outputPathDiffuse, { (uint8_t*)diffusePngData.data(), (int)diffusePngData.size() });
+        }
+        else
+        {
+          File::write(outputPathDiffuse, gray_png);
+        }
+      }
+
+      ++meshIndex;
     }
 
-    {
-      auto const outputPathDiffuse = setExtension(outputPathMesh, to_string(meshIndex) + ".diffuse.png");
-
-      if(textureFiles[meshIndex] == "")
-        textureFiles[meshIndex] = "mesh.png";
-
-      auto const inputPathDiffuse = textureDir + "/" + textureFiles[meshIndex];
-
-      if(File::exists(inputPathDiffuse))
-      {
-        auto diffusePngData = File::read(inputPathDiffuse);
-        File::write(outputPathDiffuse, { (uint8_t*)diffusePngData.data(), (int)diffusePngData.size() });
-      }
-      else
-      {
-        File::write(outputPathDiffuse, gray_png);
-      }
-    }
-
-    ++meshIndex;
+    return 0;
   }
-
-  return 0;
+  catch(Error const& e)
+  {
+    fflush(stdout);
+    fprintf(stderr, "Fatal: %.*s\n", e.message().len, e.message().data);
+    return 1;
+  }
 }
 

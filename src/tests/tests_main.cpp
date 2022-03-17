@@ -6,6 +6,7 @@
 
 // Unit test framework: entry point
 
+#include "base/error.h"
 #include "tests.h"
 #include <cstdio>
 
@@ -22,6 +23,11 @@ int main(int argc, char* argv[])
   {
     RunTests(filter);
     return 0;
+  }
+  catch(Error const& e)
+  {
+    fprintf(stderr, "Fatal: %.*s\n", e.msg.len, e.msg.data);
+    return 1;
   }
   catch(std::exception const& e)
   {
