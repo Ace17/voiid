@@ -29,15 +29,6 @@ constexpr uint32_t hashed(String str)
   return val;
 }
 
-template<size_t N>
-constexpr uint32_t hashed(const char (& str)[N])
-{
-  String s {};
-  s.data = str;
-  s.len = N - 1;
-  return hashed(s);
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // Low-level parsing: tokenization
 
@@ -124,11 +115,7 @@ void enforce(bool condition, const char* fmt, ...)
   vsnprintf(buffer, sizeof(buffer) - 1, fmt, args);
   va_end(args);
 
-  String msg;
-  msg.data = buffer;
-  msg.len = strlen(buffer);
-
-  throw Error(msg);
+  throw Error(String(buffer, strlen(buffer)));
 }
 
 // FBX tokenizer: produces a linear sequence of tokens.

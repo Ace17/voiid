@@ -13,9 +13,6 @@ String format(Span<char> buf, const char* fmt, ...)
   const int len = strlen(buf.data);
   buf.data[len] = 0;
 
-  String r;
-  r.data = buf.data;
-  r.len = len;
-  return r;
+  return String(buf.data, len);
 }
 

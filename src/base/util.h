@@ -55,10 +55,7 @@ inline String baseName(String path)
   while(p > left && *p != '/')
     --p;
 
-  String r;
-  r.data = p;
-  r.len = right - p;
-  return r;
+  return String(p, right - p);
 }
 
 template<typename T>
