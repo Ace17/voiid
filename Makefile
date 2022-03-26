@@ -40,6 +40,7 @@ LDFLAGS+=$(DBGFLAGS)
 
 SRCS_ENGINE:=\
 	src/base/geom.cpp \
+	src/base/string.cpp\
 	src/engine/app.cpp\
 	src/engine/main.cpp\
 	src/engine/stats.cpp\
@@ -49,7 +50,6 @@ SRCS_ENGINE:=\
 	src/misc/decompress.cpp\
 	src/misc/file.cpp\
 	src/misc/json.cpp\
-	src/misc/string.cpp\
 	src/misc/time.cpp\
 	src/render/renderer.cpp\
 	src/render/rendermesh.cpp\
@@ -67,9 +67,9 @@ SRCS_ENGINE+=\
 
 SRCS_MESHCOOKER:=\
 	src/engine/main_meshcooker.cpp\
+	src/base/string.cpp\
 	src/misc/decompress.cpp\
 	src/misc/file.cpp\
-	src/misc/string.cpp\
 	src/render/mesh_import.cpp\
 	src/render/fbx_import.cpp\
 
