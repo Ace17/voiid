@@ -1,6 +1,8 @@
 #include "gameplay/convex.h"
 #include "tests.h"
 
+#include <cmath>
+
 static
 void assertNearlyEqualsFunc(float expected, float actual, const char* file, int line)
 {

@@ -9,6 +9,7 @@
 #pragma once
 
 #include <cassert>
+#include <cmath>
 
 #include "base/geom.h"
 #include "base/quaternion.h"

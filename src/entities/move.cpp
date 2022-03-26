@@ -1,5 +1,7 @@
 #include "move.h"
 
+#include <cmath>
+
 void slideMove(IPhysicsProbe* physics, Body* body, Vector delta)
 {
   for(int i = 0; i < 5; ++i)

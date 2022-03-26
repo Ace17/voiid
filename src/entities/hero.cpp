@@ -5,6 +5,7 @@
 // License, or (at your option) any later version.
 
 #include <algorithm>
+#include <cmath>
 
 #include "base/scene.h"
 #include "base/util.h"

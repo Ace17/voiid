@@ -13,6 +13,8 @@
 
 #include "collision_groups.h"
 
+#include <cmath>
+
 struct MovingPlatform : Entity
 {
   MovingPlatform(int dir_)
