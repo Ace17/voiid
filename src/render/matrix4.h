@@ -8,7 +8,10 @@
 
 #pragma once
 
+#include <cassert>
+
 #include "base/geom.h"
+#include "base/quaternion.h"
 
 struct Matrix4f
 {

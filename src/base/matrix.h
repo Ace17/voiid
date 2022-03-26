@@ -1,0 +1,224 @@
+// Copyright (C) 2022 - Sebastien Alaiwan
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+
+// Matrix types
+
+#pragma once
+
+#include <cassert>
+
+template<typename T>
+struct Matrix2
+{
+  Matrix2() = default;
+
+  Matrix2(Matrix2 const &) = delete;
+  void operator = (Matrix2 const&) = delete;
+
+  Matrix2(Matrix2&& other)
+  {
+    data = other.data;
+    size = other.size;
+    other.data = nullptr;
+  }
+
+  void operator = (Matrix2&& other)
+  {
+    delete[] data;
+    data = other.data;
+    size = other.size;
+    other.data = nullptr;
+  }
+
+  Matrix2(Size2i size_) : size(size_)
+  {
+    resize(size_);
+  }
+
+  ~Matrix2()
+  {
+    delete[] data;
+  }
+
+  void resize(Size2i size_)
+  {
+    delete[] data;
+
+    size = size_;
+    data = new T[size.width * size.height];
+
+    for(int i = 0; i < size.width * size.height; ++i)
+      data[i] = T();
+  }
+
+  Size2i size = Size2i(0, 0);
+
+  T & get(int x, int y)
+  {
+    assert(isInside(x, y));
+    return data[raster(x, y)];
+  }
+
+  const T & get(int x, int y) const
+  {
+    assert(isInside(x, y));
+    return data[raster(x, y)];
+  }
+
+  void set(int x, int y, T const& val)
+  {
+    assert(isInside(x, y));
+    get(x, y) = val;
+  }
+
+  template<typename Lambda>
+  void scan(Lambda f)
+  {
+    for(int y = 0; y < size.height; y++)
+      for(int x = 0; x < size.width; x++)
+        f(x, y, get(x, y));
+  }
+
+  template<typename Lambda>
+  void scan(Lambda f) const
+  {
+    for(int y = 0; y < size.height; y++)
+      for(int x = 0; x < size.width; x++)
+        f(x, y, get(x, y));
+  }
+
+  bool isInside(int x, int y) const
+  {
+    if(x < 0 || y < 0)
+      return false;
+
+    if(x >= size.width || y >= size.height)
+      return false;
+
+    return true;
+  }
+
+private:
+  T* data = nullptr;
+
+  int raster(int x, int y) const
+  {
+    return y * size.width + x;
+  }
+};
+
+template<typename T>
+struct Matrix3
+{
+  Matrix3() = default;
+
+  Matrix3(Size3i size_) : size(size_)
+  {
+    resize(size_);
+  }
+
+  ~Matrix3()
+  {
+    delete[] data;
+  }
+
+  Matrix3(Matrix3&& other)
+  {
+    data = other.data;
+    size = other.size;
+    other.data = nullptr;
+  }
+
+  void operator = (Matrix3&& other)
+  {
+    delete[] data;
+    data = other.data;
+    size = other.size;
+    other.data = nullptr;
+  }
+
+  Matrix3(Matrix3 const& other)
+  {
+    *this = other;
+  }
+
+  void operator = (Matrix3 const& other)
+  {
+    resize(other.size);
+
+    for(int i = 0; i < size.cx * size.cy * size.cz; ++i)
+      data[i] = other.data[i];
+  }
+
+  void resize(Size3i size_)
+  {
+    delete[] data;
+
+    size = size_;
+    data = new T[size.cx * size.cy * size.cz];
+
+    for(int i = 0; i < size.cx * size.cy * size.cz; ++i)
+      data[i] = T();
+  }
+
+  Size3i size;
+
+  T & get(int x, int y, int z)
+  {
+    assert(isInside(x, y, z));
+    return data[raster(x, y, z)];
+  }
+
+  const T & get(int x, int y, int z) const
+  {
+    assert(isInside(x, y, z));
+    return data[raster(x, y, z)];
+  }
+
+  void set(int x, int y, int z, T const& val)
+  {
+    assert(isInside(x, y, z));
+    get(x, y, z) = val;
+  }
+
+  template<typename Lambda>
+  void scan(Lambda f)
+  {
+    for(int z = 0; z < size.cz; z++)
+      for(int y = 0; y < size.cy; y++)
+        for(int x = 0; x < size.cx; x++)
+          f(x, y, z, get(x, y, z));
+  }
+
+  template<typename Lambda>
+  void scan(Lambda f) const
+  {
+    for(int z = 0; z < size.cz; z++)
+      for(int y = 0; y < size.cy; y++)
+        for(int x = 0; x < size.cx; x++)
+          f(x, y, z, get(x, y, z));
+  }
+
+  bool isInside(int x, int y, int z) const
+  {
+    if(x < 0 || y < 0 || z < 0)
+      return false;
+
+    if(x >= size.cx || y >= size.cy || z >= size.cz)
+      return false;
+
+    return true;
+  }
+
+private:
+  T* data = nullptr;
+
+  int raster(int x, int y, int z) const
+  {
+    return (z * size.cy + y) * size.cx + x;
+  }
+};
+

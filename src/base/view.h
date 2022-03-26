@@ -9,6 +9,7 @@
 #pragma once
 
 #include "geom.h"
+#include "quaternion.h"
 #include "resource.h"
 #include "string.h"
 

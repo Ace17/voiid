@@ -7,6 +7,7 @@
 #include "base/geom.h"
 #include "engine/rendermesh.h"
 #include "misc/file.h"
+#include <cassert>
 #include <stdexcept>
 #include <string.h> // memcpy
 
