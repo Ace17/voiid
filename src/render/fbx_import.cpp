@@ -499,7 +499,7 @@ void skipObject(Tokenizer& tokenizer)
 struct FbxParser
 {
 public:
-  ImportedMesh parse(Tokenizer& tokenizer)
+  ImportedScene parse(Tokenizer& tokenizer)
   {
     while(tokenizer.tokenType != Token::EndOfFile)
     {
@@ -592,9 +592,9 @@ private:
     }
   }
 
-  ImportedMesh finish()
+  ImportedScene finish()
   {
-    ImportedMesh scene {};
+    ImportedScene scene {};
 
     for(auto& model : models)
     {
@@ -1347,7 +1347,7 @@ void parseFbxFileHeader(Span<const uint8_t>& data)
 }
 }
 
-ImportedMesh parseFbx(Span<const uint8_t> data)
+ImportedScene parseFbx(Span<const uint8_t> data)
 {
   const uint8_t* const base = data.data; // used to convert endOffset to sizes
 

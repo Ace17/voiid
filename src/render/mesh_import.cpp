@@ -14,9 +14,9 @@
 
 #include "misc/file.h"
 
-ImportedMesh parseFbx(Span<const uint8_t> data);
+ImportedScene parseFbx(Span<const uint8_t> data);
 
-ImportedMesh importMesh(String path)
+ImportedScene importMesh(String path)
 {
   auto fbxData = File::read(path);
   return parseFbx({ (uint8_t*)fbxData.c_str(), (int)fbxData.size() });

@@ -41,11 +41,11 @@ struct Light
 };
 
 // contents of the .blend file
-struct ImportedMesh
+struct ImportedScene
 {
   std::vector<Mesh> meshes;
   std::vector<Light> lights;
 };
 
-ImportedMesh importMesh(String path);
+ImportedScene importMesh(String path);
 

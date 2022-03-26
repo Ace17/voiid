@@ -11,7 +11,7 @@ using namespace std;
 #include "base/mesh.h"
 #include "misc/decompress.h"
 
-ImportedMesh parseFbx(Span<const uint8_t> data);
+ImportedScene parseFbx(Span<const uint8_t> data);
 
 // generated with the following command:
 // cat unittest.fbx | gzip | xxd -i
