@@ -8,8 +8,6 @@
 
 #pragma once
 
-#include <cmath>
-
 ///////////////////////////////////////////////////////////////////////////////
 // Dimension
 ///////////////////////////////////////////////////////////////////////////////
@@ -74,10 +72,10 @@ struct GenericSize3
   T cx, cy, cz;
 };
 
-typedef GenericSize<int> Size2i;
-typedef GenericSize<float> Size2f;
-typedef GenericSize3<int> Size3i;
-typedef GenericSize3<float> Size3f;
+using Size2f = GenericSize<float>;
+using Size2i = GenericSize<int>;
+using Size3f = GenericSize3<float>;
+using Size3i = GenericSize3<int>;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Vector
@@ -209,10 +207,7 @@ inline T dotProduct(GenericVector3<T> a, GenericVector3<T> b)
 }
 
 template<typename T>
-inline auto magnitude(GenericVector3<T> v)
-{
-  return sqrt(dotProduct(v, v));
-}
+double magnitude(GenericVector3<T> v);
 
 template<typename T>
 inline auto normalize(GenericVector3<T> v)
@@ -230,11 +225,10 @@ inline auto crossProduct(GenericVector3<T> a, GenericVector3<T> b)
   return r;
 }
 
-typedef GenericVector<int> Vector2i;
-typedef GenericVector<float> Vector2f;
-
-typedef GenericVector3<int> Vector3i;
-typedef GenericVector3<float> Vector3f;
+using Vector2f = GenericVector<float>;
+using Vector2i = GenericVector<int>;
+using Vector3f = GenericVector3<float>;
+using Vector3i = GenericVector3<int>;
 
 struct Vector4f
 {

@@ -39,6 +39,7 @@ LDFLAGS+=$(DBGFLAGS)
 #------------------------------------------------------------------------------
 
 SRCS_ENGINE:=\
+	src/base/geom.cpp \
 	src/engine/app.cpp\
 	src/engine/main.cpp\
 	src/engine/stats.cpp\
