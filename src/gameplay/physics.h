@@ -10,6 +10,7 @@
 
 #include "body.h"
 #include "physics_probe.h"
+#include <functional>
 #include <memory>
 
 struct IPhysics : IPhysicsProbe
