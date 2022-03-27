@@ -16,9 +16,40 @@
 
 ImportedScene parseFbx(Span<const uint8_t> data);
 
+void applyTransforms(ImportedScene& scene)
+{
+  for(auto& model : scene.meshes)
+  {
+    const auto normalTransform = transpose(invertStandardMatrix(model.transform));
+
+    for(auto& v : model.vertices)
+    {
+      {
+        Vector4f vert = { v.x, v.y, v.z, 1 };
+        vert = model.transform * vert;
+
+        v.x = vert.x;
+        v.y = vert.y;
+        v.z = vert.z;
+      }
+
+      {
+        Vector4f normal = { v.nx, v.ny, v.nz, 0 };
+        normal = normalTransform * normal;
+
+        v.nx = normal.x;
+        v.ny = normal.y;
+        v.nz = normal.z;
+      }
+    }
+  }
+}
+
 ImportedScene importMesh(String path)
 {
   auto fbxData = File::read(path);
-  return parseFbx({ (uint8_t*)fbxData.c_str(), (int)fbxData.size() });
+  auto scene = parseFbx({ (uint8_t*)fbxData.c_str(), (int)fbxData.size() });
+  applyTransforms(scene);
+  return scene;
 }
 

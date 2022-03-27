@@ -1,4 +1,5 @@
 #include "base/error.h"
+#include "base/matrix4.h"
 #include "base/mesh.h"
 #include "base/span.h"
 #include "base/util.h" // baseName
@@ -9,8 +10,6 @@
 #include <cstdio>
 #include <cstring> // memcmp
 #include <map>
-
-#include "matrix4.h"
 
 namespace
 {
@@ -607,33 +606,13 @@ private:
         if(FbxTexture* tex = model.materials[0]->texture)
           mesh.material.assign(tex->filename.data, tex->filename.len);
 
+        enforce(model.geometry.size() <= 1, "Too many meshes for model '%.*s'", model.name.len, model.name.data, model.materials.size());
+
         for(auto& geom : model.geometry)
         {
           mesh.vertices = geom->vertices;
           mesh.faces = geom->faces;
-
-          const auto normalTransform = transpose(invertStandardMatrix(model.transform));
-
-          for(auto& v : mesh.vertices)
-          {
-            {
-              Vector4f vert = { v.x, v.y, v.z, 1 };
-              vert = model.transform * vert;
-
-              v.x = vert.x;
-              v.y = vert.y;
-              v.z = vert.z;
-            }
-
-            {
-              Vector4f normal = { v.nx, v.ny, v.nz, 0 };
-              normal = normalTransform * normal;
-
-              v.nx = normal.x;
-              v.ny = normal.y;
-              v.nz = normal.z;
-            }
-          }
+          mesh.transform = model.transform;
         }
 
         scene.meshes.push_back(std::move(mesh));

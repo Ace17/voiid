@@ -4,15 +4,13 @@
 // published by the Free Software Foundation, either version 3 of the
 // License, or (at your option) any later version.
 
-// Matrix 4x4 class for display
-
 #pragma once
 
 #include <cassert>
 #include <cmath>
 
-#include "base/geom.h"
-#include "base/quaternion.h"
+#include "geom.h"
+#include "quaternion.h"
 
 struct Matrix4f
 {

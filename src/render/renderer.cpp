@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/geom.h"
+#include "base/matrix4.h"
 #include "base/scene.h"
 #include "base/span.h"
 #include "base/util.h" // setExtension
@@ -22,7 +23,6 @@
 #include "engine/stats.h"
 #include "misc/time.h"
 
-#include "matrix4.h"
 #include "picture.h"
 #include "postprocess.h"
 #include "renderpass.h"

@@ -5,6 +5,7 @@
 // License, or (at your option) any later version.
 
 #pragma once
+#include "matrix4.h"
 #include "string.h"
 #include <string>
 #include <vector>
@@ -29,6 +30,7 @@ struct Mesh
   };
 
   std::string name;
+  Matrix4f transform;
   std::string material;
   std::vector<Vertex> vertices;
   std::vector<Face> faces;
