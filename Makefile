@@ -94,7 +94,6 @@ SRCS_GAME:=\
 	src/entities/amulet.cpp\
 	src/entities/bonus.cpp\
 	src/entities/door.cpp\
-	src/entities/editor.cpp\
 	src/entities/explosion.cpp\
 	src/entities/hero.cpp\
 	src/entities/lamp.cpp\
