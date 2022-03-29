@@ -29,8 +29,16 @@ struct Mesh
     int i1, i2, i3;
   };
 
+  struct Property
+  {
+    std::string name;
+    std::string value;
+  };
+
   std::string name;
   Matrix4f transform;
+  std::vector<Property> properties;
+
   std::string material;
   std::vector<Vertex> vertices;
   std::vector<Face> faces;

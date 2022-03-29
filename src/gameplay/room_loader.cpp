@@ -248,24 +248,37 @@ Room loadRoom(String filename)
       continue;
     }
 
-    if(startsWith(name, "f.start"))
-    {
-      auto pos = mesh.vertices[mesh.faces[0].i1];
-      r.start.x = pos.x;
-      r.start.y = pos.y;
-      r.start.z = pos.z;
-      continue;
-    }
-
     if(startsWith(name, "nocollide."))
       continue;
 
+    std::string typeName;
+
+    std::map<std::string, std::string> config;
+
     if(startsWith(name, "f."))
+      config = parseFormula(name.substr(2), typeName);
+
+    for(auto& prop : mesh.properties)
+    {
+      if(prop.name == "type")
+        typeName = prop.value;
+      else
+        config[prop.name] = prop.value;
+    }
+
+    if(typeName.size())
     {
       auto const pos = average(mesh.vertices);
-      string typeName;
-      auto const config = parseFormula(name.substr(2), typeName);
-      r.things.push_back({ pos, typeName, config });
+      if(typeName == "start")
+      {
+        r.start.x = pos.x;
+        r.start.y = pos.y;
+        r.start.z = pos.z;
+      }
+      else
+      {
+        r.things.push_back({ pos, typeName, config });
+      }
       continue;
     }
 

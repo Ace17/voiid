@@ -117,6 +117,6 @@ struct DetectorSwitch : Entity
 };
 
 static auto const reg1 = registerEntity("switch",
-                                        [] (IEntityConfig* args) { auto arg = args->getInt("0"); return makeSwitch(arg); }
+                                        [] (IEntityConfig* args) { auto arg = args->getInt("link"); return makeSwitch(arg); }
                                         );
 

@@ -623,6 +623,14 @@ private:
           mesh.transform = model.transform;
         }
 
+        for(auto& prop : model.properties)
+        {
+          Mesh::Property mp;
+          mp.name.assign(prop.name.data, prop.name.len);
+          mp.value.assign(prop.value.data, prop.value.len);
+          mesh.properties.push_back(std::move(mp));
+        }
+
         scene.meshes.push_back(std::move(mesh));
       }
     }
@@ -860,7 +868,8 @@ private:
       expect(tokenizer, Token::ObjectBegin);
 
       const auto propName = expectString(tokenizer);
-      /* const auto propName2 = */ expectString(tokenizer);
+      const auto propType = expectString(tokenizer);
+      (void)propType;
       /* const auto someString = */ expectString(tokenizer);
       /* const auto theLetterA = */ expectString(tokenizer);
       switch(hashed(propName))
@@ -883,12 +892,21 @@ private:
           rotation = ::rotateZ(z) * rotation;
         }
         break;
+      case hashed("DefaultAttributeIndex"):
+      case hashed("InheritType"):
+        break;
       case hashed("Lcl Scaling"):
         {
           double x = expectDecimalNumber(tokenizer) / 100;
           double y = expectDecimalNumber(tokenizer) / 100;
           double z = expectDecimalNumber(tokenizer) / 100;
           scaling = ::scale(Vector3f(x, y, z));
+        }
+        break;
+      default:
+        {
+          auto propValue = expectString(tokenizer);
+          model.properties.push_back({ propName, propValue });
         }
         break;
       }
@@ -1271,9 +1289,15 @@ private:
     float intensity;
   };
 
+  struct FbxProperty
+  {
+    String name, value;
+  };
+
   struct FbxModel : FbxNode
   {
     Matrix4f transform;
+    std::vector<FbxProperty> properties;
 
     // only valid after 'Connections' pass
     std::vector<FbxGeometry*> geometry;

@@ -223,5 +223,5 @@ unique_ptr<Entity> makeBreakableDoor()
 }
 
 static auto const reg1 = registerEntity("auto_door", [] (IEntityConfig*) { return makeAutoDoor(); });
-static auto const reg2 = registerEntity("door", [] (IEntityConfig* args) { auto arg = args->getInt("0"); return makeDoor(arg); });
+static auto const reg2 = registerEntity("door", [] (IEntityConfig* args) { auto arg = args->getInt("link"); return makeDoor(arg); });
 
