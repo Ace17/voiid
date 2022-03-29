@@ -31,18 +31,6 @@ struct Event
   }
 };
 
-struct TouchLevelBoundary : Event
-{
-  TouchLevelBoundary(int targetLevel_, Vector transform_)
-  {
-    targetLevel = targetLevel_;
-    transform = transform_;
-  }
-
-  int targetLevel;
-  Vector transform {};
-};
-
 struct IEventSink
 {
   virtual void notify(const Event* evt) = 0;
