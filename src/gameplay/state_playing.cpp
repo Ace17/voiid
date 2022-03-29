@@ -312,7 +312,7 @@ struct GameState : Scene, private IGame
   }
 
   Player* m_player = nullptr;
-  uvector<Entity> m_spawned;
+  vector<unique_ptr<Entity>> m_spawned;
   View* const m_view;
   unique_ptr<IPhysics> m_physics;
   bool m_gameFinished = false;
@@ -323,7 +323,7 @@ struct GameState : Scene, private IGame
   bool m_debug;
   bool m_debugFirstTime = true;
 
-  uvector<Entity> m_entities;
+  vector<unique_ptr<Entity>> m_entities;
 
   // static stuff
 

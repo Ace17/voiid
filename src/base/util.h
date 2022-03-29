@@ -8,18 +8,12 @@
 
 #pragma once
 
-#include <memory>
 #include <string>
 #include <vector>
 
 #include "string.h"
 
 using namespace std;
-
-template<typename T>
-class uvector : public vector<unique_ptr<T>>
-{
-};
 
 inline bool endsWith(string const& value, string const& ending)
 {
