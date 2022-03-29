@@ -243,7 +243,7 @@ struct GameState : Scene, private IGame
       if(!m_player)
         m_player = makeHero().release();
 
-      m_player->pos = Vector(level.start.x, level.start.y, level.start.z) - m_player->size * 0.5;
+      m_player->pos = Vector(level.start.x, level.start.y, level.start.z);
 
       spawnEntities(level, this, levelIdx);
 
