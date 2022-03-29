@@ -269,6 +269,7 @@ Room loadRoom(String filename)
     if(typeName.size())
     {
       auto const pos = average(mesh.vertices);
+
       if(typeName == "start")
       {
         r.start.x = pos.x;
@@ -279,6 +280,7 @@ Room loadRoom(String filename)
       {
         r.things.push_back({ pos, typeName, config });
       }
+
       continue;
     }
 

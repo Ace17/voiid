@@ -9,7 +9,6 @@
 #pragma once
 
 #include "base/geom.h"
-#include "base/scene.h"
 #include "base/view.h"
 #include "body.h"
 #include "game.h"
