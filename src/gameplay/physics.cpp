@@ -33,13 +33,13 @@ struct Physics : IPhysics
 
   Trace moveBody(Body* body, Vector delta) override
   {
-    auto rect = body->getBox();
+    auto box = body->getBox();
 
-    auto const trace = traceBox(rect, delta, body);
+    auto const trace = traceBox(box, delta, body);
 
     delta = delta * trace.fraction;
 
-    rect.pos += delta;
+    box.pos += delta;
 
     if(trace.blocker)
       collideBodies(*body, *trace.blocker);
@@ -59,7 +59,7 @@ struct Physics : IPhysics
 
         // move stacked bodies
         // push potential non-solid bodies
-        if(otherBody->ground == body || overlaps(rect, otherBody->getBox()))
+        if(otherBody->ground == body || overlaps(box, otherBody->getBox()))
           moveBody(otherBody, delta);
       }
     }
@@ -67,7 +67,7 @@ struct Physics : IPhysics
     // update ground
     if(!body->pusher)
     {
-      auto const trace = traceBox(rect, Down * 0.1, body);
+      auto const trace = traceBox(box, Down * 0.1, body);
 
       if(trace.fraction < 1.0)
         body->ground = trace.blocker;
@@ -76,10 +76,10 @@ struct Physics : IPhysics
     return trace;
   }
 
-  Trace traceBox(Box rect, Vector delta, const Body* except) const override
+  Trace traceBox(Box box, Vector delta, const Body* except) const override
   {
-    auto traceBodies = traceBoxThroughBodies(rect, delta, except);
-    auto traceEdifice = traceBoxThroughEdifice(rect, delta);
+    auto traceBodies = traceBoxThroughBodies(box, delta, except);
+    auto traceEdifice = traceBoxThroughEdifice(box, delta);
 
     if(traceBodies.fraction < traceEdifice.fraction)
       return traceBodies;
@@ -144,10 +144,10 @@ struct Physics : IPhysics
       auto& me = *m_bodies[p.first];
       auto& other = *m_bodies[p.second];
 
-      auto rect = me.getBox();
+      auto box = me.getBox();
       auto otherBox = other.getBox();
 
-      if(overlaps(rect, otherBox))
+      if(overlaps(box, otherBox))
         collideBodies(me, other);
     }
   }
@@ -166,7 +166,7 @@ struct Physics : IPhysics
     m_traceEdifice = trace;
   }
 
-  Body* getBodiesInBox(Box myBox, int collisionGroup, bool onlySolid, const Body* except) const override
+  Body* getBodiesInBox(Box box, int collisionGroup, bool onlySolid, const Body* except) const override
   {
     for(auto& body : m_bodies)
     {
@@ -179,9 +179,7 @@ struct Physics : IPhysics
       if(!(body->collisionGroup & collisionGroup))
         continue;
 
-      auto rect = body->getBox();
-
-      if(overlaps(rect, myBox))
+      if(overlaps(body->getBox(), box))
         return body;
     }
 
