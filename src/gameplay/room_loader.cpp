@@ -215,16 +215,6 @@ map<string, string> parseFormula(string formula, string& name)
   return r;
 }
 
-Vector3f average(Span<const Mesh::Vertex> values)
-{
-  Vector3f result {};
-
-  for(auto v : values)
-    result += toVector3f(v);
-
-  return result * (1.0 / values.len);
-}
-
 Room loadRoom(String filename)
 {
   Room r;
@@ -268,7 +258,8 @@ Room loadRoom(String filename)
 
     if(typeName.size())
     {
-      auto const pos = average(mesh.vertices);
+      Vector4f pos = { 0, 0, 0, 1 };
+      pos = mesh.transform * pos;
 
       if(typeName == "start")
       {
@@ -278,7 +269,7 @@ Room loadRoom(String filename)
       }
       else
       {
-        r.things.push_back({ pos, typeName, config });
+        r.things.push_back({ Vector3f(pos.x, pos.y, pos.z), typeName, config });
       }
 
       continue;
