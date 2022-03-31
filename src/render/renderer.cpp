@@ -466,26 +466,25 @@ struct Renderer : Display, IScreenSizeListener
     pushMesh(where, orientation, m_camera, model, blinking);
   }
 
-  void drawText(Vector2f pos, char const* text) override
+  void drawText(Vector2f pos, String text) override
   {
     Rect3f rect;
     rect.size.cx = 0.25;
     rect.size.cy = 0;
     rect.size.cz = 0.25;
-    rect.pos.x = pos.x - strlen(text) * rect.size.cx / 2;
+    rect.pos.x = pos.x - text.len * rect.size.cx / 2;
     rect.pos.y = 0;
     rect.pos.z = pos.y;
 
     auto cam = (Camera { Vector3f(0, -10, 0), Quaternion::fromEuler(PI / 2, 0, 0) });
     auto orientation = Quaternion::identity();
 
-    while(*text)
+    for(auto c : text)
     {
-      for(auto& single : m_fontModel[*text].singleMeshes)
+      for(auto& single : m_fontModel[c].singleMeshes)
         m_uiRenderPass.m_drawCommands.push_back({& single, rect, orientation, cam, false });
 
       rect.pos.x += rect.size.cx;
-      ++text;
     }
   }
 

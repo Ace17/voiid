@@ -196,16 +196,15 @@ private:
     {
       for(int i = 0; i < getStatCount(); ++i)
       {
-        char txt[256];
         auto stat = getStat(i);
-        snprintf(txt, sizeof txt, "%s: %.2f", stat.name, stat.val);
-        m_display->drawText(Vector2f(0, 4 - i * 0.25), txt);
+        char buf[256];
+        m_display->drawText(Vector2f(0, 4 - i * 0.25), format(buf, "%s: %.2f", stat.name, stat.val));
       }
     }
 
     if(m_textboxDelay > 0)
     {
-      m_display->drawText(Vector2f(0, 2), m_textbox.c_str());
+      m_display->drawText(Vector2f(0, 2), m_textbox);
       m_textboxDelay--;
     }
 
