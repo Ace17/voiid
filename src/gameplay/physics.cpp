@@ -17,7 +17,7 @@
 
 using namespace std;
 
-struct ShapeBox : Shape
+struct BoxShape : Shape
 {
   Trace raycast(Body* owner, Vector3f A, Vector3f B, Vector3f boxHalfSize) const override
   {
@@ -37,7 +37,7 @@ struct ShapeBox : Shape
 
 const Shape* getShapeBox()
 {
-  static const ShapeBox boxShape;
+  static const BoxShape boxShape;
   return &boxShape;
 };
 
@@ -102,26 +102,6 @@ struct Physics : IPhysics
 
   Trace traceBox(Box box, Vector delta, const Body* except) const override
   {
-    auto traceBodies = traceBoxThroughBodies(box, delta, except);
-    auto traceEdifice = traceBoxThroughEdifice(box, delta);
-
-    if(traceBodies.fraction < traceEdifice.fraction)
-      return traceBodies;
-    else
-      return traceEdifice;
-  }
-
-  Trace traceBoxThroughEdifice(Box box, Vector delta) const
-  {
-    auto t = m_traceEdifice(box, delta);
-    Trace r {};
-    r.fraction = t.fraction;
-    r.plane = t.plane;
-    return r;
-  }
-
-  Trace traceBoxThroughBodies(Box box, Vector delta, const Body* except) const
-  {
     auto const halfSize = Vector3f(box.size.cx, box.size.cy, box.size.cz) * 0.5;
 
     auto const A = box.pos + halfSize;
@@ -172,11 +152,6 @@ struct Physics : IPhysics
       me.onCollision(&other);
   }
 
-  void setEdifice(function<::Trace(Box, Vector)> trace) override
-  {
-    m_traceEdifice = trace;
-  }
-
   Body* getBodiesInBox(Box box, int collisionGroup, const Body* except) const override
   {
     for(auto& body : m_bodies)
@@ -196,7 +171,6 @@ struct Physics : IPhysics
 
 private:
   vector<Body*> m_bodies;
-  function<::Trace(Box, Vector)> m_traceEdifice;
 };
 
 unique_ptr<IPhysics> createPhysics()

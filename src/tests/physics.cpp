@@ -16,6 +16,8 @@ std::ostream& operator << (std::ostream& o, const Vector& v)
   o << v.x;
   o << ", ";
   o << v.y;
+  o << ", ";
+  o << v.z;
   o << ")";
   return o;
 }
@@ -37,50 +39,60 @@ void assertNearlyEqualsFunc(Vector expected, Vector actual, const char* file, in
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static
-::Trace traceEdifice(Box rect, Vector delta)
+struct BlockerShape : Shape
 {
-  ::Trace r {};
-  r.fraction = 1.0;
-
-  auto const x0 = 0;
-  auto const y0 = 0;
-  auto const targetX = rect.pos.x + delta.x;
-  auto const targetY = rect.pos.y + delta.y;
-
-  if(targetX < 0)
+  Trace raycast(Body* owner, Vector3f A, Vector3f B, Vector3f boxHalfSize) const override
   {
-    auto const fraction = abs(rect.pos.x - x0) / abs(delta.x);
+    (void)owner;
 
-    if(fraction < r.fraction)
+    Trace r {};
+    r.fraction = 1.0;
+
+    auto const delta = B - A;
+    auto const x0 = boxHalfSize.x;
+    auto const y0 = boxHalfSize.y;
+    auto const targetX = B.x;
+    auto const targetY = B.y;
+
+    if(targetX < 0)
     {
-      r.fraction = fraction;
-      r.plane.N = Vector3f(1, 0, 0);
+      auto const fraction = abs(A.x - x0) / abs(delta.x);
+
+      if(fraction < r.fraction)
+      {
+        r.fraction = fraction;
+        r.plane.N = Vector3f(1, 0, 0);
+      }
     }
-  }
 
-  if(targetY < 0)
-  {
-    auto const fraction = abs(rect.pos.y - y0) / abs(delta.y);
-
-    if(fraction < r.fraction)
+    if(targetY < 0)
     {
-      r.fraction = fraction;
-      r.plane.N = Vector3f(0, 1, 0);
-    }
-  }
+      auto const fraction = abs(A.y - y0) / abs(delta.y);
 
-  return r;
-}
+      if(fraction < r.fraction)
+      {
+        r.fraction = fraction;
+        r.plane.N = Vector3f(0, 1, 0);
+      }
+    }
+
+    return r;
+  }
+};
+
+const BlockerShape blockerShape;
 
 struct Fixture
 {
   Fixture() : physics(createPhysics())
   {
-    physics->setEdifice(&traceEdifice);
     physics->addBody(&mover);
+    physics->addBody(&blocker);
+    blocker.shape = &blockerShape;
+    blocker.solid = 1;
   }
 
+  Body blocker;
   unique_ptr<IPhysics> physics;
   Body mover;
 };

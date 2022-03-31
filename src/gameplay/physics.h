@@ -10,7 +10,6 @@
 
 #include "body.h"
 #include "physics_probe.h"
-#include <functional>
 #include <memory>
 
 struct IPhysics : IPhysicsProbe
@@ -18,10 +17,10 @@ struct IPhysics : IPhysicsProbe
   virtual ~IPhysics() = default;
 
   // called by game
+  virtual void checkForOverlaps() = 0;
+
   virtual void addBody(Body* body) = 0;
   virtual void removeBody(Body* body) = 0;
-  virtual void checkForOverlaps() = 0;
-  virtual void setEdifice(function<::Trace(Box, Vector)> isSolid) = 0;
 };
 
 unique_ptr<IPhysics> createPhysics();

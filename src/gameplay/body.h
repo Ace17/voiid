@@ -19,6 +19,7 @@ struct Body;
 
 struct Shape
 {
+  virtual ~Shape() = default;
   virtual Trace raycast(Body* owner, Vector3f A, Vector3f B, Vector3f boxHalfSize) const = 0;
 };
 

@@ -72,6 +72,23 @@ void spawnEntities(Room const& room, IGame* game, int levelIdx)
   }
 }
 
+struct ShapePolyhedron : Shape
+{
+  Trace raycast(Body* owner, Vector3f A, Vector3f B, Vector3f boxHalfSize) const override
+  {
+    (void)owner;
+    return convex.trace(A, B, boxHalfSize);
+  }
+
+  Convex convex {};
+};
+
+struct Brush
+{
+  std::unique_ptr<Body> body;
+  ShapePolyhedron shape;
+};
+
 struct GameState : Scene, private IGame
 {
   GameState(View* view) :
@@ -83,7 +100,9 @@ struct GameState : Scene, private IGame
   void resetPhysics()
   {
     m_physics = createPhysics();
-    m_physics->setEdifice(bind(&GameState::traceEdifice, this, placeholders::_1, placeholders::_2));
+
+    for(auto& brush : m_brushes)
+      m_physics->addBody(brush.body.get());
   }
 
   ////////////////////////////////////////////////////////////////
@@ -228,8 +247,6 @@ struct GameState : Scene, private IGame
           entity.release();
     }
 
-    resetPhysics();
-
     m_entities.clear();
     m_spawned.clear();
     assert(m_listeners.empty());
@@ -238,7 +255,16 @@ struct GameState : Scene, private IGame
       const auto filename = format(buf, "res/rooms/%02d/room.fbx", levelIdx);
 
       auto level = loadRoom(filename);
-      world = level.colliders;
+
+      m_brushes.resize(level.colliders.size());
+
+      for(int i = 0; i < (int)m_brushes.size(); ++i)
+      {
+        m_brushes[i].shape.convex = level.colliders[i];
+        m_brushes[i].body = std::make_unique<Body>();
+        m_brushes[i].body->shape = &m_brushes[i].shape;
+        m_brushes[i].body->solid = 1;
+      }
 
       if(!m_player)
         m_player = makeHero().release();
@@ -253,11 +279,15 @@ struct GameState : Scene, private IGame
         m_staticLevelLights.push_back({ light.pos, light.color });
     }
 
+    resetPhysics();
+
     m_view->playMusic(levelIdx);
 
     spawn(m_player);
 
     removeDeadThings();
+
+    printf("[gameplay] level loaded : %d brushes, %d lights\n", (int)m_brushes.size(), (int)m_staticLevelLights.size());
   }
 
   void endLevel() override
@@ -315,11 +345,12 @@ struct GameState : Scene, private IGame
   vector<unique_ptr<Entity>> m_spawned;
   View* const m_view;
   unique_ptr<IPhysics> m_physics;
+
   bool m_gameFinished = false;
 
   list<IEventSink*> m_listeners;
 
-  vector<Convex> world;
+  std::vector<Brush> m_brushes;
   bool m_debug;
   bool m_debugFirstTime = true;
 
@@ -332,27 +363,6 @@ struct GameState : Scene, private IGame
     auto rect = entity->getBox();
     auto r = Actor(rect.pos, MDL_RECT);
     r.scale = rect.size;
-    return r;
-  }
-
-  Trace traceEdifice(Box box, Vector delta) const
-  {
-    Trace r {};
-    r.fraction = 1.0;
-
-    for(auto& brush : world)
-    {
-      auto const halfSize = Vector3f(box.size.cx, box.size.cy, box.size.cz) * 0.5;
-      auto const pos = box.pos + halfSize;
-      auto t = brush.trace(pos, pos + delta, halfSize);
-
-      if(t.fraction < r.fraction)
-      {
-        r.fraction = t.fraction;
-        r.plane = t.plane;
-      }
-    }
-
     return r;
   }
 };
