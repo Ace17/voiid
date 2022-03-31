@@ -110,7 +110,7 @@ struct NullPhysicsProbe : IPhysicsProbe
     return r;
   }
 
-  Body* getBodiesInBox(Box, int, bool, const Body*) const override
+  Body* getBodiesInBox(Box, int, const Body*) const override
   {
     return nullptr;
   }

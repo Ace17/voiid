@@ -166,13 +166,10 @@ struct Physics : IPhysics
     m_traceEdifice = trace;
   }
 
-  Body* getBodiesInBox(Box box, int collisionGroup, bool onlySolid, const Body* except) const override
+  Body* getBodiesInBox(Box box, int collisionGroup, const Body* except) const override
   {
     for(auto& body : m_bodies)
     {
-      if(onlySolid && !body->solid)
-        continue;
-
       if(body == except)
         continue;
 

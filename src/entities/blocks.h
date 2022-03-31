@@ -55,7 +55,7 @@ struct CrumbleBlock : Entity
       if(disappearTimer < 900)
         solid = 0;
     }
-    else if(!physics->getBodiesInBox(getBox(), CG_PLAYER, false, this))
+    else if(!physics->getBodiesInBox(getBox(), CG_PLAYER, this))
     {
       collidesWith = CG_PLAYER;
       solid = 1;
@@ -95,7 +95,7 @@ struct FragileBlock : Entity, Damageable
     {
       reappear();
 
-      if(physics->getBodiesInBox(getBox(), CG_PLAYER, false, this))
+      if(physics->getBodiesInBox(getBox(), CG_PLAYER, this))
         disappear();
     }
   }
