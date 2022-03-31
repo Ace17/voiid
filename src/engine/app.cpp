@@ -199,7 +199,7 @@ private:
         char txt[256];
         auto stat = getStat(i);
         snprintf(txt, sizeof txt, "%s: %.2f", stat.name, stat.val);
-        m_display->drawText(Vector2f(0, 4 - i), txt);
+        m_display->drawText(Vector2f(0, 4 - i * 0.25), txt);
       }
     }
 

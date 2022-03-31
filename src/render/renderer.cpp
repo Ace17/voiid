@@ -469,9 +469,9 @@ struct Renderer : Display, IScreenSizeListener
   void drawText(Vector2f pos, char const* text) override
   {
     Rect3f rect;
-    rect.size.cx = 0.5;
+    rect.size.cx = 0.25;
     rect.size.cy = 0;
-    rect.size.cz = 0.5;
+    rect.size.cz = 0.25;
     rect.pos.x = pos.x - strlen(text) * rect.size.cx / 2;
     rect.pos.y = 0;
     rect.pos.z = pos.y;
