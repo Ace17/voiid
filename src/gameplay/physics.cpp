@@ -17,6 +17,30 @@
 
 using namespace std;
 
+struct ShapeBox : Shape
+{
+  Trace raycast(Body* owner, Vector3f A, Vector3f B, Vector3f boxHalfSize) const override
+  {
+    Convex b;
+    b.planes.resize(6);
+
+    b.planes[0] = Plane { Vector3f(-1, 0, 0), -owner->pos.x };
+    b.planes[1] = Plane { Vector3f(+1, 0, 0), owner->pos.x + owner->size.cx };
+    b.planes[2] = Plane { Vector3f(0, -1, 0), -owner->pos.y };
+    b.planes[3] = Plane { Vector3f(0, +1, 0), owner->pos.y + owner->size.cy };
+    b.planes[4] = Plane { Vector3f(0, 0, -1), -owner->pos.z };
+    b.planes[5] = Plane { Vector3f(0, 0, +1), owner->pos.z + owner->size.cz };
+
+    return b.trace(A, B, boxHalfSize);
+  }
+};
+
+const Shape* getShapeBox()
+{
+  static const ShapeBox boxShape;
+  return &boxShape;
+};
+
 struct Physics : IPhysics
 {
   void addBody(Body* body) override
@@ -106,9 +130,6 @@ struct Physics : IPhysics
     Trace r {};
     r.fraction = 1.0;
 
-    Convex b;
-    b.planes.resize(6);
-
     for(auto other : m_bodies)
     {
       if(other == except)
@@ -117,14 +138,7 @@ struct Physics : IPhysics
       if(!other->solid)
         continue;
 
-      b.planes[0] = Plane { Vector3f(-1, 0, 0), -other->pos.x };
-      b.planes[1] = Plane { Vector3f(+1, 0, 0), other->pos.x + other->size.cx };
-      b.planes[2] = Plane { Vector3f(0, -1, 0), -other->pos.y };
-      b.planes[3] = Plane { Vector3f(0, +1, 0), other->pos.y + other->size.cy };
-      b.planes[4] = Plane { Vector3f(0, 0, -1), -other->pos.z };
-      b.planes[5] = Plane { Vector3f(0, 0, +1), other->pos.z + other->size.cz };
-
-      auto tr = b.trace(A, B, halfSize);
+      auto tr = other->shape->raycast(other, A, B, halfSize);
 
       if(tr.fraction < r.fraction)
       {

@@ -10,9 +10,19 @@
 #pragma once
 
 #include "base/delegate.h"
+#include "trace.h"
 #include "vec.h"
 
 using namespace std;
+
+struct Body;
+
+struct Shape
+{
+  virtual Trace raycast(Body* owner, Vector3f A, Vector3f B, Vector3f boxHalfSize) const = 0;
+};
+
+const Shape* getShapeBox();
 
 struct Body
 {
@@ -43,5 +53,7 @@ struct Body
     r.size = size;
     return r;
   }
+
+  const Shape* shape = getShapeBox();
 };
 
