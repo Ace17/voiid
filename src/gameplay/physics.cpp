@@ -144,10 +144,7 @@ struct Physics : IPhysics
       auto& me = *m_bodies[p.first];
       auto& other = *m_bodies[p.second];
 
-      auto box = me.getBox();
-      auto otherBox = other.getBox();
-
-      if(overlaps(box, otherBox))
+      if(overlaps(me.getBox(), other.getBox()))
         collideBodies(me, other);
     }
   }
