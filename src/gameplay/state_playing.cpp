@@ -28,6 +28,8 @@ using namespace std;
 
 std::unique_ptr<Player> makeHero();
 
+namespace
+{
 struct EntityConfigImpl : IEntityConfig
 {
   string getString(const char* varName, string defaultValue) override
@@ -53,7 +55,6 @@ struct EntityConfigImpl : IEntityConfig
   map<string, string> values;
 };
 
-static
 void spawnEntities(Room const& room, IGame* game, int levelIdx)
 {
   // avoid collisions between static entities from different rooms
@@ -366,6 +367,7 @@ struct GameState : Scene, private IGame
     return r;
   }
 };
+}
 
 Scene* createPlayingStateAtLevel(View* view, int level)
 {
