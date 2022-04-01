@@ -19,19 +19,47 @@ using namespace std;
 
 struct BoxShape : Shape
 {
-  Trace raycast(Body* owner, Vector3f A, Vector3f B, Vector3f boxHalfSize) const override
+  Trace raycast(Vector3f A, Vector3f B, Vector3f boxHalfSize) const override
   {
     Convex b;
     b.planes.resize(6);
 
-    b.planes[0] = Plane { Vector3f(-1, 0, 0), -owner->pos.x };
-    b.planes[1] = Plane { Vector3f(+1, 0, 0), owner->pos.x + owner->size.cx };
-    b.planes[2] = Plane { Vector3f(0, -1, 0), -owner->pos.y };
-    b.planes[3] = Plane { Vector3f(0, +1, 0), owner->pos.y + owner->size.cy };
-    b.planes[4] = Plane { Vector3f(0, 0, -1), -owner->pos.z };
-    b.planes[5] = Plane { Vector3f(0, 0, +1), owner->pos.z + owner->size.cz };
+    b.planes[0] = Plane { Vector3f(-1, 0, 0), 0 };
+    b.planes[1] = Plane { Vector3f(+1, 0, 0), 1 };
+    b.planes[2] = Plane { Vector3f(0, -1, 0), 0 };
+    b.planes[3] = Plane { Vector3f(0, +1, 0), 1 };
+    b.planes[4] = Plane { Vector3f(0, 0, -1), 0 };
+    b.planes[5] = Plane { Vector3f(0, 0, +1), 1 };
 
     return b.trace(A, B, boxHalfSize);
+  }
+};
+
+struct AffineTransformShape : Shape
+{
+  Vector3f pos;
+  Vector3f size;
+
+  const Shape* sub;
+
+  Trace raycast(Vector3f A, Vector3f B, Vector3f boxHalfSize) const override
+  {
+    return sub->raycast(transform(A), transform(B), scale(boxHalfSize));
+  }
+
+  // (size.x;size.y;size.z) -> (1;1;1)
+  Vector3f scale(Vector3f v) const
+  {
+    Vector3f r = v;
+    r.x *= 1.0 / size.x;
+    r.y *= 1.0 / size.y;
+    r.z *= 1.0 / size.z;
+    return r;
+  }
+
+  Vector3f transform(Vector3f v) const
+  {
+    return scale(v - pos);
   }
 };
 
@@ -118,7 +146,12 @@ struct Physics : IPhysics
       if(!other->solid)
         continue;
 
-      auto tr = other->shape->raycast(other, A, B, halfSize);
+      AffineTransformShape afs;
+      afs.pos = other->pos;
+      afs.size = other->size;
+      afs.sub = other->shape;
+
+      auto tr = afs.raycast(A, B, halfSize);
 
       if(tr.fraction < r.fraction)
       {

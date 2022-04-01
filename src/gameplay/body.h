@@ -15,12 +15,10 @@
 
 using namespace std;
 
-struct Body;
-
 struct Shape
 {
   virtual ~Shape() = default;
-  virtual Trace raycast(Body* owner, Vector3f A, Vector3f B, Vector3f boxHalfSize) const = 0;
+  virtual Trace raycast(Vector3f A, Vector3f B, Vector3f boxHalfSize) const = 0;
 };
 
 const Shape* getShapeBox();

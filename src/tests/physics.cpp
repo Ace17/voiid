@@ -26,7 +26,7 @@ void assertNearlyEqualsFunc(Vector expected, Vector actual, const char* file, in
 {
   auto delta = expected - actual;
 
-  if(fabs(delta.x) > 0.01 || fabs(delta.y) > 0.01)
+  if(fabs(delta.x) > 0.1 || fabs(delta.y) > 0.1 || fabs(delta.z) > 0.1)
   {
     using namespace std;
     stringstream ss;
@@ -41,10 +41,8 @@ void assertNearlyEqualsFunc(Vector expected, Vector actual, const char* file, in
 
 struct BlockerShape : Shape
 {
-  Trace raycast(Body* owner, Vector3f A, Vector3f B, Vector3f boxHalfSize) const override
+  Trace raycast(Vector3f A, Vector3f B, Vector3f boxHalfSize) const override
   {
-    (void)owner;
-
     Trace r {};
     r.fraction = 1.0;
 

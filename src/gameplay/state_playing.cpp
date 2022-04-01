@@ -75,9 +75,8 @@ void spawnEntities(Room const& room, IGame* game, int levelIdx)
 
 struct ShapePolyhedron : Shape
 {
-  Trace raycast(Body* owner, Vector3f A, Vector3f B, Vector3f boxHalfSize) const override
+  Trace raycast(Vector3f A, Vector3f B, Vector3f boxHalfSize) const override
   {
-    (void)owner;
     return convex.trace(A, B, boxHalfSize);
   }
 
