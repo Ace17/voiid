@@ -331,11 +331,6 @@ struct GameState : Scene, private IGame
     return make_unique<HandleWithDeleter>(unsubscribe);
   }
 
-  Vector getPlayerPosition() override
-  {
-    return m_player->pos;
-  }
-
   void textBox(String msg) override
   {
     m_view->textBox(msg);
