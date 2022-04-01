@@ -21,7 +21,7 @@
 
 struct Switch : Entity, Switchable
 {
-  Switch(int id_) : id(id_)
+  Switch(int id_) : link(id_)
   {
     size = UnitSize * 0.75;
     solid = true;
@@ -58,24 +58,24 @@ struct Switch : Entity, Switchable
     game->playSound(SND_SWITCH);
 
     auto evt = make_unique<TriggerEvent>();
-    evt->idx = id;
+    evt->link = link;
     game->postEvent(move(evt));
   }
 
   bool state = false;
-  const int id;
+  const int link;
 };
 
-unique_ptr<Entity> makeSwitch(int id)
+unique_ptr<Entity> makeSwitch(int link)
 {
-  return make_unique<Switch>(id);
+  return make_unique<Switch>(link);
 }
 
 struct DetectorSwitch : Entity
 {
   DetectorSwitch(int id_)
   {
-    id = id_;
+    link = id_;
     size = UnitSize;
     solid = false;
     collisionGroup = 0; // dont' trigger other detectors
@@ -105,14 +105,14 @@ struct DetectorSwitch : Entity
         game->playSound(SND_SWITCH);
 
         auto evt = make_unique<TriggerEvent>();
-        evt->idx = id;
+        evt->link = link;
         game->postEvent(move(evt));
 
         touchDelay = 100;
       };
   }
 
-  int id = 0;
+  int link = 0;
   int touchDelay = 0;
 };
 

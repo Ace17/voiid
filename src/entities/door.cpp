@@ -15,7 +15,7 @@
 
 struct Door : Entity, IEventSink
 {
-  Door(int id_) : id(id_)
+  Door(int link_) : link(link_)
   {
     size = Size3f(0.5, 2, 2);
     solid = true;
@@ -55,7 +55,7 @@ struct Door : Entity, IEventSink
   {
     if(auto trg = evt->as<TriggerEvent>())
     {
-      if(trg->idx != id)
+      if(trg->link != link)
         return;
 
       game->playSound(SND_DOOR);
@@ -70,13 +70,13 @@ struct Door : Entity, IEventSink
 
   bool state = false;
   int openingDelay = 0;
-  const int id;
+  const int link;
   unique_ptr<Handle> subscription;
 };
 
-unique_ptr<Entity> makeDoor(int id)
+unique_ptr<Entity> makeDoor(int link)
 {
-  return make_unique<Door>(id);
+  return make_unique<Door>(link);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

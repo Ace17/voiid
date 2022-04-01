@@ -14,7 +14,7 @@ namespace
 {
 struct Lamp : Entity, IEventSink
 {
-  Lamp(int id_) : id(id_)
+  Lamp(int link_) : link(link_)
   {
     size = Size3f(0.1, 0.1, 0.1);
     solid = false;
@@ -50,7 +50,7 @@ struct Lamp : Entity, IEventSink
 
     if(auto trg = evt->as<TriggerEvent>())
     {
-      if(trg->idx != id)
+      if(trg->link != link)
         return;
 
       enabled = true;
@@ -61,13 +61,13 @@ struct Lamp : Entity, IEventSink
 
   int ticks = 0;
   bool enabled = false;
-  const int id;
+  const int link;
   unique_ptr<Handle> subscription;
 };
 
-unique_ptr<Entity> makeLight(int id)
+unique_ptr<Entity> makeLight(int link)
 {
-  return make_unique<Lamp>(id);
+  return make_unique<Lamp>(link);
 }
 
 static auto const reg1 = registerEntity("lamp", [] (IEntityConfig* args) { auto arg = args->getInt("0"); return makeLight(arg); });

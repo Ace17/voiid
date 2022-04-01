@@ -4,6 +4,6 @@
 
 struct TriggerEvent : Event
 {
-  int idx {};
+  int link {};
 };
 
