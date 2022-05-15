@@ -7,8 +7,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // OpenGL stuff
 
-#include "engine/display.h"
-
 #include <cassert>
 #include <cstdio>
 #include <memory>
