@@ -17,8 +17,8 @@
 #include "base/scene.h"
 #include "base/span.h"
 #include "base/util.h" // setExtension
-#include "engine/display.h"
 #include "engine/graphics_backend.h"
+#include "engine/renderer.h"
 #include "engine/rendermesh.h"
 #include "engine/stats.h"
 #include "misc/time.h"
@@ -324,7 +324,7 @@ struct UiRenderPass : RenderPass
   float m_aspectRatio = 1.0;
 };
 
-struct Renderer : Display, IScreenSizeListener
+struct Renderer : IRenderer, IScreenSizeListener
 {
   Renderer(IGraphicsBackend* backend_) : backend(backend_), m_skyboxPass(backend_)
   {
@@ -600,7 +600,7 @@ private:
 };
 }
 
-Display* createRenderer(IGraphicsBackend* backend)
+IRenderer* createRenderer(IGraphicsBackend* backend)
 {
   return new Renderer(backend);
 }

@@ -23,10 +23,10 @@
 
 #include "audio.h"
 #include "audio_backend.h"
-#include "display.h"
 #include "graphics_backend.h"
 #include "input.h"
 #include "ratecounter.h"
+#include "renderer.h"
 #include "stats.h"
 #include "video_capture.h"
 
@@ -37,7 +37,7 @@ auto const RESOLUTION = Size2i(1280, 720);
 auto const CAPTURE_FRAME_PERIOD = 40;
 
 IGraphicsBackend* createGraphicsBackend(Size2i resolution);
-Display* createRenderer(IGraphicsBackend* backend);
+IRenderer* createRenderer(IGraphicsBackend* backend);
 MixableAudio* createAudio();
 UserInput* createUserInput();
 
@@ -50,7 +50,7 @@ public:
     : m_args({ args.data, args.data + args.len })
   {
     m_graphicsBackend.reset(createGraphicsBackend(RESOLUTION));
-    m_display.reset(createRenderer(m_graphicsBackend.get()));
+    m_renderer.reset(createRenderer(m_graphicsBackend.get()));
     m_audio.reset(createAudio());
     m_audioBackend.reset(createAudioBackend(m_audio.get()));
     m_input.reset(createUserInput());
@@ -169,28 +169,28 @@ private:
 
   void draw()
   {
-    m_display->beginDraw();
+    m_renderer->beginDraw();
 
     for(auto& actor : m_actors)
     {
       auto where = Rect3f(
         actor.pos.x, actor.pos.y, actor.pos.z,
         actor.scale.cx, actor.scale.cy, actor.scale.cz);
-      m_display->drawActor(where, actor.orientation, (int)actor.model, actor.effect == Effect::Blinking, actor.action, actor.ratio);
+      m_renderer->drawActor(where, actor.orientation, (int)actor.model, actor.effect == Effect::Blinking, actor.action, actor.ratio);
     }
 
     for(auto& actor : m_lightActors)
     {
       const int idx = int(&actor - m_lightActors.data());
-      m_display->setLight(idx, actor.pos, actor.color);
+      m_renderer->setLight(idx, actor.pos, actor.color);
     }
 
     if(m_running == AppState::ConfirmExit)
-      m_display->drawText(Vector2f(0, 0), "QUIT? [Y/N]");
+      m_renderer->drawText(Vector2f(0, 0), "QUIT? [Y/N]");
     else if(m_paused)
-      m_display->drawText(Vector2f(0, 0), "PAUSE");
+      m_renderer->drawText(Vector2f(0, 0), "PAUSE");
     else if(m_slowMotion)
-      m_display->drawText(Vector2f(0, 0), "SLOW-MOTION MODE");
+      m_renderer->drawText(Vector2f(0, 0), "SLOW-MOTION MODE");
 
     if(m_debugMode)
     {
@@ -198,17 +198,17 @@ private:
       {
         auto stat = getStat(i);
         char buf[256];
-        m_display->drawText(Vector2f(0, 4 - i * 0.25), format(buf, "%s: %.2f", stat.name, stat.val));
+        m_renderer->drawText(Vector2f(0, 4 - i * 0.25), format(buf, "%s: %.2f", stat.name, stat.val));
       }
     }
 
     if(m_textboxDelay > 0)
     {
-      m_display->drawText(Vector2f(0, 2), m_textbox);
+      m_renderer->drawText(Vector2f(0, 2), m_textbox);
       m_textboxDelay--;
     }
 
-    m_display->endDraw();
+    m_renderer->endDraw();
 
     m_recorder.captureDisplayFrameIfNeeded(m_graphicsBackend.get(), RESOLUTION);
   }
@@ -289,13 +289,13 @@ private:
   void toggleFsaa()
   {
     m_enableFsaa = !m_enableFsaa;
-    m_display->setFsaa(m_enableFsaa);
+    m_renderer->setFsaa(m_enableFsaa);
   }
 
   void toggleHdr()
   {
     m_enableHdr = !m_enableHdr;
-    m_display->setHdr(m_enableHdr);
+    m_renderer->setHdr(m_enableHdr);
   }
 
   // View implementation
@@ -312,7 +312,7 @@ private:
       m_audio->loadSound(res.id, res.path);
       break;
     case ResourceType::Model:
-      m_display->loadModel(res.id, res.path);
+      m_renderer->loadModel(res.id, res.path);
       break;
     }
   }
@@ -362,12 +362,12 @@ private:
 
   void setCameraPos(Vector3f pos, Quaternion orientation) override
   {
-    m_display->setCamera(pos, orientation);
+    m_renderer->setCamera(pos, orientation);
   }
 
   void setAmbientLight(float amount) override
   {
-    m_display->setAmbientLight(amount);
+    m_renderer->setAmbientLight(amount);
   }
 
   void sendLight(LightActor const& actor) override
@@ -408,7 +408,7 @@ private:
   bool m_doGrab = true;
   unique_ptr<MixableAudio> m_audio;
   unique_ptr<IAudioBackend> m_audioBackend;
-  unique_ptr<Display> m_display;
+  unique_ptr<IRenderer> m_renderer;
   unique_ptr<IGraphicsBackend> m_graphicsBackend;
   vector<Actor> m_actors;
   vector<LightActor> m_lightActors;

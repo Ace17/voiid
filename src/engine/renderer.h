@@ -13,9 +13,9 @@
 #include "base/quaternion.h"
 #include "base/string.h"
 
-struct Display
+struct IRenderer
 {
-  virtual ~Display() = default;
+  virtual ~IRenderer() = default;
 
   virtual void setHdr(bool enable) = 0;
   virtual void setFsaa(bool enable) = 0;

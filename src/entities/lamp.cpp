@@ -71,6 +71,6 @@ unique_ptr<Entity> makeLight(IEntityConfig* cfg)
 }
 
 static auto const reg1 = registerEntity("lamp", [] (IEntityConfig* cfg) { return makeLight(cfg); });
-static auto const reg2 = registerEntity("light", [] (IEntityConfig*  cfg) { return makeLight(cfg); });
+static auto const reg2 = registerEntity("light", [] (IEntityConfig* cfg) { return makeLight(cfg); });
 }
 
