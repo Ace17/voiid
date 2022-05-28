@@ -4,6 +4,7 @@
 // published by the Free Software Foundation, either version 3 of the
 // License, or (at your option) any later version.
 
+#include "base/delegate.h"
 #include "base/util.h"
 #include "tests.h"
 #include <algorithm>
@@ -57,5 +58,23 @@ unittest("Util: rasterScan simple")
     result.push_back(p);
 
   assertEquals(expected, result);
+}
+
+unittest("Delegate: lambdas")
+{
+  Delegate<void(void)> callMe;
+
+  bool wasCalled = false;
+  callMe = [&] () { wasCalled = true; };
+  callMe();
+  assertTrue(wasCalled);
+}
+
+unittest("Delegate: return value")
+{
+  Delegate<int(int)> multiplyByThree;
+
+  multiplyByThree = [] (int val) { return val * 3; };
+  assertEquals(12, multiplyByThree(4));
 }
 
