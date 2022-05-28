@@ -180,10 +180,7 @@ private:
     }
 
     for(auto& actor : m_lightActors)
-    {
-      const int idx = int(&actor - m_lightActors.data());
-      m_renderer->setLight(idx, actor.pos, actor.color);
-    }
+      m_renderer->drawLight(actor.pos, actor.color);
 
     if(m_running == AppState::ConfirmExit)
       m_renderer->drawText(Vector2f(0, 0), "QUIT? [Y/N]");

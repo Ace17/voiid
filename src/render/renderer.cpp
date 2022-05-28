@@ -493,12 +493,9 @@ struct Renderer : IRenderer, IScreenSizeListener
     m_meshRenderPass.m_ambientLight = ambientLight;
   }
 
-  void setLight(int idx, Vector3f pos, Vector3f color) override
+  void drawLight(Vector3f pos, Vector3f color) override
   {
-    if(idx >= (int)m_meshRenderPass.m_lights.size())
-      m_meshRenderPass.m_lights.resize(idx + 1);
-
-    m_meshRenderPass.m_lights[idx] = { pos, color };
+    m_meshRenderPass.m_lights.push_back({ pos, color });
   }
 
 private:

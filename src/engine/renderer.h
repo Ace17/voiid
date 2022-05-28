@@ -22,12 +22,13 @@ struct IRenderer
   virtual void loadModel(int modelId, String path) = 0;
   virtual void setCamera(Vector3f pos, Quaternion dir) = 0;
   virtual void setAmbientLight(float ambientLight) = 0;
-  virtual void setLight(int idx, Vector3f pos, Vector3f color) = 0;
 
   // draw functions
   virtual void beginDraw() = 0;
   virtual void endDraw() = 0;
+
   virtual void drawActor(Rect3f where, Quaternion orientation, int modelId, bool blinking) = 0;
+  virtual void drawLight(Vector3f pos, Vector3f color) = 0;
   virtual void drawText(Vector2f pos, String text) = 0;
 };
 
