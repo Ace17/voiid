@@ -143,9 +143,9 @@ struct SkyboxPass : RenderPass
   Camera camera;
 };
 
-struct MeshRenderPass : RenderPass
+struct MeshRenderPass
 {
-  void execute(FrameBuffer dst) override
+  void execute(RenderPass::FrameBuffer dst)
   {
     backend->setRenderTarget(dst.fb);
 
