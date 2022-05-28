@@ -458,12 +458,12 @@ struct Renderer : IRenderer, IScreenSizeListener
     m_uiRenderPass.execute(screen);
   }
 
-  void drawActor(Rect3f where, Quaternion orientation, int modelId, bool blinking, int actionIdx, float ratio) override
+  void drawActor(Rect3f where, Quaternion orientation, int modelId, bool blinking) override
   {
-    (void)actionIdx;
-    (void)ratio;
     auto& model = m_Models.at(modelId);
-    pushMesh(where, orientation, m_camera, model, blinking);
+
+    for(auto& single : model.singleMeshes)
+      m_meshRenderPass.m_drawCommands.push_back({& single, where, orientation, m_camera, blinking });
   }
 
   void drawText(Vector2f pos, String text) override
@@ -590,12 +590,6 @@ private:
     auto texture = backend->createTexture();
     texture->upload(pic);
     return texture;
-  }
-
-  void pushMesh(Rect3f where, Quaternion orientation, Camera const& camera, RenderMesh& model, bool blinking)
-  {
-    for(auto& single : model.singleMeshes)
-      m_meshRenderPass.m_drawCommands.push_back({& single, where, orientation, camera, blinking });
   }
 };
 }

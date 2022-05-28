@@ -27,7 +27,7 @@ struct IRenderer
   // draw functions
   virtual void beginDraw() = 0;
   virtual void endDraw() = 0;
-  virtual void drawActor(Rect3f where, Quaternion orientation, int modelId, bool blinking, int actionIdx, float frame) = 0;
+  virtual void drawActor(Rect3f where, Quaternion orientation, int modelId, bool blinking) = 0;
   virtual void drawText(Vector2f pos, String text) = 0;
 };
 
