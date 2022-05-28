@@ -81,6 +81,7 @@ Picture loadPicture(String path)
     r.stride = pic.dim.width;
     r.pixels = std::move(img);
 
+    printf("[display] loaded texture '%.*s'\n", path.len, path.data);
     return r;
   }
   catch(std::exception const& e)

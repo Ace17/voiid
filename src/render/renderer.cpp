@@ -26,6 +26,7 @@
 #include "picture.h"
 #include "postprocess.h"
 #include "renderpass.h"
+#include "weakcache.h"
 
 using namespace std;
 
@@ -328,6 +329,8 @@ struct Renderer : IRenderer, IScreenSizeListener
 {
   Renderer(IGraphicsBackend* backend_) : backend(backend_), m_skyboxPass(backend_)
   {
+    m_textureCache.onCacheMiss = [this] (String path) { return loadTexture(path); };
+
     m_fontModel = loadFontModels("res/font.png", 16, 16);
 
     backend->setScreenSizeListener(this);
@@ -380,13 +383,8 @@ struct Renderer : IRenderer, IScreenSizeListener
 
     for(auto& single : m_Models[modelId].singleMeshes)
     {
-      auto diffuse = loadTexture(setExtension(string(path.data), to_string(i) + ".diffuse.png"));
-      auto lightmap = loadTexture(setExtension(string(path.data), to_string(i) + ".lightmap.png"));
-      single.diffuse = diffuse.get();
-      single.lightmap = lightmap.get();
-
-      m_textures.push_back(std::move(diffuse));
-      m_textures.push_back(std::move(lightmap));
+      single.diffuse = m_textureCache.fetch(setExtension(string(path.data), to_string(i) + ".diffuse.png"));
+      single.lightmap = m_textureCache.fetch(setExtension(string(path.data), to_string(i) + ".lightmap.png"));
 
       ++i;
     }
@@ -514,19 +512,20 @@ private:
   UiRenderPass m_uiRenderPass;
   PostProcessRenderPass m_postprocRenderPass;
 
-  std::vector<std::unique_ptr<ITexture>> m_textures;
+  WeakCache<std::string, ITexture> m_textureCache;
   std::vector<std::unique_ptr<IVertexBuffer>> m_vbs;
+  std::shared_ptr<ITexture> m_fontTexture;
 
   std::vector<RenderMesh> loadFontModels(String path, int COLS, int ROWS)
   {
     std::vector<RenderMesh> r;
 
-    auto diffuse = backend->createTexture();
-    diffuse->upload(addBorderToTiles(loadPicture(path), COLS, ROWS));
-    auto lightmap = loadTexture("res/white.png");
+    m_fontTexture = backend->createTexture();
+    m_fontTexture->upload(addBorderToTiles(loadPicture(path), COLS, ROWS));
+    auto lightmap = m_textureCache.fetch("res/white.png");
 
     // don't repeat fonts
-    diffuse->setNoRepeat();
+    m_fontTexture->setNoRepeat();
     lightmap->setNoRepeat();
 
     for(int i = 0; i < COLS * ROWS; ++i)
@@ -552,8 +551,8 @@ private:
       };
 
       SingleRenderMesh sm;
-      sm.diffuse = diffuse.get();
-      sm.lightmap = lightmap.get();
+      sm.diffuse = m_fontTexture;
+      sm.lightmap = lightmap;
 
       for(auto& v : vertices)
         sm.vertices.push_back(v);
@@ -563,9 +562,6 @@ private:
       uploadVerticesToGPU(glyph);
       r.push_back(glyph);
     }
-
-    m_textures.push_back(std::move(diffuse));
-    m_textures.push_back(std::move(lightmap));
 
     return r;
   }

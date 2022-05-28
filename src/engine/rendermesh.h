@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <memory>
 #include <stdint.h>
 #include <vector>
 using namespace std;
@@ -20,8 +21,8 @@ struct SingleRenderMesh
 {
   // renderer stuff
   IVertexBuffer* vb {};
-  ITexture* diffuse {};
-  ITexture* lightmap {};
+  std::shared_ptr<ITexture> diffuse;
+  std::shared_ptr<ITexture> lightmap;
 
   // mesh data
   struct Vertex
