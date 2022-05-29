@@ -1220,44 +1220,26 @@ private:
 
       assert(normals.len == indices.len);
 
-      int i = 0;
-
       enforce(indices.len % 3 == 0, "the mesh '%.*s' isn't triangulated", node.name.len, node.name.data);
 
-      while(i < indices.len)
+      for(int i = 0; i < indices.len; i += 3)
       {
-        // one iteration = one input face
+        const int i0 = i + 0;
+        const int i1 = i + 1;
+        const int i2 = i + 2;
 
-        const int firstIt = i;
-        const int firstIndex = indices[i++];
-        int prevIt = i;
-        int prevIndex = indices[i++];
+        const int k0 = indices[i0];
+        const int k1 = indices[i1];
+        const int k2 = ~indices[i2];
 
-        while(i < indices.len)
-        {
-          // one iteration = one output triangle
-          const int currIt = i;
-          const int currIndex = indices[i++];
+        enforce(k2 >= 0, "the mesh '%.*s' isn't triangulated", node.name.len, node.name.data);
 
-          const int k0 = firstIndex;
-          const int k1 = prevIndex;
-          const int k2 = currIndex >= 0 ? currIndex : ~currIndex;
+        const int f0 = (int)node.vertices.size();
+        node.vertices.push_back(toVertex(m_vertexPos.at(k0), m_vertexNormals.at(i0), m_vertexUv[m_vertexUvIndices[i0]]));
+        node.vertices.push_back(toVertex(m_vertexPos.at(k1), m_vertexNormals.at(i1), m_vertexUv[m_vertexUvIndices[i1]]));
+        node.vertices.push_back(toVertex(m_vertexPos.at(k2), m_vertexNormals.at(i2), m_vertexUv[m_vertexUvIndices[i2]]));
 
-          {
-            const int f0 = (int)node.vertices.size();
-            node.vertices.push_back(toVertex(m_vertexPos.at(k0), m_vertexNormals.at(firstIt), m_vertexUv[m_vertexUvIndices[firstIt]]));
-            node.vertices.push_back(toVertex(m_vertexPos.at(k1), m_vertexNormals.at(prevIt), m_vertexUv[m_vertexUvIndices[prevIt]]));
-            node.vertices.push_back(toVertex(m_vertexPos.at(k2), m_vertexNormals.at(currIt), m_vertexUv[m_vertexUvIndices[currIt]]));
-
-            node.faces.push_back({ f0, f0 + 1, f0 + 2 });
-          }
-
-          if(currIndex < 0)
-            break;
-
-          prevIndex = currIndex;
-          prevIt = currIt;
-        }
+        node.faces.push_back({ f0, f0 + 1, f0 + 2 });
       }
     }
 
