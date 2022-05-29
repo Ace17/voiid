@@ -23,12 +23,15 @@ struct SingleRenderMesh
   IVertexBuffer* vb {};
   std::shared_ptr<ITexture> diffuse;
   std::shared_ptr<ITexture> lightmap;
+  std::shared_ptr<ITexture> normal;
 
   // mesh data
   struct Vertex
   {
     float x, y, z; // position
     float nx, ny, nz; // normal
+    float bx, by, bz; // binormal
+    float tx, ty, tz; // tangent
     float diffuse_u, diffuse_v;
     float lightmap_u, lightmap_v;
   };

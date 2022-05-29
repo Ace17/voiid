@@ -26,9 +26,19 @@ RenderMesh convertToRenderMesh(vector<Mesh> const& meshes, vector<string>& textu
       r.x = src.x;
       r.y = src.y;
       r.z = src.z;
+
       r.nx = src.nx;
       r.ny = src.ny;
       r.nz = src.nz;
+
+      r.bx = src.bx;
+      r.by = src.by;
+      r.bz = src.bz;
+
+      r.tx = src.tx;
+      r.ty = src.ty;
+      r.tz = src.tz;
+
       r.diffuse_u = src.u;
       r.diffuse_v = src.v;
       return r;
@@ -113,6 +123,7 @@ int main(int argc, const char* argv[])
     for(auto& single : renderMesh.singleMeshes)
     {
       static uint8_t gray_png[] = { 0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x08, 0x08, 0x06, 0x00, 0x00, 0x00, 0xc4, 0x0f, 0xbe, 0x8b, 0x00, 0x00, 0x00, 0x16, 0x49, 0x44, 0x41, 0x54, 0x18, 0xd3, 0x63, 0x6c, 0x68, 0x68, 0xf8, 0xcf, 0x80, 0x07, 0x30, 0x31, 0x10, 0x00, 0xc3, 0x43, 0x01, 0x00, 0x95, 0x62, 0x02, 0x8f, 0x72, 0x61, 0x0a, 0x14, 0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82 };
+      static uint8_t blue_png[] = { 0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x08, 0x08, 0x06, 0x00, 0x00, 0x00, 0xc4, 0x0f, 0xbe, 0x8b, 0x00, 0x00, 0x00, 0x16, 0x49, 0x44, 0x41, 0x54, 0x18, 0xd3, 0x63, 0x6c, 0x68, 0xf8, 0xff, 0x9f, 0x01, 0x0f, 0x60, 0x62, 0x20, 0x00, 0x86, 0x87, 0x02, 0x00, 0x16, 0xec, 0x03, 0x0e, 0x15, 0x2f, 0x52, 0x39, 0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82 };
 
       {
         auto outputPathLightmap = setExtension(outputPathMesh, to_string(meshIndex) + ".lightmap.png");
@@ -120,22 +131,41 @@ int main(int argc, const char* argv[])
       }
 
       {
-        auto const outputPathDiffuse = setExtension(outputPathMesh, to_string(meshIndex) + ".diffuse.png");
-
         if(textureFiles[meshIndex] == "")
           textureFiles[meshIndex] = "mesh.png";
 
+        ///////////////////////////////////////////////////////////////////////
+        // Diffuse map
+
         auto const inputPathDiffuse = textureDir + "/" + textureFiles[meshIndex];
+        auto const outputPathDiffuse = setExtension(outputPathMesh, to_string(meshIndex) + ".diffuse.png");
 
         if(File::exists(inputPathDiffuse))
         {
-          auto diffusePngData = File::read(inputPathDiffuse);
-          File::write(outputPathDiffuse, { (uint8_t*)diffusePngData.data(), (int)diffusePngData.size() });
+          auto pngData = File::read(inputPathDiffuse);
+          File::write(outputPathDiffuse, { (uint8_t*)pngData.data(), (int)pngData.size() });
         }
         else
         {
           fprintf(stderr, "File doesn't exist: '%s'\n", inputPathDiffuse.c_str());
           File::write(outputPathDiffuse, gray_png);
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+        // Normal map
+
+        auto const inputPathNormalMap = textureDir + "/" + setExtension(textureFiles[meshIndex], "n.png");
+        auto const outputPathNormalMap = setExtension(outputPathMesh, to_string(meshIndex) + ".normal.png");
+
+        if(File::exists(inputPathNormalMap))
+        {
+          auto pngData = File::read(inputPathNormalMap);
+          File::write(outputPathNormalMap, { (uint8_t*)pngData.data(), (int)pngData.size() });
+        }
+        else
+        {
+          fprintf(stderr, "File doesn't exist: '%s'\n", inputPathNormalMap.c_str());
+          File::write(outputPathNormalMap, blue_png);
         }
       }
 

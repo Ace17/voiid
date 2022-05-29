@@ -21,6 +21,8 @@ struct Mesh
   {
     float x, y, z;
     float nx, ny, nz;
+    float tx, ty, tz;
+    float bx, by, bz;
     float u, v;
   };
 

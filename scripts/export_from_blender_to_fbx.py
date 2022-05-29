@@ -20,6 +20,7 @@ def run():
           axis_up="Z",
           axis_forward="Y",
           use_custom_props=True,
+          use_tspace=True,
           bake_anim=False)
 
 try:

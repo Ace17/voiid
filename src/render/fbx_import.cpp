@@ -754,6 +754,12 @@ private:
       case hashed("LayerElementNormal"):
         parseSection_LayerElementNormal(tokenizer);
         break;
+      case hashed("LayerElementBinormal"):
+        parseSection_LayerElementBinormal(tokenizer);
+        break;
+      case hashed("LayerElementTangent"):
+        parseSection_LayerElementTangent(tokenizer);
+        break;
       case hashed("LayerElementUV"):
         parseSection_LayerElementUV(tokenizer);
         break;
@@ -1052,7 +1058,53 @@ private:
       switch(hashed(objName))
       {
       case hashed("Normals"):
-        parseSection_Normals(tokenizer);
+        parseSection_Normals(tokenizer, m_vertexNormals);
+        break;
+      default:
+        skipObject(tokenizer);
+        break;
+      }
+    }
+
+    expect(tokenizer, Token::ObjectEnd);
+  }
+
+  void parseSection_LayerElementBinormal(Tokenizer& tokenizer)
+  {
+    expect(tokenizer, Token::ObjectBegin);
+
+    skipValues(tokenizer);
+
+    while(tokenizer.tokenType != Token::ObjectEnd)
+    {
+      const auto objName = expectObjectBegin(tokenizer);
+      switch(hashed(objName))
+      {
+      case hashed("Binormals"):
+        parseSection_Normals(tokenizer, m_vertexBinormals);
+        break;
+      default:
+        skipObject(tokenizer);
+        break;
+      }
+    }
+
+    expect(tokenizer, Token::ObjectEnd);
+  }
+
+  void parseSection_LayerElementTangent(Tokenizer& tokenizer)
+  {
+    expect(tokenizer, Token::ObjectBegin);
+
+    skipValues(tokenizer);
+
+    while(tokenizer.tokenType != Token::ObjectEnd)
+    {
+      const auto objName = expectObjectBegin(tokenizer);
+      switch(hashed(objName))
+      {
+      case hashed("Tangents"):
+        parseSection_Normals(tokenizer, m_vertexTangents);
         break;
       default:
         skipObject(tokenizer);
@@ -1165,7 +1217,7 @@ private:
     expect(tokenizer, Token::ObjectEnd);
   }
 
-  void parseSection_Normals(Tokenizer& tokenizer)
+  void parseSection_Normals(Tokenizer& tokenizer, std::vector<Vector3f>& vectors)
   {
     expect(tokenizer, Token::ObjectBegin);
 
@@ -1183,7 +1235,7 @@ private:
       const float x = doubles[i + 0];
       const float y = doubles[i + 1];
       const float z = doubles[i + 2];
-      m_vertexNormals.push_back({ x, y, z });
+      vectors.push_back({ x, y, z });
     }
 
     tokenizer.nextToken();
@@ -1197,7 +1249,7 @@ private:
   {
     if(!m_faceIndices.empty())
     {
-      static auto toVertex = [] (Vector3f pos, Vector3f n, Vector2f uv)
+      static auto toVertex = [] (Vector3f pos, Vector3f n, Vector3f b, Vector3f t, Vector2f uv)
         {
           Mesh::Vertex vertex {};
 
@@ -1209,6 +1261,14 @@ private:
           vertex.ny = n.y;
           vertex.nz = n.z;
 
+          vertex.bx = b.x;
+          vertex.by = b.y;
+          vertex.bz = b.z;
+
+          vertex.tx = t.x;
+          vertex.ty = t.y;
+          vertex.tz = t.z;
+
           vertex.u = uv.x;
           vertex.v = uv.y;
 
@@ -1217,8 +1277,12 @@ private:
 
       auto indices = Span<int>(m_faceIndices);
       auto normals = Span<Vector3f>(m_vertexNormals);
+      auto binormals = Span<Vector3f>(m_vertexBinormals);
+      auto tangents = Span<Vector3f>(m_vertexTangents);
 
-      assert(normals.len == indices.len);
+      enforce(normals.len == indices.len, "[%.*s] Invalid normal count: %d instead of %d", node.name.len, node.name.data, normals.len, indices.len);
+      enforce(binormals.len == indices.len, "[%.*s] Invalid binormal count: %d instead of %d", node.name.len, node.name.data, binormals.len, indices.len);
+      enforce(tangents.len == indices.len, "[%.*s] Invalid tangent count: %d instead of %d", node.name.len, node.name.data, tangents.len, indices.len);
 
       enforce(indices.len % 3 == 0, "the mesh '%.*s' isn't triangulated", node.name.len, node.name.data);
 
@@ -1235,9 +1299,9 @@ private:
         enforce(k2 >= 0, "the mesh '%.*s' isn't triangulated", node.name.len, node.name.data);
 
         const int f0 = (int)node.vertices.size();
-        node.vertices.push_back(toVertex(m_vertexPos.at(k0), m_vertexNormals.at(i0), m_vertexUv[m_vertexUvIndices[i0]]));
-        node.vertices.push_back(toVertex(m_vertexPos.at(k1), m_vertexNormals.at(i1), m_vertexUv[m_vertexUvIndices[i1]]));
-        node.vertices.push_back(toVertex(m_vertexPos.at(k2), m_vertexNormals.at(i2), m_vertexUv[m_vertexUvIndices[i2]]));
+        node.vertices.push_back(toVertex(m_vertexPos.at(k0), m_vertexNormals.at(i0), m_vertexBinormals.at(i0), m_vertexTangents.at(i0), m_vertexUv[m_vertexUvIndices[i0]]));
+        node.vertices.push_back(toVertex(m_vertexPos.at(k1), m_vertexNormals.at(i1), m_vertexBinormals.at(i1), m_vertexTangents.at(i1), m_vertexUv[m_vertexUvIndices[i1]]));
+        node.vertices.push_back(toVertex(m_vertexPos.at(k2), m_vertexNormals.at(i2), m_vertexBinormals.at(i2), m_vertexTangents.at(i2), m_vertexUv[m_vertexUvIndices[i2]]));
 
         node.faces.push_back({ f0, f0 + 1, f0 + 2 });
       }
@@ -1245,6 +1309,8 @@ private:
 
     m_vertexPos.clear();
     m_vertexNormals.clear();
+    m_vertexBinormals.clear();
+    m_vertexTangents.clear();
     m_faceIndices.clear();
     m_vertexUv.clear();
     m_vertexUvIndices.clear();
@@ -1253,6 +1319,8 @@ private:
   // intermediate data
   std::vector<Vector3f> m_vertexPos;
   std::vector<Vector3f> m_vertexNormals;
+  std::vector<Vector3f> m_vertexBinormals;
+  std::vector<Vector3f> m_vertexTangents;
   std::vector<Vector2f> m_vertexUv;
   std::vector<int> m_vertexUvIndices;
   std::vector<int> m_faceIndices;

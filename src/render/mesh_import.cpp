@@ -35,11 +35,24 @@ void applyTransforms(ImportedScene& scene)
 
       {
         Vector4f normal = { v.nx, v.ny, v.nz, 0 };
+        Vector4f binormal = { v.bx, v.by, v.bz, 0 };
+        Vector4f tangent = { v.tx, v.ty, v.tz, 0 };
+
         normal = normalTransform * normal;
+        binormal = normalTransform * binormal;
+        tangent = normalTransform * tangent;
 
         v.nx = normal.x;
         v.ny = normal.y;
         v.nz = normal.z;
+
+        v.bx = binormal.x;
+        v.by = binormal.y;
+        v.bz = binormal.z;
+
+        v.tx = tangent.x;
+        v.ty = tangent.y;
+        v.tz = tangent.z;
       }
     }
   }

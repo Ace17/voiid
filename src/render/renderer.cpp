@@ -184,8 +184,12 @@ struct MeshRenderPass
     backend->setUniformInt(MeshShader::Uniform::DiffuseTex, 0);
 
     // Texture Unit 1: Lightmap
-    model.diffuse->bind(1);
+    model.lightmap->bind(1);
     backend->setUniformInt(MeshShader::Uniform::LightmapTex, 1);
+
+    // Texture Unit 2: Normalmap
+    model.normal->bind(2);
+    backend->setUniformInt(MeshShader::Uniform::NormalTex, 2);
 
     auto const forward = cmd.camera.dir.rotate(Vector3f(1, 0, 0));
     auto const up = cmd.camera.dir.rotate(Vector3f(0, 0, 1));
@@ -212,6 +216,8 @@ struct MeshRenderPass
 
     backend->enableVertexAttribute(MeshShader::Attribute::positionLoc, 3, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, x));
     backend->enableVertexAttribute(MeshShader::Attribute::normalLoc, 3, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, nx));
+    backend->enableVertexAttribute(MeshShader::Attribute::binormalLoc, 3, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, bx));
+    backend->enableVertexAttribute(MeshShader::Attribute::tangentLoc, 3, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, tx));
     backend->enableVertexAttribute(MeshShader::Attribute::uvDiffuseLoc, 2, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, diffuse_u));
     backend->enableVertexAttribute(MeshShader::Attribute::uvLightmapLoc, 2, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, lightmap_u));
 
@@ -225,13 +231,14 @@ struct MeshRenderPass
       M = 0,
       MVP = 1,
       CameraPos = 2,
+      colorId = 3,
       DiffuseTex = 4,
       LightmapTex = 5,
-      colorId = 3,
-      ambientLoc = 6,
-      LightCountLoc = 7,
-      LightPosLoc = 8,
-      LightColorLoc = 40,
+      NormalTex = 6,
+      ambientLoc = 7,
+      LightCountLoc = 8,
+      LightPosLoc = 9,
+      LightColorLoc = 41,
     };
 
     enum Attribute
@@ -240,6 +247,8 @@ struct MeshRenderPass
       uvDiffuseLoc = 1,
       uvLightmapLoc = 2,
       normalLoc = 3,
+      binormalLoc = 4,
+      tangentLoc = 5,
     };
   };
 
@@ -385,6 +394,7 @@ struct Renderer : IRenderer, IScreenSizeListener
     {
       single.diffuse = m_textureCache.fetch(setExtension(string(path.data), to_string(i) + ".diffuse.png"));
       single.lightmap = m_textureCache.fetch(setExtension(string(path.data), to_string(i) + ".lightmap.png"));
+      single.normal = m_textureCache.fetch(setExtension(string(path.data), to_string(i) + ".normal.png"));
 
       ++i;
     }
@@ -541,13 +551,13 @@ private:
 
       const SingleRenderMesh::Vertex vertices[] =
       {
-        { 0, 0, 0, /* N */ 0, 1, 0, /* uv diffuse */ u0, v0, /* uv lightmap */ u0, v0, },
-        { 1, 0, 1, /* N */ 0, 1, 0, /* uv diffuse */ u1, v1, /* uv lightmap */ u1, v1, },
-        { 0, 0, 1, /* N */ 0, 1, 0, /* uv diffuse */ u0, v1, /* uv lightmap */ u0, v1, },
+        { 0, 0, 0, /* N */ 0, 1, 0, /* BN */ 1, 0, 0, /* T */ 0, 0, 1, /* uv diffuse */ u0, v0, /* uv lightmap */ u0, v0, },
+        { 1, 0, 1, /* N */ 0, 1, 0, /* BN */ 1, 0, 0, /* T */ 0, 0, 1, /* uv diffuse */ u1, v1, /* uv lightmap */ u1, v1, },
+        { 0, 0, 1, /* N */ 0, 1, 0, /* BN */ 1, 0, 0, /* T */ 0, 0, 1, /* uv diffuse */ u0, v1, /* uv lightmap */ u0, v1, },
 
-        { 0, 0, 0, /* N */ 0, 1, 0, /* uv diffuse */ u0, v0, /* uv lightmap */ u0, v0, },
-        { 1, 0, 0, /* N */ 0, 1, 0, /* uv diffuse */ u1, v0, /* uv lightmap */ u0, v1, },
-        { 1, 0, 1, /* N */ 0, 1, 0, /* uv diffuse */ u1, v1, /* uv lightmap */ u1, v1, },
+        { 0, 0, 0, /* N */ 0, 1, 0, /* BN */ 1, 0, 0, /* T */ 0, 0, 1, /* uv diffuse */ u0, v0, /* uv lightmap */ u0, v0, },
+        { 1, 0, 0, /* N */ 0, 1, 0, /* BN */ 1, 0, 0, /* T */ 0, 0, 1, /* uv diffuse */ u1, v0, /* uv lightmap */ u0, v1, },
+        { 1, 0, 1, /* N */ 0, 1, 0, /* BN */ 1, 0, 0, /* T */ 0, 0, 1, /* uv diffuse */ u1, v1, /* uv lightmap */ u1, v1, },
       };
 
       SingleRenderMesh sm;
