@@ -1199,7 +1199,20 @@ private:
     {
       static auto toVertex = [] (Vector3f pos, Vector3f n, Vector2f uv)
         {
-          return Mesh::Vertex { pos.x, pos.y, pos.z, n.x, n.y, n.z, uv.x, uv.y };
+          Mesh::Vertex vertex {};
+
+          vertex.x = pos.x;
+          vertex.y = pos.y;
+          vertex.z = pos.z;
+
+          vertex.nx = n.x;
+          vertex.ny = n.y;
+          vertex.nz = n.z;
+
+          vertex.u = uv.x;
+          vertex.v = uv.y;
+
+          return vertex;
         };
 
       auto indices = Span<int>(m_faceIndices);
