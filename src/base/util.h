@@ -49,6 +49,9 @@ inline String baseName(String path)
   while(p > left && *p != '/')
     --p;
 
+  if(*p == '/')
+    ++p;
+
   return String(p, right - p);
 }
 
