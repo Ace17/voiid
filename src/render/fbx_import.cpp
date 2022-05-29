@@ -1222,6 +1222,8 @@ private:
 
       int i = 0;
 
+      enforce(indices.len % 3 == 0, "the mesh '%.*s' isn't triangulated", node.name.len, node.name.data);
+
       while(i < indices.len)
       {
         // one iteration = one input face
