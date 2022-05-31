@@ -131,9 +131,10 @@ struct Physics : IPhysics
   Trace traceBox(Box box, Vector delta, const Body* except) const override
   {
     auto const halfSize = Vector3f(box.size.cx, box.size.cy, box.size.cz) * 0.5;
+    auto const boxCenter = box.pos + halfSize;
 
-    auto const A = box.pos + halfSize;
-    auto const B = A + delta;
+    auto const A = boxCenter;
+    auto const B = boxCenter + delta;
 
     Trace r {};
     r.fraction = 1.0;
