@@ -124,8 +124,7 @@ struct HighLevelAudio : MixableAudio
     }
     catch(std::exception const& e)
     {
-      printf("[audio] can't load sound '%.*s' (%s)\n", path.len, path.data, e.what());
-      printf("[audio] default sound will be used instead.\n");
+      printf("[audio] can't load sound '%.*s' (%s), falling back to default sound.\n", path.len, path.data, e.what());
     }
   }
 
