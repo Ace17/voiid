@@ -141,7 +141,9 @@ struct GameState : Scene, private IGame
 
     {
       auto playerLight = LightActor{ m_player->getCenter() + Vec3f(0, 0, 1), Vec3f(0.3, 0.3, 0.3) };
-      m_view->sendLight(playerLight);
+
+      if(0)
+        m_view->sendLight(playerLight);
 
       for(auto light: m_staticLevelLights)
         m_view->sendLight(light);
