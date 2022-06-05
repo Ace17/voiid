@@ -39,7 +39,7 @@ struct Lamp : Entity, IEventSink
       if(ticks < 5
          || (ticks > 40 && ticks < 50)
          || ticks > 80)
-        view->sendLight({ pos, Vector3f(0.39, 0.65, 0.77) });
+        view->sendLight({ pos, Vec3f(0.39, 0.65, 0.77) });
     }
   }
 

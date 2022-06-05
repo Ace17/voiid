@@ -15,7 +15,7 @@ static Actor getActor(Entity* entity)
     virtual void playMusic(int) {}
     virtual void stopMusic() {}
     virtual void playSound(int) {}
-    virtual void setCameraPos(Vector3f, Quaternion) {}
+    virtual void setCameraPos(Vec3f, Quaternion) {}
     virtual void setAmbientLight(float) {}
     virtual void sendLight(LightActor const&) {}
     virtual void sendActor(Actor const& actor) { this->actor = actor; }
@@ -98,7 +98,7 @@ struct NullPhysicsProbe : IPhysicsProbe
     return box.pos.y < 0;
   }
 
-  virtual Trace traceBox(Box box, Vector3f delta, const Body* except) const override
+  virtual Trace traceBox(Box box, Vec3f delta, const Body* except) const override
   {
     (void)box;
     (void)delta;

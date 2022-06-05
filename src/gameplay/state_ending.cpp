@@ -62,8 +62,8 @@ struct EndingState : Scene
   void draw() override
   {
     double t = time * 0.01;
-    view->setCameraPos(Vector3f(0, 0, 0), Quaternion::fromEuler(0, 0, 0));
-    Actor panel = Actor(Vector3f(2.5, 0, +0.15), MDL_ENDING);
+    view->setCameraPos(Vec3f(0, 0, 0), Quaternion::fromEuler(0, 0, 0));
+    Actor panel = Actor(Vec3f(2.5, 0, +0.15), MDL_ENDING);
     panel.scale = panel.scale * (1.0 / (1.0 + t));
     panel.orientation = Quaternion::fromEuler(0, 0, t * 5.0);
     view->sendActor(panel);

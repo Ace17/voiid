@@ -8,7 +8,7 @@
 
 struct Quaternion
 {
-  Vector3f v = Vector3f(0, 0, 0);
+  Vec3f v = Vec3f(0, 0, 0);
   float s = 0;
 
   static Quaternion identity()
@@ -16,7 +16,7 @@ struct Quaternion
     return Quaternion { { 0, 0, 0 }, 1 };
   }
 
-  static Quaternion rotation(Vector3f axis, float angle);
+  static Quaternion rotation(Vec3f axis, float angle);
   static Quaternion fromEuler(float yaw, float pitch, float roll);
 
   Quaternion operator * (Quaternion q) const
@@ -51,7 +51,7 @@ struct Quaternion
     return *this * (1.0 / magnitude());
   }
 
-  Vector3f rotate(Vector3f v) const
+  Vec3f rotate(Vec3f v) const
   {
     return (*this * Quaternion { v, 0 } *this->conjugate()).v;
   }

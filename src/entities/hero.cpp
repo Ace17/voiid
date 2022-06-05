@@ -19,7 +19,7 @@
 #include "hero.h"
 #include "move.h"
 
-auto const GRAVITY = Vector3f(0, 0, -0.005);
+auto const GRAVITY = Vec3f(0, 0, -0.005);
 auto const JUMP_SPEED = 0.15;
 auto const WALK_SPEED = 0.075f;
 auto const MAX_HORZ_SPEED = 0.2f;
@@ -50,7 +50,7 @@ struct Hero : Player, Damageable
     if(0) // hide debug box
       view->sendActor(r);
 
-    auto eyesPos = r.pos + Vector3f(
+    auto eyesPos = r.pos + Vec3f(
       r.scale.cx * 0.5,
       r.scale.cy * 0.5,
       r.scale.cz * 0.9);
@@ -153,9 +153,9 @@ struct Hero : Player, Damageable
 
     computeVelocity(control);
 
-    physics->moveBody(this, Vector3f(0, 0, STAIR_CLIMB));
+    physics->moveBody(this, Vec3f(0, 0, STAIR_CLIMB));
     slideMove(physics, this, vel);
-    physics->moveBody(this, Vector3f(0, 0, -STAIR_CLIMB));
+    physics->moveBody(this, Vec3f(0, 0, -STAIR_CLIMB));
 
     auto const onGround = isOnGround(physics, this);
 

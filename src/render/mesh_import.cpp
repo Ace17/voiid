@@ -25,7 +25,7 @@ void applyTransforms(ImportedScene& scene)
     for(auto& v : model.vertices)
     {
       {
-        Vector4f vert = { v.x, v.y, v.z, 1 };
+        Vec4f vert = { v.x, v.y, v.z, 1 };
         vert = model.transform * vert;
 
         v.x = vert.x;
@@ -34,9 +34,9 @@ void applyTransforms(ImportedScene& scene)
       }
 
       {
-        Vector4f normal = { v.nx, v.ny, v.nz, 0 };
-        Vector4f binormal = { v.bx, v.by, v.bz, 0 };
-        Vector4f tangent = { v.tx, v.ty, v.tz, 0 };
+        Vec4f normal = { v.nx, v.ny, v.nz, 0 };
+        Vec4f binormal = { v.bx, v.by, v.bz, 0 };
+        Vec4f tangent = { v.tx, v.ty, v.tz, 0 };
 
         normal = normalTransform * normal;
         binormal = normalTransform * binormal;

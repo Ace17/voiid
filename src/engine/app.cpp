@@ -183,11 +183,11 @@ private:
       m_renderer->drawLight(actor.pos, actor.color);
 
     if(m_running == AppState::ConfirmExit)
-      m_renderer->drawText(Vector2f(0, 0), "QUIT? [Y/N]");
+      m_renderer->drawText(Vec2f(0, 0), "QUIT? [Y/N]");
     else if(m_paused)
-      m_renderer->drawText(Vector2f(0, 0), "PAUSE");
+      m_renderer->drawText(Vec2f(0, 0), "PAUSE");
     else if(m_slowMotion)
-      m_renderer->drawText(Vector2f(0, 0), "SLOW-MOTION MODE");
+      m_renderer->drawText(Vec2f(0, 0), "SLOW-MOTION MODE");
 
     if(m_debugMode)
     {
@@ -195,13 +195,13 @@ private:
       {
         auto stat = getStat(i);
         char buf[256];
-        m_renderer->drawText(Vector2f(0, 4 - i * 0.25), format(buf, "%s: %.2f", stat.name, stat.val));
+        m_renderer->drawText(Vec2f(0, 4 - i * 0.25), format(buf, "%s: %.2f", stat.name, stat.val));
       }
     }
 
     if(m_textboxDelay > 0)
     {
-      m_renderer->drawText(Vector2f(0, 2), m_textbox);
+      m_renderer->drawText(Vec2f(0, 2), m_textbox);
       m_textboxDelay--;
     }
 
@@ -357,7 +357,7 @@ private:
     m_audio->releaseVoice(voiceId, true);
   }
 
-  void setCameraPos(Vector3f pos, Quaternion orientation) override
+  void setCameraPos(Vec3f pos, Quaternion orientation) override
   {
     m_renderer->setCamera(pos, orientation);
   }

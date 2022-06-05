@@ -22,14 +22,14 @@ enum class Effect
 // a displayable object (= a game object, as seen by the user-interface)
 struct Actor
 {
-  Actor(Vector3f pos_ = Vector3f(0, 0, 0), int model_ = 0)
+  Actor(Vec3f pos_ = Vec3f(0, 0, 0), int model_ = 0)
   {
     model = model_;
     pos = pos_;
   }
 
-  Vector3f pos; // object position, in logical units
-  Quaternion orientation = Quaternion::rotation(Vector3f(1, 0, 0), 0);
+  Vec3f pos; // object position, in logical units
+  Quaternion orientation = Quaternion::rotation(Vec3f(1, 0, 0), 0);
   int model = 0; // what sprite to display
   int action = 0; // what sprite action to use
   float ratio = 0; // in [0 .. 1]. 0 for action beginning, 1 for action end
@@ -39,8 +39,8 @@ struct Actor
 
 struct LightActor
 {
-  Vector3f pos; // light position, in logical units
-  Vector3f color;
+  Vec3f pos; // light position, in logical units
+  Vec3f color;
 };
 
 // This interface should act as a message sink.
@@ -55,7 +55,7 @@ struct View
   virtual void playMusic(int id) = 0;
   virtual void stopMusic() = 0;
   virtual void playSound(int id) = 0;
-  virtual void setCameraPos(Vector3f pos, Quaternion orientation) = 0;
+  virtual void setCameraPos(Vec3f pos, Quaternion orientation) = 0;
   virtual void setAmbientLight(float amount) = 0;
 
   // adds a displayable object to the current frame

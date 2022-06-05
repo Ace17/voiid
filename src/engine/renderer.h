@@ -20,7 +20,7 @@ struct IRenderer
   virtual void setHdr(bool enable) = 0;
   virtual void setFsaa(bool enable) = 0;
   virtual void loadModel(int modelId, String path) = 0;
-  virtual void setCamera(Vector3f pos, Quaternion dir) = 0;
+  virtual void setCamera(Vec3f pos, Quaternion dir) = 0;
   virtual void setAmbientLight(float ambientLight) = 0;
 
   // draw functions
@@ -28,7 +28,7 @@ struct IRenderer
   virtual void endDraw() = 0;
 
   virtual void drawActor(Rect3f where, Quaternion orientation, int modelId, bool blinking) = 0;
-  virtual void drawLight(Vector3f pos, Vector3f color) = 0;
-  virtual void drawText(Vector2f pos, String text) = 0;
+  virtual void drawLight(Vec3f pos, Vec3f color) = 0;
+  virtual void drawText(Vec2f pos, String text) = 0;
 };
 

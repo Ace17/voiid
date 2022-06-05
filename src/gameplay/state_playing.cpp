@@ -75,7 +75,7 @@ void spawnEntities(Room const& room, IGame* game, int levelIdx)
 
 struct ShapePolyhedron : Shape
 {
-  Trace raycast(Vector3f A, Vector3f B, Vector3f boxHalfSize) const override
+  Trace raycast(Vec3f A, Vec3f B, Vec3f boxHalfSize) const override
   {
     return convex.trace(A, B, boxHalfSize);
   }
@@ -140,7 +140,7 @@ struct GameState : Scene, private IGame
     m_view->sendActor(Actor(Vector(0, 0, 0), MDL_ROOMS));
 
     {
-      auto playerLight = LightActor{ m_player->getCenter() + Vector3f(0, 0, 1), Vector3f(0.3, 0.3, 0.3) };
+      auto playerLight = LightActor{ m_player->getCenter() + Vec3f(0, 0, 1), Vec3f(0.3, 0.3, 0.3) };
       m_view->sendLight(playerLight);
 
       for(auto light: m_staticLevelLights)

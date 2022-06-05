@@ -19,17 +19,17 @@ using namespace std;
 
 struct BoxShape : Shape
 {
-  Trace raycast(Vector3f A, Vector3f B, Vector3f boxHalfSize) const override
+  Trace raycast(Vec3f A, Vec3f B, Vec3f boxHalfSize) const override
   {
     Convex b;
     b.planes.resize(6);
 
-    b.planes[0] = Plane { Vector3f(-1, 0, 0), 0 };
-    b.planes[1] = Plane { Vector3f(+1, 0, 0), 1 };
-    b.planes[2] = Plane { Vector3f(0, -1, 0), 0 };
-    b.planes[3] = Plane { Vector3f(0, +1, 0), 1 };
-    b.planes[4] = Plane { Vector3f(0, 0, -1), 0 };
-    b.planes[5] = Plane { Vector3f(0, 0, +1), 1 };
+    b.planes[0] = Plane { Vec3f(-1, 0, 0), 0 };
+    b.planes[1] = Plane { Vec3f(+1, 0, 0), 1 };
+    b.planes[2] = Plane { Vec3f(0, -1, 0), 0 };
+    b.planes[3] = Plane { Vec3f(0, +1, 0), 1 };
+    b.planes[4] = Plane { Vec3f(0, 0, -1), 0 };
+    b.planes[5] = Plane { Vec3f(0, 0, +1), 1 };
 
     return b.trace(A, B, boxHalfSize);
   }
@@ -37,27 +37,27 @@ struct BoxShape : Shape
 
 struct AffineTransformShape : Shape
 {
-  Vector3f pos;
-  Vector3f size;
+  Vec3f pos;
+  Vec3f size;
 
   const Shape* sub;
 
-  Trace raycast(Vector3f A, Vector3f B, Vector3f boxHalfSize) const override
+  Trace raycast(Vec3f A, Vec3f B, Vec3f boxHalfSize) const override
   {
     return sub->raycast(transform(A), transform(B), scale(boxHalfSize));
   }
 
   // (size.x;size.y;size.z) -> (1;1;1)
-  Vector3f scale(Vector3f v) const
+  Vec3f scale(Vec3f v) const
   {
-    Vector3f r = v;
+    Vec3f r = v;
     r.x *= 1.0 / size.x;
     r.y *= 1.0 / size.y;
     r.z *= 1.0 / size.z;
     return r;
   }
 
-  Vector3f transform(Vector3f v) const
+  Vec3f transform(Vec3f v) const
   {
     return scale(v - pos);
   }
@@ -130,7 +130,7 @@ struct Physics : IPhysics
 
   Trace traceBox(Box box, Vector delta, const Body* except) const override
   {
-    auto const halfSize = Vector3f(box.size.cx, box.size.cy, box.size.cz) * 0.5;
+    auto const halfSize = Vec3f(box.size.cx, box.size.cy, box.size.cz) * 0.5;
     auto const boxCenter = box.pos + halfSize;
 
     auto const A = boxCenter;

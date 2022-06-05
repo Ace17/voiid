@@ -594,7 +594,7 @@ private:
     {
       if(model.lights.size())
       {
-        auto pos = model.transform * Vector4f{ 0, 0, 0, 1 };
+        auto pos = model.transform * Vec4f{ 0, 0, 0, 1 };
         Light light;
         light.x = pos.x;
         light.y = pos.y;
@@ -885,7 +885,7 @@ private:
           double x = expectDecimalNumber(tokenizer) / 100;
           double y = expectDecimalNumber(tokenizer) / 100;
           double z = expectDecimalNumber(tokenizer) / 100;
-          translation = ::translate(Vector3f(x, y, z));
+          translation = ::translate(Vec3f(x, y, z));
         }
         break;
       case hashed("Lcl Rotation"):
@@ -906,7 +906,7 @@ private:
           double x = expectDecimalNumber(tokenizer) / 100;
           double y = expectDecimalNumber(tokenizer) / 100;
           double z = expectDecimalNumber(tokenizer) / 100;
-          scaling = ::scale(Vector3f(x, y, z));
+          scaling = ::scale(Vec3f(x, y, z));
         }
         break;
       default:
@@ -1139,7 +1139,7 @@ private:
           m_vertexUv.reserve(doubles.len / 2);
 
           for(int i = 0; i < doubles.len; i += 2)
-            m_vertexUv.push_back(Vector2f(doubles[i], doubles[i + 1]));
+            m_vertexUv.push_back(Vec2f(doubles[i], doubles[i + 1]));
 
           tokenizer.nextToken();
 
@@ -1217,7 +1217,7 @@ private:
     expect(tokenizer, Token::ObjectEnd);
   }
 
-  void parseSection_Normals(Tokenizer& tokenizer, std::vector<Vector3f>& vectors)
+  void parseSection_Normals(Tokenizer& tokenizer, std::vector<Vec3f>& vectors)
   {
     expect(tokenizer, Token::ObjectBegin);
 
@@ -1249,7 +1249,7 @@ private:
   {
     if(!m_faceIndices.empty())
     {
-      static auto toVertex = [] (Vector3f pos, Vector3f n, Vector3f b, Vector3f t, Vector2f uv)
+      static auto toVertex = [] (Vec3f pos, Vec3f n, Vec3f b, Vec3f t, Vec2f uv)
         {
           Mesh::Vertex vertex {};
 
@@ -1276,9 +1276,9 @@ private:
         };
 
       auto indices = Span<int>(m_faceIndices);
-      auto normals = Span<Vector3f>(m_vertexNormals);
-      auto binormals = Span<Vector3f>(m_vertexBinormals);
-      auto tangents = Span<Vector3f>(m_vertexTangents);
+      auto normals = Span<Vec3f>(m_vertexNormals);
+      auto binormals = Span<Vec3f>(m_vertexBinormals);
+      auto tangents = Span<Vec3f>(m_vertexTangents);
 
       enforce(normals.len == indices.len, "[%.*s] Invalid normal count: %d instead of %d", node.name.len, node.name.data, normals.len, indices.len);
       enforce(binormals.len == indices.len, "[%.*s] Invalid binormal count: %d instead of %d", node.name.len, node.name.data, binormals.len, indices.len);
@@ -1317,11 +1317,11 @@ private:
   }
 
   // intermediate data
-  std::vector<Vector3f> m_vertexPos;
-  std::vector<Vector3f> m_vertexNormals;
-  std::vector<Vector3f> m_vertexBinormals;
-  std::vector<Vector3f> m_vertexTangents;
-  std::vector<Vector2f> m_vertexUv;
+  std::vector<Vec3f> m_vertexPos;
+  std::vector<Vec3f> m_vertexNormals;
+  std::vector<Vec3f> m_vertexBinormals;
+  std::vector<Vec3f> m_vertexTangents;
+  std::vector<Vec2f> m_vertexUv;
   std::vector<int> m_vertexUvIndices;
   std::vector<int> m_faceIndices;
 
@@ -1350,7 +1350,7 @@ private:
 
   struct FbxLight : FbxNode
   {
-    Vector3f rgb;
+    Vec3f rgb;
     float intensity;
   };
 

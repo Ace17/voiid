@@ -40,7 +40,7 @@ T blend(T a, T b, float alpha)
 
 struct Camera
 {
-  Vector3f pos;
+  Vec3f pos;
   Quaternion dir;
 };
 
@@ -113,11 +113,11 @@ struct SkyboxPass : RenderPass
 
     backend->useGpuProgram(m_shader.get());
 
-    auto const forward = camera.dir.rotate(Vector3f(1, 0, 0));
-    auto const up = camera.dir.rotate(Vector3f(0, 0, 1));
+    auto const forward = camera.dir.rotate(Vec3f(1, 0, 0));
+    auto const up = camera.dir.rotate(Vec3f(0, 0, 1));
 
     auto const target = forward;
-    auto const view = ::lookAt(Vector3f(0, 0, 0), target, up);
+    auto const view = ::lookAt(Vec3f(0, 0, 0), target, up);
     auto const pos = ::translate({});
 
     static const float fovy = (float)((60.0f / 180) * PI);
@@ -191,13 +191,13 @@ struct MeshRenderPass
     model.normal->bind(2);
     backend->setUniformInt(MeshShader::Uniform::NormalTex, 2);
 
-    auto const forward = cmd.camera.dir.rotate(Vector3f(1, 0, 0));
-    auto const up = cmd.camera.dir.rotate(Vector3f(0, 0, 1));
+    auto const forward = cmd.camera.dir.rotate(Vec3f(1, 0, 0));
+    auto const up = cmd.camera.dir.rotate(Vec3f(0, 0, 1));
 
     auto const target = cmd.camera.pos + forward;
     auto const view = ::lookAt(cmd.camera.pos, target, up);
     auto const pos = ::translate(where.pos);
-    auto const scale = ::scale(Vector3f(where.size.cx, where.size.cy, where.size.cz));
+    auto const scale = ::scale(Vec3f(where.size.cx, where.size.cy, where.size.cz));
     auto const rotate = quaternionToMatrix(cmd.orientation);
 
     static const float fovy = (float)((60.0f / 180) * PI);
@@ -254,8 +254,8 @@ struct MeshRenderPass
 
   struct Light
   {
-    Vector3f pos;
-    Vector3f color;
+    Vec3f pos;
+    Vec3f color;
   };
 
   IGraphicsBackend* backend {};
@@ -287,13 +287,13 @@ struct UiRenderPass : RenderPass
     model.diffuse->bind(0);
     backend->setUniformInt(TextShader::Uniform::DiffuseTex, 0);
 
-    auto const forward = Vector3f(0, 1, 0);
-    auto const up = Vector3f(0, 0, 1);
+    auto const forward = Vec3f(0, 1, 0);
+    auto const up = Vec3f(0, 0, 1);
 
     auto const target = cmd.camera.pos + forward;
     auto const view = ::lookAt(cmd.camera.pos, target, up);
     auto const pos = ::translate(where.pos);
-    auto const scale = ::scale(Vector3f(where.size.cx, where.size.cy, where.size.cz));
+    auto const scale = ::scale(Vec3f(where.size.cx, where.size.cy, where.size.cz));
 
     static const float fovy = (float)((60.0f / 180) * PI);
     static const float near_ = 0.1f;
@@ -402,7 +402,7 @@ struct Renderer : IRenderer, IScreenSizeListener
     uploadVerticesToGPU(m_Models[modelId]);
   }
 
-  void setCamera(Vector3f pos, Quaternion dir) override
+  void setCamera(Vec3f pos, Quaternion dir) override
   {
     auto cam = (Camera { pos, dir });
 
@@ -474,7 +474,7 @@ struct Renderer : IRenderer, IScreenSizeListener
       m_meshRenderPass.m_drawCommands.push_back({& single, where, orientation, m_camera, blinking });
   }
 
-  void drawText(Vector2f pos, String text) override
+  void drawText(Vec2f pos, String text) override
   {
     Rect3f rect;
     rect.size.cx = 0.25;
@@ -484,7 +484,7 @@ struct Renderer : IRenderer, IScreenSizeListener
     rect.pos.y = 0;
     rect.pos.z = pos.y;
 
-    auto cam = (Camera { Vector3f(0, -10, 0), Quaternion::fromEuler(PI / 2, 0, 0) });
+    auto cam = (Camera { Vec3f(0, -10, 0), Quaternion::fromEuler(PI / 2, 0, 0) });
     auto orientation = Quaternion::identity();
 
     for(auto c : text)
@@ -501,7 +501,7 @@ struct Renderer : IRenderer, IScreenSizeListener
     m_meshRenderPass.m_ambientLight = ambientLight;
   }
 
-  void drawLight(Vector3f pos, Vector3f color) override
+  void drawLight(Vec3f pos, Vec3f color) override
   {
     m_meshRenderPass.m_lights.push_back({ pos, color });
   }

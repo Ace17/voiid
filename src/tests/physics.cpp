@@ -41,7 +41,7 @@ void assertNearlyEqualsFunc(Vector expected, Vector actual, const char* file, in
 
 struct BlockerShape : Shape
 {
-  Trace raycast(Vector3f A, Vector3f B, Vector3f boxHalfSize) const override
+  Trace raycast(Vec3f A, Vec3f B, Vec3f boxHalfSize) const override
   {
     Trace r {};
     r.fraction = 1.0;
@@ -59,7 +59,7 @@ struct BlockerShape : Shape
       if(fraction < r.fraction)
       {
         r.fraction = fraction;
-        r.plane.N = Vector3f(1, 0, 0);
+        r.plane.N = Vec3f(1, 0, 0);
       }
     }
 
@@ -70,7 +70,7 @@ struct BlockerShape : Shape
       if(fraction < r.fraction)
       {
         r.fraction = fraction;
-        r.plane.N = Vector3f(0, 1, 0);
+        r.plane.N = Vec3f(0, 1, 0);
       }
     }
 

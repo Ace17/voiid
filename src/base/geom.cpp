@@ -23,7 +23,7 @@ float Quaternion::magnitude() const
   return sqrt(v.x * v.x + v.y * v.y + v.z * v.z + s * s);
 }
 
-Quaternion Quaternion::rotation(Vector3f axis, float angle)
+Quaternion Quaternion::rotation(Vec3f axis, float angle)
 {
   Quaternion r;
   r.v = axis * sin(angle / 2);

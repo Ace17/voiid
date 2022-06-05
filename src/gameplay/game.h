@@ -15,7 +15,7 @@
 #include <memory>
 
 typedef Matrix3<int> Matrix;
-typedef Vector3f Vector;
+typedef Vec3f Vector;
 
 struct Entity;
 

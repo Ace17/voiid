@@ -18,7 +18,7 @@ using namespace std;
 struct Shape
 {
   virtual ~Shape() = default;
-  virtual Trace raycast(Vector3f A, Vector3f B, Vector3f boxHalfSize) const = 0;
+  virtual Trace raycast(Vec3f A, Vec3f B, Vec3f boxHalfSize) const = 0;
 };
 
 const Shape* getShapeBox();

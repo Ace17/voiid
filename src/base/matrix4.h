@@ -69,9 +69,9 @@ Matrix4f operator * (Matrix4f const& A, Matrix4f const& B)
 }
 
 inline
-Vector4f operator * (Matrix4f const& A, Vector4f v)
+Vec4f operator * (Matrix4f const& A, Vec4f v)
 {
-  Vector4f r;
+  Vec4f r;
 
   r.x = A[0][0] * v.x + A[0][1] * v.y + A[0][2] * v.z + A[0][3] * v.w;
   r.y = A[1][0] * v.x + A[1][1] * v.y + A[1][2] * v.z + A[1][3] * v.w;
@@ -82,7 +82,7 @@ Vector4f operator * (Matrix4f const& A, Vector4f v)
 }
 
 inline
-Matrix4f translate(Vector3f v)
+Matrix4f translate(Vec3f v)
 {
   Matrix4f r(0);
 
@@ -99,7 +99,7 @@ Matrix4f translate(Vector3f v)
 }
 
 inline
-Matrix4f scale(Vector3f v)
+Matrix4f scale(Vec3f v)
 {
   Matrix4f r(0);
   r[0][0] = v.x;
@@ -193,10 +193,10 @@ Matrix4f rotateZ(float angle)
 inline
 Matrix4f invertStandardMatrix(const Matrix4f& m)
 {
-  const Vector3f u(m[0][0], m[1][0], m[2][0]);
-  const Vector3f v(m[0][1], m[1][1], m[2][1]);
-  const Vector3f w(m[0][2], m[1][2], m[2][2]);
-  const Vector3f t(m[0][3], m[1][3], m[2][3]);
+  const Vec3f u(m[0][0], m[1][0], m[2][0]);
+  const Vec3f v(m[0][1], m[1][1], m[2][1]);
+  const Vec3f w(m[0][2], m[1][2], m[2][2]);
+  const Vec3f t(m[0][3], m[1][3], m[2][3]);
 
   Matrix4f r(0);
 
@@ -222,7 +222,7 @@ Matrix4f invertStandardMatrix(const Matrix4f& m)
 }
 
 inline
-Matrix4f lookAt(Vector3f eye, Vector3f center, Vector3f up)
+Matrix4f lookAt(Vec3f eye, Vec3f center, Vec3f up)
 {
   auto f = normalize(center - eye);
   auto s = normalize(crossProduct(f, up));
