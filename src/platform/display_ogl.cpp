@@ -17,11 +17,9 @@
 #include "base/matrix4.h"
 #include "base/span.h"
 #include "engine/graphics_backend.h"
-#include "engine/rendermesh.h"
 #include "engine/stats.h"
 #include "misc/file.h"
 #include "render/picture.h"
-#include "render/renderpass.h"
 
 #include "glad.h"
 #include "SDL.h" // SDL_INIT_VIDEO
