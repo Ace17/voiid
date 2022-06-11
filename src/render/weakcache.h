@@ -12,13 +12,18 @@ struct WeakCache
   {
     std::shared_ptr<T> r;
 
-    if(entries.find(key) == entries.end())
+    auto i = entries.find(key);
+
+    if(i != entries.end())
+      r = i->second.lock();
+
+    if(!r)
     {
       r = onCacheMiss(key);
       entries[key] = r;
     }
 
-    return entries[key].lock();
+    return r;
   }
 
   Delegate<std::unique_ptr<T>(Key)> onCacheMiss;
