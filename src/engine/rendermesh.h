@@ -20,7 +20,7 @@ struct ITexture;
 struct SingleRenderMesh
 {
   // renderer stuff
-  IVertexBuffer* vb {};
+  std::shared_ptr<IVertexBuffer> vb;
   std::shared_ptr<ITexture> diffuse;
   std::shared_ptr<ITexture> lightmap;
   std::shared_ptr<ITexture> normal;

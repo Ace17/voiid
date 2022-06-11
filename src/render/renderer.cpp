@@ -212,7 +212,7 @@ struct MeshRenderPass
     backend->setUniformMatrixFloat4(MeshShader::Uniform::MVP, &MVP[0][0]);
     backend->setUniformFloat3(MeshShader::Uniform::CameraPos, cmd.camera.pos.x, cmd.camera.pos.y, cmd.camera.pos.z);
 
-    backend->useVertexBuffer(model.vb);
+    backend->useVertexBuffer(model.vb.get());
 
     backend->enableVertexAttribute(MeshShader::Attribute::positionLoc, 3, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, x));
     backend->enableVertexAttribute(MeshShader::Attribute::normalLoc, 3, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, nx));
@@ -305,7 +305,7 @@ struct UiRenderPass : RenderPass
 
     backend->setUniformMatrixFloat4(TextShader::Uniform::MVP, &MVP[0][0]);
 
-    backend->useVertexBuffer(model.vb);
+    backend->useVertexBuffer(model.vb.get());
 
     backend->enableVertexAttribute(TextShader::Attribute::positionLoc, 3, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, x));
     backend->enableVertexAttribute(TextShader::Attribute::uvDiffuseLoc, 2, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, diffuse_u));
@@ -523,7 +523,6 @@ private:
   PostProcessRenderPass m_postprocRenderPass;
 
   WeakCache<std::string, ITexture> m_textureCache;
-  std::vector<std::unique_ptr<IVertexBuffer>> m_vbs;
   std::shared_ptr<ITexture> m_fontTexture;
 
   std::vector<RenderMesh> loadFontModels(String path, int COLS, int ROWS)
@@ -580,10 +579,8 @@ private:
   {
     for(auto& model : mesh.singleMeshes)
     {
-      auto vb = backend->createVertexBuffer();
-      vb->upload((uint8_t*)model.vertices.data(), sizeof(model.vertices[0]) * model.vertices.size());
-      model.vb = vb.get();
-      m_vbs.push_back(std::move(vb));
+      model.vb = backend->createVertexBuffer();
+      model.vb->upload((uint8_t*)model.vertices.data(), sizeof(model.vertices[0]) * model.vertices.size());
     }
   }
 
