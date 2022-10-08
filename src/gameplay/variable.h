@@ -1,6 +1,7 @@
 #pragma once
 
 #include "game.h"
+#include <functional>
 
 struct HandleWithDeleter : Handle
 {
