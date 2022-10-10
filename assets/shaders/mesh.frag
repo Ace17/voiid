@@ -3,15 +3,21 @@
 precision mediump float;
 
 // Uniforms
-layout(location = 2) uniform vec3 CameraPos;
-layout(location = 3) uniform vec4 fragOffset;
-layout(location = 4) uniform sampler2D DiffuseTex;
-layout(location = 5) uniform sampler2D LightmapTex;
-layout(location = 6) uniform sampler2D NormalTex;
-layout(location = 7) uniform vec3 ambientLight;
-layout(location = 8) uniform int LightCount;
-layout(location = 9) uniform vec3 LightPos[32];
-layout(location = 41) uniform vec3 LightColor[32];
+layout(std140, binding=0) uniform MyUniformBlock
+{
+  mat4 M;
+  mat4 MVP;
+  vec4 fragOffset;
+  vec3 CameraPos;
+  vec3 ambientLight;
+  vec3 LightPos[32];
+  vec3 LightColor[32];
+  int LightCount;
+};
+
+layout(location = 0) uniform sampler2D DiffuseTex;
+layout(location = 1) uniform sampler2D LightmapTex;
+layout(location = 2) uniform sampler2D NormalTex;
 
 // Interpolated values from the vertex shader
 layout(location = 0) in vec2 UV;

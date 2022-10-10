@@ -160,24 +160,18 @@ struct MeshRenderPass
 
     backend->useGpuProgram(m_meshShader.get());
 
-    backend->setUniformFloat3(MeshShader::Uniform::ambientLoc, m_ambientLight, m_ambientLight, m_ambientLight);
-    backend->setUniformFloat4(MeshShader::Uniform::colorId, 0, 0, 0, 0);
-
-    assert(m_lights.size() < 32);
-    backend->setUniformInt(MeshShader::Uniform::LightCountLoc, (int)m_lights.size());
-
-    for(auto& light : m_lights)
+    // Must match the uniform block in mesh.frag and mesh.vert
+    struct MyUniformBlock
     {
-      const auto i = int(&light - m_lights.data());
-      backend->setUniformFloat3(MeshShader::Uniform::LightPosLoc + i, light.pos.x, light.pos.y, light.pos.z);
-      backend->setUniformFloat3(MeshShader::Uniform::LightColorLoc + i, light.color.x, light.color.y, light.color.z);
-    }
-
-    if(cmd.blinking)
-    {
-      if(GetSteadyClockMs() % 100 < 50)
-        backend->setUniformFloat4(MeshShader::Uniform::colorId, 0.8, 0.4, 0.4, 0);
-    }
+      Matrix4f M;
+      Matrix4f MVP;
+      Vec4f fragOffset;
+      Vec4f cameraPos;
+      Vec4f ambientLight;
+      Vec4f lightPos[32];
+      Vec4f lightColor[32];
+      int lightCount;
+    };
 
     // Texture Unit 0: Diffuse
     model.diffuse->bind(0);
@@ -205,12 +199,37 @@ struct MeshRenderPass
     static const float far_ = 1000.0f;
     const auto perspective = ::perspective(fovy, m_aspectRatio, near_, far_);
 
-    auto MV = pos * rotate * scale;
-    auto MVP = perspective * view * MV;
+    const auto MV = pos * rotate * scale;
+    const auto MVP = perspective * view * MV;
 
-    backend->setUniformMatrixFloat4(MeshShader::Uniform::M, &MV[0][0]);
-    backend->setUniformMatrixFloat4(MeshShader::Uniform::MVP, &MVP[0][0]);
-    backend->setUniformFloat3(MeshShader::Uniform::CameraPos, cmd.camera.pos.x, cmd.camera.pos.y, cmd.camera.pos.z);
+    {
+      MyUniformBlock ub {};
+      ub.ambientLight = { m_ambientLight, m_ambientLight, m_ambientLight, 0 };
+      ub.lightCount = m_lights.size();
+
+      assert(m_lights.size() < 32);
+
+      for(auto& light : m_lights)
+      {
+        const auto i = int(&light - m_lights.data());
+        ub.lightPos[i] = { light.pos.x, light.pos.y, light.pos.z, 1 };
+        ub.lightColor[i] = { light.color.x, light.color.y, light.color.z, 1 };
+      }
+
+      if(cmd.blinking)
+      {
+        if(GetSteadyClockMs() % 100 < 50)
+        {
+          ub.fragOffset = { 0.8, 0.4, 0.4, 0.0 };
+        }
+      }
+
+      ub.M = transpose(MV);
+      ub.MVP = transpose(MVP);
+      ub.cameraPos = { cmd.camera.pos.x, cmd.camera.pos.y, cmd.camera.pos.z, 1 };
+
+      backend->setUniformBlock(&ub, sizeof ub);
+    }
 
     backend->useVertexBuffer(model.vb.get());
 
@@ -228,17 +247,9 @@ struct MeshRenderPass
   {
     enum Uniform
     {
-      M = 0,
-      MVP = 1,
-      CameraPos = 2,
-      colorId = 3,
-      DiffuseTex = 4,
-      LightmapTex = 5,
-      NormalTex = 6,
-      ambientLoc = 7,
-      LightCountLoc = 8,
-      LightPosLoc = 9,
-      LightColorLoc = 41,
+      DiffuseTex = 0,
+      LightmapTex = 1,
+      NormalTex = 2,
     };
 
     enum Attribute
