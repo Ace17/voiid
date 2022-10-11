@@ -175,15 +175,12 @@ struct MeshRenderPass
 
     // Texture Unit 0: Diffuse
     model.diffuse->bind(0);
-    backend->setUniformInt(MeshShader::Uniform::DiffuseTex, 0);
 
     // Texture Unit 1: Lightmap
     model.lightmap->bind(1);
-    backend->setUniformInt(MeshShader::Uniform::LightmapTex, 1);
 
     // Texture Unit 2: Normalmap
     model.normal->bind(2);
-    backend->setUniformInt(MeshShader::Uniform::NormalTex, 2);
 
     auto const forward = cmd.camera.dir.rotate(Vec3f(1, 0, 0));
     auto const up = cmd.camera.dir.rotate(Vec3f(0, 0, 1));
@@ -296,7 +293,6 @@ struct UiRenderPass : RenderPass
 
     // Texture Unit 0: Diffuse
     model.diffuse->bind(0);
-    backend->setUniformInt(TextShader::Uniform::DiffuseTex, 0);
 
     auto const forward = Vec3f(0, 1, 0);
     auto const up = Vec3f(0, 0, 1);

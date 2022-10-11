@@ -29,12 +29,6 @@ const QuadVertex screenQuad[] =
 
 namespace HdrShader
 {
-enum Uniform
-{
-  InputTex1 = 0,
-  InputTex2 = 1,
-};
-
 enum Attribute
 {
   positionLoc = 0,
@@ -46,8 +40,7 @@ namespace BloomShader
 {
 enum Uniform
 {
-  InputTex = 0,
-  IsThreshold = 1,
+  IsThreshold = 0,
 };
 
 enum Attribute
@@ -90,7 +83,6 @@ struct PostProcessing
 
         // Texture Unit 0
         inputTex->bind(0);
-        backend->setUniformInt(BloomShader::Uniform::InputTex, 0);
 
         backend->setRenderTarget(outputFramebuffer);
         backend->draw(6);
@@ -114,11 +106,9 @@ struct PostProcessing
 
     // Texture Unit 0
     m_hdrFramebuffer->getColorTexture()->bind(0);
-    backend->setUniformInt(HdrShader::Uniform::InputTex1, 0);
 
     // Texture Unit 1
     m_bloomFramebuffer[0]->getColorTexture()->bind(1);
-    backend->setUniformInt(HdrShader::Uniform::InputTex2, 1);
 
     backend->useVertexBuffer(m_quadVbo.get());
 

@@ -3,8 +3,8 @@
 precision mediump float;
 
 // Uniforms
-layout(location = 0) uniform sampler2D InputTex1;
-layout(location = 1) uniform sampler2D InputTex2;
+layout(binding = 0) uniform sampler2D InputTex1;
+layout(binding = 1) uniform sampler2D InputTex2;
 
 // Interpolated values from the vertex shader
 layout(location = 0) in vec2 UV;

@@ -3,7 +3,7 @@
 precision mediump float;
 
 // Uniforms
-layout(location = 1) uniform sampler2D DiffuseTex;
+layout(binding = 0) uniform sampler2D DiffuseTex;
 
 // Interpolated values from the vertex shader
 layout(location = 0) in vec2 UV;

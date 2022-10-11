@@ -15,9 +15,9 @@ layout(std140, binding=0) uniform MyUniformBlock
   int LightCount;
 };
 
-layout(location = 0) uniform sampler2D DiffuseTex;
-layout(location = 1) uniform sampler2D LightmapTex;
-layout(location = 2) uniform sampler2D NormalTex;
+layout(binding = 0) uniform sampler2D DiffuseTex;
+layout(binding = 1) uniform sampler2D LightmapTex;
+layout(binding = 2) uniform sampler2D NormalTex;
 
 // Interpolated values from the vertex shader
 layout(location = 0) in vec2 UV;
