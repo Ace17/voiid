@@ -425,16 +425,6 @@ struct OpenGlGraphicsBackend : IGraphicsBackend
     SAFE_GL(glUniform1i(id, value));
   }
 
-  void setUniformFloat3(int id, float x, float y, float z) override
-  {
-    SAFE_GL(glUniform3f(id, x, y, z));
-  }
-
-  void setUniformFloat4(int id, float x, float y, float z, float w) override
-  {
-    SAFE_GL(glUniform4f(id, x, y, z, w));
-  }
-
   void setUniformBlock(void* ptr, size_t size) override
   {
     glBindBuffer(GL_UNIFORM_BUFFER, m_uniformBuffer);
