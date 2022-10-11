@@ -420,11 +420,6 @@ struct OpenGlGraphicsBackend : IGraphicsBackend
     SAFE_GL(glVertexAttribPointer(id, dim, GL_FLOAT, GL_FALSE, stride, (void*)(uintptr_t)offset));
   }
 
-  void setUniformInt(int id, int value) override
-  {
-    SAFE_GL(glUniform1i(id, value));
-  }
-
   void setUniformBlock(void* ptr, size_t size) override
   {
     glBindBuffer(GL_UNIFORM_BUFFER, m_uniformBuffer);

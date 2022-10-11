@@ -79,7 +79,7 @@ struct PostProcessing
 
     auto oneBlurringPass = [&] (ITexture* inputTex, IFrameBuffer* outputFramebuffer, bool isThreshold = false)
       {
-        backend->setUniformInt(BloomShader::Uniform::IsThreshold, isThreshold);
+        backend->setUniformBlock(&isThreshold, sizeof isThreshold);
 
         // Texture Unit 0
         inputTex->bind(0);

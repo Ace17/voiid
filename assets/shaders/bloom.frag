@@ -3,8 +3,13 @@
 precision mediump float;
 
 // Uniforms
+
+layout(std140, binding=0) uniform MyUniformBlock
+{
+  bool IsThreshold;
+};
+
 layout(binding = 0) uniform sampler2D InputTex;
-layout(location = 0) uniform bool IsThreshold;
 
 // Interpolated values from the vertex shader
 layout(location = 0) in vec2 UV;
