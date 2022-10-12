@@ -3,7 +3,7 @@
 
 SOUNDS_SRC+=$(wildcard assets/sounds/*.ogg)
 SOUNDS_SRC+=$(wildcard assets/music/*.ogg)
-TARGETS+=$(SOUNDS_SRC:assets/%.ogg=res/%.ogg)
+RESOURCES+=$(SOUNDS_SRC:assets/%.ogg=res/%.ogg)
 
 res/%.ogg: assets/%.ogg
 	@mkdir -p $(dir $@)
@@ -13,15 +13,16 @@ res/%.ogg: assets/%.ogg
 #-----------------------------------
 # Fonts
 
-TARGETS+=res/font.png res/white.png
+RESOURCES+=res/font.png
+RESOURCES+=res/white.png
 
 #-----------------------------------
 # ROOMS
 
 ROOMS+=$(wildcard assets/rooms/*)
-TARGETS+=$(ROOMS:assets/%=res/%/room.settings)
-TARGETS+=$(ROOMS:assets/%=res/%/room.fbx)
-TARGETS+=$(ROOMS:assets/%=res/%/room.render)
+RESOURCES+=$(ROOMS:assets/%=res/%/room.settings)
+RESOURCES+=$(ROOMS:assets/%=res/%/room.fbx)
+RESOURCES+=$(ROOMS:assets/%=res/%/room.render)
 
 res/%/room.fbx: assets/%/room.blend ./scripts/export_from_blender_to_fbx.py
 	@mkdir -p $(dir $@)
@@ -31,7 +32,7 @@ res/%/room.fbx: assets/%/room.blend ./scripts/export_from_blender_to_fbx.py
 # Meshes
 
 SPRITES_SRC+=$(wildcard assets/sprites/*.blend)
-TARGETS+=$(SPRITES_SRC:assets/%.blend=res/%.render)
+RESOURCES+=$(SPRITES_SRC:assets/%.blend=res/%.render)
 
 res/%.fbx: assets/%.blend ./scripts/export_from_blender_to_fbx.py
 	@mkdir -p $(dir $@)
@@ -46,7 +47,7 @@ res/%.render: res/%.fbx $(BIN_HOST)/meshcooker.exe
 
 SHADERS_SRC+=$(wildcard assets/shaders/*.vert)
 SHADERS_SRC+=$(wildcard assets/shaders/*.frag)
-TARGETS+=$(SHADERS_SRC:assets/%=res/%)
+RESOURCES+=$(SHADERS_SRC:assets/%=res/%)
 
 res/%.frag: assets/%.frag
 	@mkdir -p $(dir $@)
@@ -61,7 +62,12 @@ res/%.vert: assets/%.vert
 	@cp "$<" "$@"
 
 #-----------------------------------
+# fallback copy
 res/%: assets/%
 	@mkdir -p $(dir $@)
 	@cp "$<" "$@"
+
+resources: $(RESOURCES)
+
+TARGETS+=$(RESOURCES)
 
