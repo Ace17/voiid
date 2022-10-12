@@ -73,20 +73,6 @@ SRCS_MESHCOOKER:=\
 	src/render/mesh_import.cpp\
 	src/render/fbx_import.cpp\
 
-#-----------------------------------
-$(BIN_HOST):
-	@mkdir -p "$@"
-
-$(BIN_HOST)/%.cpp.o: %.cpp
-	@mkdir -p $(dir $@)
-	@echo [HOST] compile "$@"
-	g++ -Isrc -Iengine/src -c "$^" -o "$@"
-
-$(BIN_HOST)/meshcooker.exe: $(SRCS_MESHCOOKER:%=$(BIN_HOST)/%.o)
-	@mkdir -p $(dir $@)
-	g++ $^ -o '$@'
-
-
 #------------------------------------------------------------------------------
 
 SRCS_GAME:=\
@@ -123,6 +109,8 @@ $(BIN)/rel/game$(EXT): $(SRCS:%=$(BIN)/%.o)
 
 TARGETS+=$(BIN)/rel/game$(EXT)
 
+game: $(BIN)/rel/game$(EXT)
+
 #------------------------------------------------------------------------------
 include assets/project.mk
 
@@ -149,5 +137,20 @@ $(BIN)/tests$(EXT): $(SRCS_TESTS:%=$(BIN)/%.o)
 	$(CXX) $^ -o '$@' $(LDFLAGS)
 
 TARGETS+=$(BIN)/tests$(EXT)
+
+#------------------------------------------------------------------------------
+$(BIN_HOST):
+	@mkdir -p "$@"
+
+$(BIN_HOST)/%.cpp.o: %.cpp
+	@mkdir -p $(dir $@)
+	@echo [HOST] compile "$@"
+	g++ -Isrc -c "$^" -o "$@"
+
+$(BIN_HOST)/meshcooker.exe: $(SRCS_MESHCOOKER:%=$(BIN_HOST)/%.o)
+	@mkdir -p $(dir $@)
+	g++ $^ -o '$@'
+
+TARGETS+=$(BIN_HOST)/meshcooker.exe
 
 include build/common.mak
