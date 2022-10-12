@@ -42,7 +42,7 @@ Trace Convex::trace(Vector A, Vector B, Vector boxSize) const
     if(distA > 0 && distB <= 0)
     {
       float fraction = (distA - epsilon) / (distA - distB);
-      fraction = clamp(fraction, 0.0f, 1.0f);
+      fraction = ::clamp(fraction, 0.0f, 1.0f);
 
       if(fraction > enterBrush)
       {
@@ -55,7 +55,7 @@ Trace Convex::trace(Vector A, Vector B, Vector boxSize) const
     if(distA <= 0 && distB > 0)
     {
       float fraction = (distA + epsilon) / (distA - distB);
-      fraction = clamp(fraction, 0.0f, 1.0f);
+      fraction = ::clamp(fraction, 0.0f, 1.0f);
       leaveBrush = max(leaveBrush, fraction);
 
       if(fraction < leaveBrush)
