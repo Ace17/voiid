@@ -6,6 +6,7 @@
 
 // Playlist management, sound loading
 
+#include "base/error.h"
 #include "engine/audio.h"
 #include "engine/stats.h"
 
@@ -122,9 +123,9 @@ struct HighLevelAudio : MixableAudio
 
       m_sounds.insert({ id, loadSoundFile(path) });
     }
-    catch(std::exception const& e)
+    catch(const Error& e)
     {
-      printf("[audio] can't load sound '%.*s' (%s), falling back to default sound.\n", path.len, path.data, e.what());
+      printf("[audio] can't load sound '%.*s' (%.*s), falling back to default sound.\n", path.len, path.data, e.msg.len, e.msg.data);
     }
   }
 

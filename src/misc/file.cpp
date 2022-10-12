@@ -4,10 +4,10 @@
 // published by the Free Software Foundation, either version 3 of the
 // License, or (at your option) any later version.
 
+#include "base/error.h"
 #include "file.h"
 
 #include <cstdio>
-#include <stdexcept>
 
 using namespace std;
 
@@ -19,7 +19,7 @@ string read(String path_)
   FILE* fp = fopen(path.c_str(), "rb");
 
   if(!fp)
-    throw runtime_error("Can't open file '" + path + "' for reading");
+    throw Error("Can't open file '" + path + "' for reading");
 
   fseek(fp, 0, SEEK_END);
   const auto size = ftell(fp);
@@ -40,7 +40,7 @@ void write(String path_, Span<const uint8_t> data)
   FILE* fp = fopen(path.c_str(), "wb");
 
   if(!fp)
-    throw runtime_error("Can't open file '" + path + "' for writing");
+    throw Error("Can't open file '" + path + "' for writing");
 
   fwrite(data.data, 1, data.len, fp);
   fflush(fp);
