@@ -38,11 +38,6 @@ enum Attribute
 
 namespace BloomShader
 {
-enum Uniform
-{
-  IsThreshold = 0,
-};
-
 enum Attribute
 {
   positionLoc = 0,
@@ -79,7 +74,15 @@ struct PostProcessing
 
     auto oneBlurringPass = [&] (ITexture* inputTex, IFrameBuffer* outputFramebuffer, bool isThreshold = false)
       {
-        backend->setUniformBlock(&isThreshold, sizeof isThreshold);
+        struct MyUniformBlock
+        {
+          int IsThreshold;
+        };
+
+        MyUniformBlock block {};
+        block.IsThreshold = isThreshold ? 1 : 0;
+
+        backend->setUniformBlock(&block, sizeof block);
 
         // Texture Unit 0
         inputTex->bind(0);

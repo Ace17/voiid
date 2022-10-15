@@ -6,7 +6,7 @@ precision mediump float;
 
 layout(std140, binding=0) uniform MyUniformBlock
 {
-  bool IsThreshold;
+  int IsThreshold;
 };
 
 layout(binding = 0) uniform sampler2D InputTex;
@@ -21,7 +21,7 @@ const float offset = 1.0 / 600.0;
 
 void main()
 {
-    if(IsThreshold)
+    if(IsThreshold != 0)
     {
       color = texture(InputTex, UV.xy);
       if(length(color.rgb) < 3.5)
