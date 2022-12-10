@@ -24,14 +24,19 @@ struct BoxShape : Shape
     Convex b;
     b.planes.resize(6);
 
-    b.planes[0] = Plane { Vec3f(-1, 0, 0), 0 };
-    b.planes[1] = Plane { Vec3f(+1, 0, 0), 1 };
-    b.planes[2] = Plane { Vec3f(0, -1, 0), 0 };
-    b.planes[3] = Plane { Vec3f(0, +1, 0), 1 };
-    b.planes[4] = Plane { Vec3f(0, 0, -1), 0 };
-    b.planes[5] = Plane { Vec3f(0, 0, +1), 1 };
+    // cast a ray against the minkowski sum of both boxes
+    const auto cx = boxHalfSize.x;
+    const auto cy = boxHalfSize.y;
+    const auto cz = boxHalfSize.z;
 
-    return b.trace(A, B, boxHalfSize);
+    b.planes[0] = Plane { Vec3f(-1, 0, 0), 0 + cx };
+    b.planes[1] = Plane { Vec3f(+1, 0, 0), 1 + cx };
+    b.planes[2] = Plane { Vec3f(0, -1, 0), 0 + cy };
+    b.planes[3] = Plane { Vec3f(0, +1, 0), 1 + cy };
+    b.planes[4] = Plane { Vec3f(0, 0, -1), 0 + cz };
+    b.planes[5] = Plane { Vec3f(0, 0, +1), 1 + cz };
+
+    return b.trace(A, B);
   }
 };
 
