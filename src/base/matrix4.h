@@ -134,7 +134,7 @@ Matrix4f rotateX(float angle)
   r[1][1] = c;
   r[1][2] = -s;
 
-  r[2][2] = s;
+  r[2][1] = s;
   r[2][2] = c;
 
   r[3][3] = 1;
