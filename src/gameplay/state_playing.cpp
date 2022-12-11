@@ -30,6 +30,14 @@ std::unique_ptr<Player> makeHero();
 
 namespace
 {
+Actor getDebugActor(Entity* entity)
+{
+  auto rect = entity->getBox();
+  auto r = Actor(rect.pos, MDL_RECT);
+  r.scale = rect.size;
+  return r;
+}
+
 struct EntityConfigImpl : IEntityConfig
 {
   string getString(const char* varName, string defaultValue) override
@@ -352,16 +360,6 @@ struct GameState : Scene, private IGame
   bool m_debugFirstTime = true;
 
   vector<unique_ptr<Entity>> m_entities;
-
-  // static stuff
-
-  static Actor getDebugActor(Entity* entity)
-  {
-    auto rect = entity->getBox();
-    auto r = Actor(rect.pos, MDL_RECT);
-    r.scale = rect.size;
-    return r;
-  }
 };
 }
 
