@@ -56,8 +56,8 @@ void main()
     totalLight += LightColor[i] * incidenceRatio * attenuation * texture(DiffuseTex, UV).rgb;
 
     // specular
-    const float material_shininess = 2048.0;
-    const float material_specular = 0.001;
+    const float material_shininess = 256.0;
+    const float material_specular = 0.01;
     vec3 viewDir = normalize(CameraPos - vPos);
     vec3 halfwayDir = normalize((viewDir + lightDir) * 0.5);
     float angle = max(dot(normal, halfwayDir), 0.0);
