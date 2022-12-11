@@ -115,12 +115,17 @@ private:
   {
     m_control.debug = m_debugMode;
 
+    auto const t0 = GetSteadyClockUs();
+
     auto next = m_scene->tick(m_control);
     m_control.look_horz = 0;
     m_control.look_vert = 0;
 
     if(next != m_scene.get())
       m_scene.reset(next);
+
+    auto const t1 = GetSteadyClockUs();
+    Stat("Tick duration", (t1 - t0) / 1000.0f);
   }
 
   void registerUserInputActions()
