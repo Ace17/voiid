@@ -1,7 +1,7 @@
 // immediate-mode gathering of named statistics.
 // Values are smoothed over AVERAGE_PERIOD.
-#include "stats.h"
 #include "misc/time.h"
+#include "stats.h"
 #include <map>
 #include <vector>
 
