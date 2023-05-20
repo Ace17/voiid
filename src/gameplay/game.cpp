@@ -11,11 +11,9 @@
 #include "state_machine.h"
 #include <string>
 
-using namespace std;
-
 extern const Span<const Resource> AllResources;
 
-Scene* createGame(View* view, Span<const string> args)
+Scene* createGame(View* view, Span<const std::string> args)
 {
   view->setTitle("Voiid");
 
