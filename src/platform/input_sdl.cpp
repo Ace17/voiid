@@ -6,10 +6,10 @@
 
 // User input event source: SDL implementation
 
+#include "base/error.h"
 #include "engine/input.h"
 #include "SDL.h"
 #include <map>
-#include <stdexcept>
 #include <string>
 
 namespace
@@ -82,7 +82,10 @@ struct SdlUserInput : UserInput
   SdlUserInput()
   {
     if(SDL_InitSubSystem(SDL_INIT_EVENTS))
-      throw std::runtime_error(std::string("Can't init input: ") + SDL_GetError());
+    {
+      char buffer[256];
+      throw Error(format(buffer, "Can't init input: %s", SDL_GetError()));
+    }
 
     m_quitDelegate = &unbound;
   }

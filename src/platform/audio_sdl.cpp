@@ -6,14 +6,11 @@
 
 // SDL audio output
 
+#include "base/error.h"
 #include "engine/audio.h" // IAudioMixer
 #include "engine/audio_backend.h"
 
-#include <memory>
-#include <stdexcept>
 #include <SDL.h>
-
-using namespace std;
 
 namespace
 {
@@ -24,7 +21,7 @@ struct SdlAudioBackend : IAudioBackend
     auto ret = SDL_InitSubSystem(SDL_INIT_AUDIO);
 
     if(ret == -1)
-      throw runtime_error("Can't init audio subsystem");
+      throw Error("Can't init audio subsystem");
 
     SDL_AudioSpec desired {};
     desired.freq = SAMPLERATE;
@@ -39,7 +36,7 @@ struct SdlAudioBackend : IAudioBackend
     if(audioDevice == 0)
     {
       printf("[sdl_audio] %s\n", SDL_GetError());
-      throw runtime_error("Can't open audio");
+      throw Error("Can't open audio");
     }
 
     printf("[sdl_audio] %d Hz %d channels\n",
