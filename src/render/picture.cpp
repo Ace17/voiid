@@ -5,7 +5,7 @@
 
 namespace
 {
-void blit(PictureView dst, Vector2i dstPos, PictureView src, Vector2i srcPos, Size2i size)
+void blit(PictureView dst, Vec2i dstPos, PictureView src, Vec2i srcPos, Size2i size)
 {
   const auto bpp = 4;
   const uint8_t* srcPels = src.pixels + srcPos.y * src.stride * bpp + srcPos.x * bpp;
@@ -40,8 +40,8 @@ Picture addBorderToTiles(PictureView src, int cols, int rows)
     for(int col = 0; col < cols; ++col)
     {
       const auto srcTileSize = Size2i(srcTileWidth, srcTileHeight);
-      const auto srcPos = Vector2i(col * srcTileWidth, row * srcTileHeight);
-      const auto dstPos = Vector2i(col * dstTileWidth, row * dstTileHeight) + Vector2i(border, border);
+      const auto srcPos = Vec2i(col * srcTileWidth, row * srcTileHeight);
+      const auto dstPos = Vec2i(col * dstTileWidth, row * dstTileHeight) + Vec2i(border, border);
       blit(dst, dstPos, src, srcPos, srcTileSize);
     }
   }

@@ -219,7 +219,7 @@ Room loadRoom(String filename)
 {
   Room r;
 
-  r.start = Vector3i(0, 0, 2);
+  r.start = Vec3i(0, 0, 2);
 
   auto importedMesh = importMesh(filename);
 

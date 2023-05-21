@@ -20,7 +20,7 @@ using namespace std;
 
 struct Room
 {
-  Vector3i start;
+  Vec3i start;
 
   struct Thing
   {

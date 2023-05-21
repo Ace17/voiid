@@ -226,9 +226,9 @@ inline auto crossProduct(GenericVector3<T> a, GenericVector3<T> b)
 }
 
 using Vec2f = GenericVector<float>;
+using Vec2i = GenericVector<int>;
 using Vec3f = GenericVector3<float>;
-using Vector2i = GenericVector<int>;
-using Vector3i = GenericVector3<int>;
+using Vec3i = GenericVector3<int>;
 
 struct Vec4f
 {
