@@ -30,8 +30,6 @@
 #include "stats.h"
 #include "video_capture.h"
 
-using namespace std;
-
 auto const TIMESTEP = 10;
 auto const RESOLUTION = Vec2i(1280, 720);
 auto const CAPTURE_FRAME_PERIOD = 40;
