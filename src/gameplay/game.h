@@ -14,7 +14,6 @@
 #include "base/view.h"
 #include <memory>
 
-typedef Matrix3<int> Matrix;
 typedef Vec3f Vector;
 
 struct Entity;
