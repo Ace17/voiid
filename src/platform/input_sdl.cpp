@@ -7,6 +7,7 @@
 // User input event source: SDL implementation
 
 #include "base/error.h"
+#include "base/logger.h"
 #include "engine/input.h"
 #include "SDL.h"
 #include <map>
@@ -16,12 +17,12 @@ namespace
 {
 void unbound()
 {
-  printf("input: this key/event is unbound\n");
+  logMsg("input: this key/event is unbound");
 }
 
 void unbound2(int)
 {
-  printf("input: this key/event is unbound\n");
+  logMsg("input: this key/event is unbound");
 }
 
 void unbound3(int, int)
