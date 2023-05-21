@@ -92,13 +92,23 @@ private:
   {
     const auto timeStep = m_slowMotion ? TIMESTEP * 10 : TIMESTEP;
 
+    int ticksPerFrame = 0;
+
     while(m_lastTime + timeStep < now)
     {
       m_lastTime += timeStep;
 
       if(!m_paused && m_running == AppState::Running)
+      {
         tickGameplay();
+        m_tps.tick(now);
+        Stat("TPS", m_tps.slope());
+      }
+
+      ++ticksPerFrame;
     }
+
+    Stat("Ticks/Frame", ticksPerFrame);
 
     // draw the frame
     m_actors.clear();
@@ -400,9 +410,9 @@ private:
   int m_lastTime;
   int m_lastDisplayFrameTime;
   RateCounter m_fps;
+  RateCounter m_tps;
   Control m_control {};
   vector<string> m_args;
-  unique_ptr<Scene> m_scene;
   bool m_slowMotion = false;
   bool m_fullscreen = false;
   bool m_paused = false;
@@ -417,6 +427,8 @@ private:
 
   string m_textbox;
   int m_textboxDelay = 0;
+
+  unique_ptr<Scene> m_scene;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
