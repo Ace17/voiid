@@ -48,7 +48,7 @@ enum Attribute
 
 struct PostProcessing
 {
-  PostProcessing(IGraphicsBackend* backend, Size2i resolution)
+  PostProcessing(IGraphicsBackend* backend, Vec2i resolution)
     : m_resolution(resolution), backend(backend)
   {
     m_hdrShader = backend->createGpuProgram("hdr", false);
@@ -121,7 +121,7 @@ struct PostProcessing
     backend->draw(6);
   }
 
-  const Size2i m_resolution;
+  const Vec2i m_resolution;
 
   IGraphicsBackend* const backend;
 
@@ -145,7 +145,7 @@ void PostProcessRenderPass::execute(RenderPass::FrameBuffer dst)
   postproc->drawHdrBuffer();
 }
 
-void PostProcessRenderPass::setup(IGraphicsBackend* backend, Size2i resolution)
+void PostProcessRenderPass::setup(IGraphicsBackend* backend, Vec2i resolution)
 {
   postproc = std::make_unique<PostProcessing>(backend, resolution);
 }

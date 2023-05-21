@@ -37,7 +37,7 @@ struct CrumbleBlock : Entity
 
   void touch(Body* other)
   {
-    if(other->pos.z > pos.z + size.cz)
+    if(other->pos.z > pos.z + size.z)
     {
       disappearTimer = 1000;
       game->playSound(SND_DISAPPEAR);

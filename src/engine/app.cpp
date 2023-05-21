@@ -33,10 +33,10 @@
 using namespace std;
 
 auto const TIMESTEP = 10;
-auto const RESOLUTION = Size2i(1280, 720);
+auto const RESOLUTION = Vec2i(1280, 720);
 auto const CAPTURE_FRAME_PERIOD = 40;
 
-IGraphicsBackend* createGraphicsBackend(Size2i resolution);
+IGraphicsBackend* createGraphicsBackend(Vec2i resolution);
 IRenderer* createRenderer(IGraphicsBackend* backend);
 MixableAudio* createAudio();
 UserInput* createUserInput();
@@ -180,7 +180,7 @@ private:
     {
       auto where = Rect3f(
         actor.pos.x, actor.pos.y, actor.pos.z,
-        actor.scale.cx, actor.scale.cy, actor.scale.cz);
+        actor.scale.x, actor.scale.y, actor.scale.z);
       m_renderer->drawActor(where, actor.orientation, (int)actor.model, actor.effect == Effect::Blinking);
     }
 

@@ -51,9 +51,9 @@ struct Hero : Player, Damageable
       view->sendActor(r);
 
     auto eyesPos = r.pos + Vec3f(
-      r.scale.cx * 0.5,
-      r.scale.cy * 0.5,
-      r.scale.cz * 0.9);
+      r.scale.x * 0.5,
+      r.scale.y * 0.5,
+      r.scale.z * 0.9);
 
     view->setCameraPos(eyesPos, r.orientation);
   }

@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "geom.h" // Vec2i
 #include <cassert>
 
 template<typename T>
@@ -33,7 +34,7 @@ struct Matrix2
     other.data = nullptr;
   }
 
-  Matrix2(Size2i size_) : size(size_)
+  Matrix2(Vec2i size_) : size(size_)
   {
     resize(size_);
   }
@@ -43,18 +44,18 @@ struct Matrix2
     delete[] data;
   }
 
-  void resize(Size2i size_)
+  void resize(Vec2i size_)
   {
     delete[] data;
 
     size = size_;
-    data = new T[size.width * size.height];
+    data = new T[size.x * size.y];
 
-    for(int i = 0; i < size.width * size.height; ++i)
+    for(int i = 0; i < size.x * size.y; ++i)
       data[i] = T();
   }
 
-  Size2i size = Size2i(0, 0);
+  Vec2i size = Vec2i(0, 0);
 
   T & get(int x, int y)
   {
@@ -77,16 +78,16 @@ struct Matrix2
   template<typename Lambda>
   void scan(Lambda f)
   {
-    for(int y = 0; y < size.height; y++)
-      for(int x = 0; x < size.width; x++)
+    for(int y = 0; y < size.y; y++)
+      for(int x = 0; x < size.x; x++)
         f(x, y, get(x, y));
   }
 
   template<typename Lambda>
   void scan(Lambda f) const
   {
-    for(int y = 0; y < size.height; y++)
-      for(int x = 0; x < size.width; x++)
+    for(int y = 0; y < size.y; y++)
+      for(int x = 0; x < size.x; x++)
         f(x, y, get(x, y));
   }
 
@@ -95,7 +96,7 @@ struct Matrix2
     if(x < 0 || y < 0)
       return false;
 
-    if(x >= size.width || y >= size.height)
+    if(x >= size.x || y >= size.y)
       return false;
 
     return true;
@@ -106,7 +107,7 @@ private:
 
   int raster(int x, int y) const
   {
-    return y * size.width + x;
+    return y * size.x + x;
   }
 };
 

@@ -16,7 +16,7 @@ struct Lamp : Entity, IEventSink
 {
   Lamp(IEntityConfig* cfg) : link(cfg->getInt("link"))
   {
-    size = Size3f(0.1, 0.1, 0.1);
+    size = Vec3f(0.1, 0.1, 0.1);
     solid = false;
   }
 

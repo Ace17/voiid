@@ -168,7 +168,7 @@ struct OpenGlTexture : ITexture
   void upload(PictureView pic) override
   {
     glBindTexture(GL_TEXTURE_2D, texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, pic.dim.width, pic.dim.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pic.pixels);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, pic.dim.x, pic.dim.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, pic.pixels);
     SAFE_GL(glGenerateMipmap(GL_TEXTURE_2D));
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -195,7 +195,7 @@ struct OpenGlTexture : ITexture
 
 struct OpenGlFrameBuffer : IFrameBuffer
 {
-  OpenGlFrameBuffer(Size2i resolution, bool depth) : resolution(resolution)
+  OpenGlFrameBuffer(Vec2i resolution, bool depth) : resolution(resolution)
   {
     SAFE_GL(glGenFramebuffers(1, &framebuffer));
     SAFE_GL(glBindFramebuffer(GL_FRAMEBUFFER, framebuffer));
@@ -206,7 +206,7 @@ struct OpenGlFrameBuffer : IFrameBuffer
       auto depthTexture = std::make_unique<OpenGlTexture>();
 
       SAFE_GL(glBindTexture(GL_TEXTURE_2D, depthTexture->texture));
-      SAFE_GL(glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, resolution.width, resolution.height, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL));
+      SAFE_GL(glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, resolution.x, resolution.y, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL));
       SAFE_GL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, depthTexture->texture, 0));
 
       this->depthTexture = std::move(depthTexture);
@@ -217,7 +217,7 @@ struct OpenGlFrameBuffer : IFrameBuffer
       auto colorTexture = std::make_unique<OpenGlTexture>();
 
       SAFE_GL(glBindTexture(GL_TEXTURE_2D, colorTexture->texture));
-      SAFE_GL(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, resolution.width, resolution.height, 0, GL_RGBA, GL_FLOAT, nullptr));
+      SAFE_GL(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, resolution.x, resolution.y, 0, GL_RGBA, GL_FLOAT, nullptr));
       SAFE_GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
       SAFE_GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
       SAFE_GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
@@ -238,7 +238,7 @@ struct OpenGlFrameBuffer : IFrameBuffer
     return colorTexture.get();
   }
 
-  const Size2i resolution;
+  const Vec2i resolution;
   GLuint framebuffer;
   std::unique_ptr<ITexture> colorTexture;
   std::unique_ptr<ITexture> depthTexture;
@@ -268,7 +268,7 @@ struct OpenGlVertexBuffer : IVertexBuffer
 
 struct OpenGlGraphicsBackend : IGraphicsBackend
 {
-  OpenGlGraphicsBackend(Size2i resolution)
+  OpenGlGraphicsBackend(Vec2i resolution)
   {
     if(SDL_InitSubSystem(SDL_INIT_VIDEO))
     {
@@ -289,7 +289,7 @@ struct OpenGlGraphicsBackend : IGraphicsBackend
     m_window = SDL_CreateWindow(
       "",
       SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-      resolution.width, resolution.height,
+      resolution.x, resolution.y,
       SDL_WINDOW_OPENGL
       );
 
@@ -325,7 +325,7 @@ struct OpenGlGraphicsBackend : IGraphicsBackend
 
     updateScreenSize();
 
-    printf("[display] init OK ( %dx%d )\n", m_screenSize.width, m_screenSize.height);
+    printf("[display] init OK ( %dx%d )\n", m_screenSize.x, m_screenSize.y);
   }
 
   ~OpenGlGraphicsBackend()
@@ -444,7 +444,7 @@ struct OpenGlGraphicsBackend : IGraphicsBackend
     return std::make_unique<OpenGlVertexBuffer>();
   }
 
-  std::unique_ptr<IFrameBuffer> createFrameBuffer(Size2i resolution, bool depth) override
+  std::unique_ptr<IFrameBuffer> createFrameBuffer(Vec2i resolution, bool depth) override
   {
     return std::make_unique<OpenGlFrameBuffer>(resolution, depth);
   }
@@ -456,12 +456,12 @@ struct OpenGlGraphicsBackend : IGraphicsBackend
     if(!fb)
     {
       auto screenSize = m_screenSize;
-      SAFE_GL(glViewport(0, 0, screenSize.width, screenSize.height));
+      SAFE_GL(glViewport(0, 0, screenSize.x, screenSize.y));
       SAFE_GL(glBindFramebuffer(GL_FRAMEBUFFER, 0));
     }
     else
     {
-      SAFE_GL(glViewport(0, 0, fb->resolution.width, fb->resolution.height));
+      SAFE_GL(glViewport(0, 0, fb->resolution.x, fb->resolution.y));
       SAFE_GL(glBindFramebuffer(GL_FRAMEBUFFER, fb->framebuffer));
     }
   }
@@ -496,8 +496,8 @@ struct OpenGlGraphicsBackend : IGraphicsBackend
 
   void updateScreenSize()
   {
-    Size2i screenSize {};
-    SDL_GL_GetDrawableSize(m_window, &screenSize.width, &screenSize.height);
+    Vec2i screenSize {};
+    SDL_GL_GetDrawableSize(m_window, &screenSize.x, &screenSize.y);
 
     if(screenSize != m_screenSize)
     {
@@ -517,7 +517,7 @@ struct OpenGlGraphicsBackend : IGraphicsBackend
 
 private:
   int m_drawCallCount = 0;
-  Size2i m_screenSize {};
+  Vec2i m_screenSize {};
   IScreenSizeListener* m_screenSizeListener {};
   SDL_Window* m_window;
   SDL_GLContext m_context;
@@ -526,7 +526,7 @@ private:
 };
 }
 
-IGraphicsBackend* createGraphicsBackend(Size2i resolution)
+IGraphicsBackend* createGraphicsBackend(Vec2i resolution)
 {
   return new OpenGlGraphicsBackend(resolution);
 }

@@ -4,158 +4,77 @@
 // published by the Free Software Foundation, either version 3 of the
 // License, or (at your option) any later version.
 
-// Basic geometric types
+// Basic geometric types: Vec2f, Vec2i, Vec3f, Vec3i
 
 #pragma once
 
-///////////////////////////////////////////////////////////////////////////////
-// Dimension
-///////////////////////////////////////////////////////////////////////////////
-
-template<typename T>
-struct GenericSize
+struct Vec2f
 {
-  typedef GenericSize<T> MyType;
+  float x = 0;
+  float y = 0;
 
-  GenericSize() : width(0), height(0)
+  Vec2f() = default;
+  Vec2f(const Vec2f &) = default;
+  Vec2f(float x_, float y_)
+    : x(x_)
+    , y(y_)
   {
   }
 
-  GenericSize(T w, T h) : width(w), height(h)
-  {
-  }
+  friend void operator += (Vec2f& a, Vec2f b) { a = a + b; }
+  friend void operator -= (Vec2f& a, Vec2f b) { a = a - b; }
+  friend void operator *= (Vec2f& a, float b) { a = a * b; }
+  friend void operator /= (Vec2f& a, float b) { a = a / b; }
 
-  template<typename F>
-  friend MyType operator * (MyType const& a, F val)
-  {
-    return MyType(a.width * val, a.height * val);
-  }
+  friend Vec2f operator - (Vec2f v) { return Vec2f{ -v.x, -v.y }; }
+  friend Vec2f operator + (Vec2f a, Vec2f b) { return Vec2f{ a.x + b.x, a.y + b.y }; }
+  friend Vec2f operator - (Vec2f a, Vec2f b) { return Vec2f{ a.x - b.x, a.y - b.y }; }
+  friend Vec2f operator * (Vec2f v, float f) { return Vec2f{ v.x* f, v.y* f }; }
+  friend Vec2f operator * (float f, Vec2f v) { return v * f; }
+  friend Vec2f operator / (Vec2f v, float f) { return Vec2f{ v.x / f, v.y / f }; }
 
-  template<typename F>
-  friend MyType operator / (MyType const& a, F val)
-  {
-    return MyType(a.width / val, a.height / val);
-  }
-
-  bool operator == (GenericSize const& other) const
-  {
-    return width == other.width && height == other.height;
-  }
-
-  bool operator != (GenericSize const& other) const
-  {
-    return !(*this == other);
-  }
-
-  T width, height;
+  friend bool operator == (Vec2f a, Vec2f b) { return a.x == b.x && a.y == b.y; }
 };
 
-template<typename T>
-struct GenericSize3
+struct Vec2i
 {
-  typedef GenericSize3<T> MyType;
+  int x = 0;
+  int y = 0;
 
-  GenericSize3() : cx(0), cy(0), cz(0)
+  Vec2i() = default;
+  Vec2i(const Vec2i &) = default;
+  Vec2i(int x_, int y_)
+    : x(x_)
+    , y(y_)
   {
   }
 
-  GenericSize3(T cx_, T cy_, T cz_) : cx(cx_), cy(cy_), cz(cz_)
-  {
-  }
+  friend void operator += (Vec2i& a, Vec2i b) { a = a + b; }
+  friend void operator -= (Vec2i& a, Vec2i b) { a = a - b; }
+  friend void operator *= (Vec2i& a, int b) { a = a * b; }
+  friend void operator /= (Vec2i& a, int b) { a = a / b; }
 
-  template<typename F>
-  friend MyType operator * (MyType const& a, F val)
-  {
-    return MyType(a.cx * val, a.cy * val, a.cz * val);
-  }
+  friend Vec2i operator - (Vec2i v) { return Vec2i{ -v.x, -v.y }; }
+  friend Vec2i operator + (Vec2i a, Vec2i b) { return Vec2i{ a.x + b.x, a.y + b.y }; }
+  friend Vec2i operator - (Vec2i a, Vec2i b) { return Vec2i{ a.x - b.x, a.y - b.y }; }
+  friend Vec2i operator * (Vec2i v, int f) { return Vec2i{ v.x* f, v.y* f }; }
+  friend Vec2i operator * (int f, Vec2i v) { return v * f; }
+  friend Vec2i operator / (Vec2i v, int f) { return Vec2i{ v.x / f, v.y / f }; }
 
-  T cx, cy, cz;
+  friend bool operator == (Vec2i a, Vec2i b) { return a.x == b.x && a.y == b.y; }
+  friend bool operator != (Vec2i a, Vec2i b) { return !(a == b); }
 };
 
-using Size2f = GenericSize<float>;
-using Size2i = GenericSize<int>;
-using Size3f = GenericSize3<float>;
-using Size3i = GenericSize3<int>;
-
-///////////////////////////////////////////////////////////////////////////////
-// Vector
-///////////////////////////////////////////////////////////////////////////////
-
-template<typename T>
-struct GenericVector
+struct Vec3f
 {
-  typedef GenericVector<T> MyType;
+  float x = 0;
+  float y = 0;
+  float z = 0;
 
-  GenericVector() : x(0), y(0) {}
-  GenericVector(T x_, T y_) : x(x_), y(y_) {}
+  Vec3f() = default;
+  Vec3f(float x_, float y_, float z_) : x(x_), y(y_), z(z_) {}
 
-  MyType operator += (MyType const& other)
-  {
-    x += other.x;
-    y += other.y;
-    return *this;
-  }
-
-  MyType operator -= (MyType const& other)
-  {
-    x -= other.x;
-    y -= other.y;
-    return *this;
-  }
-
-  template<typename F>
-  friend MyType operator * (MyType const& a, F val)
-  {
-    return MyType(a.x * val, a.y * val);
-  }
-
-  template<typename F>
-  friend MyType operator / (MyType const& a, F val)
-  {
-    return MyType(a.x / val, a.y / val);
-  }
-
-  template<typename F>
-  friend MyType operator * (F val, MyType const& a)
-  {
-    return MyType(a.x * val, a.y * val);
-  }
-
-  friend MyType operator + (MyType const& a, MyType const& b)
-  {
-    MyType r = a;
-    r += b;
-    return r;
-  }
-
-  friend MyType operator - (MyType const& a, MyType const& b)
-  {
-    MyType r = a;
-    r -= b;
-    return r;
-  }
-
-  T x, y;
-};
-
-template<typename T>
-struct GenericVector3
-{
-  typedef GenericVector3<T> MyType;
-
-  GenericVector3() : x(0), y(0), z(0)
-  {
-  }
-
-  GenericVector3(T x_, T y_, T z_) : x(x_), y(y_), z(z_)
-  {
-  }
-
-  GenericVector3(GenericSize3<T> size) : x(size.cx), y(size.cy), z(size.cz)
-  {
-  }
-
-  MyType operator += (MyType const& other)
+  Vec3f operator += (Vec3f const& other)
   {
     x += other.x;
     y += other.y;
@@ -163,7 +82,7 @@ struct GenericVector3
     return *this;
   }
 
-  MyType operator -= (MyType const& other)
+  Vec3f operator -= (Vec3f const& other)
   {
     x -= other.x;
     y -= other.y;
@@ -172,63 +91,57 @@ struct GenericVector3
   }
 
   template<typename F>
-  friend MyType operator * (MyType const& a, F val)
+  friend Vec3f operator * (Vec3f const& a, F val)
   {
-    return MyType(a.x * val, a.y * val, a.z * val);
+    return Vec3f(a.x * val, a.y * val, a.z * val);
   }
 
   template<typename F>
-  friend MyType operator * (F val, MyType const& a)
+  friend Vec3f operator * (F val, Vec3f const& a)
   {
-    return MyType(a.x * val, a.y * val, a.z * val);
+    return Vec3f(a.x * val, a.y * val, a.z * val);
   }
 
-  friend MyType operator + (MyType const& a, MyType const& b)
+  friend Vec3f operator + (Vec3f const& a, Vec3f const& b)
   {
-    MyType r = a;
+    Vec3f r = a;
     r += b;
     return r;
   }
 
-  friend MyType operator - (MyType const& a, MyType const& b)
+  friend Vec3f operator - (Vec3f const& a, Vec3f const& b)
   {
-    MyType r = a;
+    Vec3f r = a;
     r -= b;
     return r;
   }
 
-  T x, y, z;
+  bool operator == (Vec3f const& other) const
+  {
+    return x == other.x && y == other.y && z == other.z;
+  }
 };
 
-template<typename T>
-inline T dotProduct(GenericVector3<T> a, GenericVector3<T> b)
+inline float dotProduct(Vec3f a, Vec3f b)
 {
   return a.x * b.x + a.y * b.y + a.z * b.z;
 }
 
-template<typename T>
-double magnitude(GenericVector3<T> v);
+double magnitude(Vec3f v);
 
-template<typename T>
-inline auto normalize(GenericVector3<T> v)
+inline auto normalize(Vec3f v)
 {
   return v * (1.0f / magnitude(v));
 }
 
-template<typename T>
-inline auto crossProduct(GenericVector3<T> a, GenericVector3<T> b)
+inline auto crossProduct(Vec3f a, Vec3f b)
 {
-  GenericVector3<T> r;
+  Vec3f r;
   r.x = a.y * b.z - a.z * b.y;
   r.y = a.z * b.x - b.z * a.x;
   r.z = a.x * b.y - a.y * b.x;
   return r;
 }
-
-using Vec2f = GenericVector<float>;
-using Vec2i = GenericVector<int>;
-using Vec3f = GenericVector3<float>;
-using Vec3i = GenericVector3<int>;
 
 struct Vec4f
 {

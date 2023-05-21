@@ -21,7 +21,7 @@ struct PostProcessRenderPass : RenderPass
   PostProcessRenderPass();
   ~PostProcessRenderPass();
 
-  void setup(IGraphicsBackend* backend, Size2i resolution);
+  void setup(IGraphicsBackend* backend, Vec2i resolution);
   void execute(FrameBuffer dst) override;
 
   RenderPass::FrameBuffer getInputFrameBuffer();

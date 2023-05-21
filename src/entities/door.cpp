@@ -17,7 +17,7 @@ struct Door : Entity, IEventSink
 {
   Door(int link_) : link(link_)
   {
-    size = Size3f(0.5, 2, 2);
+    size = Vec3f(0.5, 2, 2);
     solid = true;
   }
 
@@ -85,7 +85,7 @@ struct AutoDoor : Entity, Switchable
 {
   AutoDoor()
   {
-    size = Size3f(0.5, 2, 2);
+    size = Vec3f(0.5, 2, 2);
     solid = true;
   }
 

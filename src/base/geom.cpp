@@ -9,14 +9,10 @@
 
 #include <cmath>
 
-template<typename T>
-double magnitude(GenericVector3<T> v)
+double magnitude(Vec3f v)
 {
   return sqrt(dotProduct(v, v));
 }
-
-template double magnitude(GenericVector3<double> v);
-template double magnitude(GenericVector3<float> v);
 
 float Quaternion::magnitude() const
 {

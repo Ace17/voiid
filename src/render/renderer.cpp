@@ -188,7 +188,7 @@ struct MeshRenderPass
     auto const target = cmd.camera.pos + forward;
     auto const view = ::lookAt(cmd.camera.pos, target, up);
     auto const pos = ::translate(where.pos);
-    auto const scale = ::scale(Vec3f(where.size.cx, where.size.cy, where.size.cz));
+    auto const scale = ::scale(where.size);
     auto const rotate = quaternionToMatrix(cmd.orientation);
 
     static const float fovy = (float)((60.0f / 180) * PI);
@@ -300,7 +300,7 @@ struct UiRenderPass : RenderPass
     auto const target = cmd.camera.pos + forward;
     auto const view = ::lookAt(cmd.camera.pos, target, up);
     auto const pos = ::translate(where.pos);
-    auto const scale = ::scale(Vec3f(where.size.cx, where.size.cy, where.size.cz));
+    auto const scale = ::scale(where.size);
 
     static const float fovy = (float)((60.0f / 180) * PI);
     static const float near_ = 0.1f;
@@ -360,12 +360,12 @@ struct Renderer : IRenderer, IScreenSizeListener
     m_postprocRenderPass.setup(backend, m_screenSize);
   }
 
-  void onScreenSizeChanged(Size2i screenSize) override
+  void onScreenSizeChanged(Vec2i screenSize) override
   {
     m_screenSize = screenSize;
     m_postprocRenderPass.setup(backend, screenSize);
 
-    printf("[renderer] Screen size changed to: %dx%d\n", screenSize.width, screenSize.height);
+    printf("[renderer] Screen size changed to: %dx%d\n", screenSize.x, screenSize.y);
   }
 
   void setHdr(bool enable) override
@@ -377,7 +377,7 @@ struct Renderer : IRenderer, IScreenSizeListener
   {
     if(enable != m_enableFsaa)
     {
-      Size2i size = m_screenSize;
+      Vec2i size = m_screenSize;
 
       if(enable)
         size = size * 2;
@@ -453,7 +453,7 @@ struct Renderer : IRenderer, IScreenSizeListener
 
   void doRender()
   {
-    const auto aspectRatio = float(m_screenSize.width) / m_screenSize.height;
+    const auto aspectRatio = float(m_screenSize.x) / m_screenSize.y;
     auto screen = RenderPass::FrameBuffer{ nullptr, m_screenSize };
     auto meshRenderTarget = m_enablePostProcessing ? m_postprocRenderPass.getInputFrameBuffer() : screen;
 
@@ -484,10 +484,10 @@ struct Renderer : IRenderer, IScreenSizeListener
   void drawText(Vec2f pos, String text) override
   {
     Rect3f rect;
-    rect.size.cx = 0.25;
-    rect.size.cy = 0;
-    rect.size.cz = 0.25;
-    rect.pos.x = pos.x - text.len * rect.size.cx / 2;
+    rect.size.x = 0.25;
+    rect.size.y = 0;
+    rect.size.z = 0.25;
+    rect.pos.x = pos.x - text.len * rect.size.x / 2;
     rect.pos.y = 0;
     rect.pos.z = pos.y;
 
@@ -499,7 +499,7 @@ struct Renderer : IRenderer, IScreenSizeListener
       for(auto& single : m_fontModel[c].singleMeshes)
         m_uiRenderPass.m_drawCommands.push_back({& single, rect, orientation, cam, false });
 
-      rect.pos.x += rect.size.cx;
+      rect.pos.x += rect.size.x;
     }
   }
 
@@ -514,7 +514,7 @@ struct Renderer : IRenderer, IScreenSizeListener
   }
 
 private:
-  Size2i m_screenSize;
+  Vec2i m_screenSize;
   Camera m_camera;
   bool m_cameraValid = false;
   IGraphicsBackend* const backend;

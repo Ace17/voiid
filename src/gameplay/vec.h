@@ -10,11 +10,11 @@
 #include "base/box.h"
 #include "base/geom.h"
 
-typedef GenericVector3<float> Vector;
-typedef GenericSize3<float> Size;
-typedef GenericBox3<float> Box;
+typedef Vec3f Vector;
+typedef Vec3f Size;
+typedef Rect3f Box;
 
 static auto const UnitSize = Size(1, 1, 1);
-static auto const Up = GenericVector3<float>(0, 0, 1);
-static auto const Down = GenericVector3<float>(0, 0, -1);
+static auto const Up = Vec3f(0, 0, 1);
+static auto const Down = Vec3f(0, 0, -1);
 

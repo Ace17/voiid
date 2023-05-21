@@ -20,7 +20,9 @@ using namespace std;
 
 struct Room
 {
-  Vec3i start;
+  int startpos_x;
+  int startpos_y;
+  int startpos_z;
 
   struct Thing
   {
