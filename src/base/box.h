@@ -4,6 +4,7 @@
 // published by the Free Software Foundation, either version 3 of the
 // License, or (at your option) any later version.
 
+// Basic geometric types: Rect2f, Rect2i, Rect3f, Rect3i
 #pragma once
 
 #include <cassert>
@@ -40,10 +41,9 @@ using Rect2i = GenericBox<int>;
 using Rect3f = GenericBox3<float>;
 using Rect3i = GenericBox3<int>;
 
-template<typename T>
-bool segmentsOverlap(T a_left, T a_right, T b_left, T b_right)
+inline bool segmentsOverlap(float a_left, float a_right, float b_left, float b_right)
 {
-  static auto swap = [] (T& a, T& b)
+  static auto swap = [] (float& a, float& b)
     {
       auto t = a;
       a = b;
@@ -59,8 +59,7 @@ bool segmentsOverlap(T a_left, T a_right, T b_left, T b_right)
   return b_left >= a_left && b_left < a_right;
 }
 
-template<typename T>
-bool overlaps(GenericBox3<T> const& a, GenericBox3<T> const& b)
+inline bool overlaps(const Rect3f& a, const Rect3f& b)
 {
   assert(a.size.cx >= 0);
   assert(a.size.cy >= 0);
