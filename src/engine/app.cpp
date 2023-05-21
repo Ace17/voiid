@@ -39,6 +39,7 @@ IRenderer* createRenderer(IGraphicsBackend* backend);
 MixableAudio* createAudio();
 UserInput* createUserInput();
 
+// Implemented by the game-specific part
 Scene* createGame(View* view, Span<const string> argv);
 
 class App : View, public IApp
