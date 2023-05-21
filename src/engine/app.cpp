@@ -97,15 +97,17 @@ private:
     while(m_lastTime + timeStep < now)
     {
       m_lastTime += timeStep;
+      ++ticksPerFrame;
+    }
 
+    for(int k=0;k < ticksPerFrame;++k)
+    {
       if(!m_paused && m_running == AppState::Running)
       {
         tickGameplay();
         m_tps.tick(now);
         Stat("TPS", m_tps.slope());
       }
-
-      ++ticksPerFrame;
     }
 
     Stat("Ticks/Frame", ticksPerFrame);
