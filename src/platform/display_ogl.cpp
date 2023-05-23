@@ -141,7 +141,6 @@ struct OpenGlProgram : IGpuProgram
 {
   OpenGlProgram(GLuint program_, bool zTest_) : program(program_), zTest(zTest_)
   {
-    uniformBlockIndex = glGetUniformBlockIndex(program, "MyUniformBlock");
   }
 
   ~OpenGlProgram()
@@ -149,7 +148,6 @@ struct OpenGlProgram : IGpuProgram
     glDeleteProgram(program);
   }
 
-  int uniformBlockIndex = -1;
   const GLuint program;
   const bool zTest;
 };
@@ -425,7 +423,7 @@ struct OpenGlGraphicsBackend : IGraphicsBackend
   {
     glBindBuffer(GL_UNIFORM_BUFFER, m_uniformBuffer);
     glBufferData(GL_UNIFORM_BUFFER, size, ptr, GL_DYNAMIC_DRAW);
-    glBindBufferBase(GL_UNIFORM_BUFFER, m_currProgram->uniformBlockIndex, m_uniformBuffer);
+    glBindBufferBase(GL_UNIFORM_BUFFER, 0, m_uniformBuffer);
   }
 
   void setUniformMatrixFloat4(int id, float* matrix) override
