@@ -46,7 +46,6 @@ struct Door : Entity, IEventSink
   {
     auto r = Actor(pos, MDL_DOOR);
     r.action = 1;
-    r.ratio = 0;
     r.scale = size;
     view->sendActor(r);
   }
@@ -134,7 +133,6 @@ struct AutoDoor : Entity, Switchable
   {
     auto r = Actor(pos, MDL_DOOR);
     r.action = 1;
-    r.ratio = 0;
     r.scale = size;
     view->sendActor(r);
   }

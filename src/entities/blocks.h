@@ -21,7 +21,6 @@ struct CrumbleBlock : Entity
   {
     auto r = Actor(pos, MDL_RECT);
     r.scale = size;
-    r.ratio = 0;
     r.action = 3;
 
     if(!solid)
@@ -77,7 +76,6 @@ struct FragileBlock : Entity, Damageable
   {
     auto r = Actor(pos, MDL_RECT);
     r.scale = size;
-    r.ratio = 0;
     r.action = solid ? 4 : 1;
 
     view->sendActor(r);

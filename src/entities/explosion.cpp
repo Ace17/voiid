@@ -31,7 +31,6 @@ struct Explosion : Entity
   {
     auto r = Actor(pos, MDL_RECT);
 
-    r.ratio = time / (float)DURATION;
     r.scale = UnitSize * 1.5;
     r.pos -= r.scale * 0.5;
 

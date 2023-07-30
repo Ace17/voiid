@@ -5,40 +5,16 @@
 
 #include "tests.h"
 
-static Actor getActor(Entity* entity)
-{
-  struct FakeView : View
-  {
-    virtual void setTitle(String) {}
-    virtual void preload(Resource) {}
-    virtual void textBox(String) {}
-    virtual void playMusic(int) {}
-    virtual void stopMusic() {}
-    virtual void playSound(int) {}
-    virtual void setCameraPos(Vec3f, Quaternion) {}
-    virtual void setAmbientLight(float) {}
-    virtual void sendLight(LightActor const&) {}
-    virtual void sendActor(Actor const& actor) { this->actor = actor; }
-
-    Actor actor;
-  };
-  FakeView fakeView;
-  entity->onDraw(&fakeView);
-  return fakeView.actor;
-}
-
 unittest("Entity: explosion")
 {
   auto explosion = makeExplosion();
 
   assert(!explosion->dead);
-  assertEquals(0, getActor(explosion.get()).ratio);
 
   for(int i = 0; i < 10000; ++i)
     explosion->tick();
 
   assert(explosion->dead);
-  assertEquals(100, int(getActor(explosion.get()).ratio * 100));
 }
 
 #include "gameplay/player.h"
@@ -142,29 +118,5 @@ unittest("Entity: pickup bonus")
 
   assert(ent->dead);
   assertEquals(4, player.upgrades);
-}
-
-bool nearlyEquals(float expected, float actual)
-{
-  return abs(expected - actual) < 0.01;
-}
-
-unittest("Entity: animate")
-{
-  auto ent = makeBonus(0, 4, "cool");
-
-  float minVal = 10.0f;
-  float maxVal = -10.0f;
-
-  for(int i = 0; i < 1000; ++i)
-  {
-    auto actor = getActor(ent.get());
-    minVal = min(minVal, actor.ratio);
-    maxVal = max(maxVal, actor.ratio);
-    ent->tick();
-  }
-
-  assert(nearlyEquals(0, minVal));
-  assert(nearlyEquals(1, maxVal));
 }
 
