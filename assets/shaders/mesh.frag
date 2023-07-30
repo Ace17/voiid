@@ -36,7 +36,7 @@ void main()
   totalLight += fragOffset.rgb;
 
   // ambient
-  totalLight += vec3(1, 1, 1) * ambientLight * texture(DiffuseTex, UV).rgb;
+  totalLight += ambientLight * texture(DiffuseTex, UV).rgb;
 
   // lightmap
   totalLight += texture(LightmapTex, UV_lightmap).rgb * 0.01 * texture(DiffuseTex, UV).rgb;
