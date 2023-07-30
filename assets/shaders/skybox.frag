@@ -2,7 +2,15 @@
 
 precision mediump float;
 
-// Interpolated values from the vertex shader
+// Uniforms
+layout(std140, binding=0) uniform MyUniformBlock
+{
+  mat4 MVP;
+};
+
+precision mediump float;
+
+// Input Vertex Attributes
 layout(location = 0) in vec3 vPos;
 
 // Ouput data

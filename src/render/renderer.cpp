@@ -125,11 +125,17 @@ struct SkyboxPass : RenderPass
     static const float far_ = 1000.0f;
     const auto perspective = ::perspective(fovy, 16.0 / 9.0, near_, far_);
 
-    auto M = pos;
-    auto MVP = perspective * view * M;
+    // Must match the uniform block in skybox.frag
+    struct MyUniformBlock
+    {
+      Matrix4f MVP;
+    };
 
-    backend->setUniformMatrixFloat4(0, &M[0][0]);
-    backend->setUniformMatrixFloat4(1, &MVP[0][0]);
+    MyUniformBlock ub {};
+    ub.MVP = perspective * view * pos;
+    ub.MVP = transpose(ub.MVP);
+
+    backend->setUniformBlock(&ub, sizeof ub);
 
     backend->useVertexBuffer(m_vb.get());
     backend->enableVertexAttribute(0, 3, sizeof(CubeVertex), OFFSET(CubeVertex, x));

@@ -1,8 +1,10 @@
 #version 310 es
 
 // Uniforms
-layout(location = 0) uniform mat4 M;
-layout(location = 1) uniform mat4 MVP;
+layout(std140, binding=0) uniform MyUniformBlock
+{
+  mat4 MVP;
+};
 
 // Attributes
 layout(location = 0) in vec4 vertexPos_model;
