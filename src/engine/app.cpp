@@ -190,9 +190,7 @@ private:
 
     for(auto& actor : m_actors)
     {
-      auto where = Rect3f(
-        actor.pos.x, actor.pos.y, actor.pos.z,
-        actor.scale.x, actor.scale.y, actor.scale.z);
+      auto where = Rect3f(actor.pos, actor.scale);
       m_renderer->drawActor(where, actor.orientation, actor.model, actor.effect == Effect::Blinking);
     }
 
