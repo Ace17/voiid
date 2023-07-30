@@ -29,6 +29,7 @@
 #include "weakcache.h"
 
 using namespace std;
+std::unique_ptr<RenderPass> CreateSkyboxPass(IGraphicsBackend* backend, const Camera* camera);
 
 namespace
 {
@@ -38,12 +39,6 @@ T blend(T a, T b, float alpha)
   return a * (1 - alpha) + b * alpha;
 }
 
-struct Camera
-{
-  Vec3f pos;
-  Quaternion dir;
-};
-
 struct DrawCommand
 {
   SingleRenderMesh* pMesh;
@@ -51,102 +46,6 @@ struct DrawCommand
   Quaternion orientation;
   Camera camera;
   bool blinking;
-};
-
-struct CubeVertex
-{
-  float x, y, z;
-};
-
-const CubeVertex UnitCube[] =
-{
-  { -1, -1, -1, },
-  { -1, -1, 1, },
-  { -1, 1, 1, },
-  { 1, 1, -1, },
-  { -1, -1, -1, },
-  { -1, 1, -1, },
-  { 1, -1, 1, },
-  { -1, -1, -1, },
-  { 1, -1, -1, },
-  { 1, 1, -1, },
-  { 1, -1, -1, },
-  { -1, -1, -1, },
-  { -1, -1, -1, },
-  { -1, 1, 1, },
-  { -1, 1, -1, },
-  { 1, -1, 1, },
-  { -1, -1, 1, },
-  { -1, -1, -1, },
-  { -1, 1, 1, },
-  { -1, -1, 1, },
-  { 1, -1, 1, },
-  { 1, 1, 1, },
-  { 1, -1, -1, },
-  { 1, 1, -1, },
-  { 1, -1, -1, },
-  { 1, 1, 1, },
-  { 1, -1, 1, },
-  { 1, 1, 1, },
-  { 1, 1, -1, },
-  { -1, 1, -1, },
-  { 1, 1, 1, },
-  { -1, 1, -1, },
-  { -1, 1, 1, },
-  { 1, 1, 1, },
-  { -1, 1, 1, },
-  { 1, -1, 1 },
-};
-
-struct SkyboxPass : RenderPass
-{
-  SkyboxPass(IGraphicsBackend* backend) : backend(backend)
-  {
-    m_shader = backend->createGpuProgram("skybox", false);
-    m_vb = backend->createVertexBuffer();
-    m_vb->upload(UnitCube, sizeof UnitCube);
-  }
-
-  void execute(FrameBuffer dst) override
-  {
-    backend->setRenderTarget(dst.fb);
-
-    backend->useGpuProgram(m_shader.get());
-
-    auto const forward = camera.dir.rotate(Vec3f(1, 0, 0));
-    auto const up = camera.dir.rotate(Vec3f(0, 0, 1));
-
-    auto const target = forward;
-    auto const view = ::lookAt(Vec3f(0, 0, 0), target, up);
-    auto const pos = ::translate({});
-
-    static const float fovy = (float)((60.0f / 180) * PI);
-    static const float near_ = 0.1f;
-    static const float far_ = 1000.0f;
-    const auto perspective = ::perspective(fovy, 16.0 / 9.0, near_, far_);
-
-    // Must match the uniform block in skybox.frag
-    struct MyUniformBlock
-    {
-      Matrix4f MVP;
-    };
-
-    MyUniformBlock ub {};
-    ub.MVP = perspective * view * pos;
-    ub.MVP = transpose(ub.MVP);
-
-    backend->setUniformBlock(&ub, sizeof ub);
-
-    backend->useVertexBuffer(m_vb.get());
-    backend->enableVertexAttribute(0, 3, sizeof(CubeVertex), OFFSET(CubeVertex, x));
-
-    backend->draw(std::size(UnitCube));
-  }
-
-  IGraphicsBackend* const backend;
-  std::unique_ptr<IGpuProgram> m_shader;
-  std::unique_ptr<IVertexBuffer> m_vb;
-  Camera camera;
 };
 
 struct MeshRenderPass
@@ -345,7 +244,7 @@ struct UiRenderPass : RenderPass
 
 struct Renderer : IRenderer, IScreenSizeListener
 {
-  Renderer(IGraphicsBackend* backend_) : backend(backend_), m_skyboxPass(backend_)
+  Renderer(IGraphicsBackend* backend_) : backend(backend_), m_skyboxPass(CreateSkyboxPass(backend_, &m_camera))
   {
     m_textureCache.onCacheMiss = [this] (String path) { return loadTexture(path); };
 
@@ -462,8 +361,7 @@ struct Renderer : IRenderer, IScreenSizeListener
     backend->setRenderTarget(meshRenderTarget.fb);
     backend->clear();
 
-    m_skyboxPass.camera = m_camera;
-    m_skyboxPass.execute(meshRenderTarget);
+    m_skyboxPass->execute(meshRenderTarget);
 
     m_meshRenderPass.m_aspectRatio = aspectRatio;
     m_meshRenderPass.execute(meshRenderTarget);
@@ -526,7 +424,7 @@ private:
   bool m_enableFsaa = false;
   bool m_enablePostProcessing = true;
 
-  SkyboxPass m_skyboxPass;
+  std::unique_ptr<RenderPass> m_skyboxPass;
   MeshRenderPass m_meshRenderPass;
   UiRenderPass m_uiRenderPass;
   PostProcessRenderPass m_postprocRenderPass;

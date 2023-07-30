@@ -59,6 +59,7 @@ SRCS_ENGINE:=\
 	src/render/png.cpp\
 	src/render/mesh_import.cpp\
 	src/render/fbx_import.cpp\
+	src/render/skybox_pass.cpp\
 
 SRCS_ENGINE+=\
 	src/platform/audio_sdl.cpp\

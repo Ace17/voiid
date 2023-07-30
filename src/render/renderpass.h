@@ -1,6 +1,7 @@
 #pragma once
 
 #include "base/geom.h"
+#include "base/quaternion.h"
 #include <cstdint>
 
 #define OFFSET(VertexType, Attribute) \
@@ -19,5 +20,11 @@ struct RenderPass
   };
 
   virtual void execute(FrameBuffer dst) = 0;
+};
+
+struct Camera
+{
+  Vec3f pos;
+  Quaternion dir;
 };
 
