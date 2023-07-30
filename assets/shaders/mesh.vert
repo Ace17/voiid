@@ -13,7 +13,7 @@ layout(std140, binding=0) uniform MyUniformBlock
   int LightCount;
 };
 
-// Attributes
+// Input Vertex Attributes
 layout(location = 0) in vec4 vertexPos_model;
 layout(location = 1) in vec2 vertexUV;
 layout(location = 2) in vec2 vertexUV_lightmap;
@@ -21,7 +21,7 @@ layout(location = 3) in vec3 a_normal;
 layout(location = 4) in vec3 a_binormal;
 layout(location = 5) in vec3 a_tangent;
 
-// Output data; will be interpolated for each fragment
+// Output Vertex Attributes
 layout(location = 0) out vec2 UV;
 layout(location = 1) out vec2 UV_lightmap;
 layout(location = 2) out vec3 vPos;
