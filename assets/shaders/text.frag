@@ -3,7 +3,12 @@
 precision mediump float;
 
 // Uniforms
-layout(binding = 0) uniform sampler2D DiffuseTex;
+layout(std140, binding=0) uniform MyUniformBlock
+{
+  mat4 MVP;
+};
+
+layout(binding=1) uniform sampler2D DiffuseTex;
 
 // Interpolated values from the vertex shader
 layout(location = 0) in vec2 UV;

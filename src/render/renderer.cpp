@@ -248,13 +248,6 @@ struct MeshRenderPass
 
   struct MeshShader
   {
-    enum Uniform
-    {
-      DiffuseTex = 0,
-      LightmapTex = 1,
-      NormalTex = 2,
-    };
-
     enum Attribute
     {
       positionLoc = 0,
@@ -298,7 +291,7 @@ struct UiRenderPass : RenderPass
     backend->useGpuProgram(m_textShader.get());
 
     // Texture Unit 0: Diffuse
-    model.diffuse->bind(0);
+    model.diffuse->bind(1);
 
     auto const forward = Vec3f(0, 1, 0);
     auto const up = Vec3f(0, 0, 1);
@@ -314,9 +307,18 @@ struct UiRenderPass : RenderPass
     const auto perspective = ::perspective(fovy, m_aspectRatio, near_, far_);
 
     auto MV = pos * scale;
-    auto MVP = perspective * view * MV;
 
-    backend->setUniformMatrixFloat4(TextShader::Uniform::MVP, &MVP[0][0]);
+    // Must match the uniform block in text.vert and text.frag
+    struct MyUniformBlock
+    {
+      Matrix4f MVP;
+    };
+
+    MyUniformBlock ub {};
+    ub.MVP = perspective * view * MV;
+    ub.MVP = transpose(ub.MVP);
+
+    backend->setUniformBlock(&ub, sizeof ub);
 
     backend->useVertexBuffer(model.vb.get());
 
@@ -328,12 +330,6 @@ struct UiRenderPass : RenderPass
 
   struct TextShader
   {
-    enum Uniform
-    {
-      MVP = 0,
-      DiffuseTex = 1,
-    };
-
     enum Attribute
     {
       positionLoc = 0,
