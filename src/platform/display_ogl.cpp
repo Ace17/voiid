@@ -426,18 +426,6 @@ struct OpenGlGraphicsBackend : IGraphicsBackend
     glBindBufferBase(GL_UNIFORM_BUFFER, 0, m_uniformBuffer);
   }
 
-  void setUniformMatrixFloat4(int id, float* matrix) override
-  {
-    // make the matrix column-major
-    float m[16];
-
-    for(int row = 0; row < 4; ++row)
-      for(int col = 0; col < 4; ++col)
-        m[col * 4 + row] = matrix[row * 4 + col];
-
-    SAFE_GL(glUniformMatrix4fv(id, 1, GL_FALSE, m));
-  }
-
   std::unique_ptr<IVertexBuffer> createVertexBuffer() override
   {
     return std::make_unique<OpenGlVertexBuffer>();
