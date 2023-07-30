@@ -59,7 +59,7 @@ struct Switch : Entity, Switchable
 
     auto evt = make_unique<TriggerEvent>();
     evt->link = link;
-    game->postEvent(move(evt));
+    game->postEvent(std::move(evt));
   }
 
   bool state = false;
@@ -106,7 +106,7 @@ struct DetectorSwitch : Entity
 
         auto evt = make_unique<TriggerEvent>();
         evt->link = link;
-        game->postEvent(move(evt));
+        game->postEvent(std::move(evt));
 
         touchDelay = 100;
       };
