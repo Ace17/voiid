@@ -193,7 +193,7 @@ private:
       auto where = Rect3f(
         actor.pos.x, actor.pos.y, actor.pos.z,
         actor.scale.x, actor.scale.y, actor.scale.z);
-      m_renderer->drawActor(where, actor.orientation, (int)actor.model, actor.effect == Effect::Blinking);
+      m_renderer->drawActor(where, actor.orientation, actor.model, actor.effect == Effect::Blinking);
     }
 
     for(auto& actor : m_lightActors)
