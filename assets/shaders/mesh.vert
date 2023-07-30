@@ -1,7 +1,7 @@
 #version 310 es
 
 // Uniforms
-layout(std140, binding=0) uniform MyUniformBlock
+layout(binding=0, std140) uniform MyUniformBlock
 {
   mat4 M;
   mat4 MVP;

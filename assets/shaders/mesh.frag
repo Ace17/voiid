@@ -3,7 +3,7 @@
 precision mediump float;
 
 // Uniforms
-layout(std140, binding=0) uniform MyUniformBlock
+layout(binding=0, std140) uniform MyUniformBlock
 {
   mat4 M;
   mat4 MVP;
@@ -15,9 +15,9 @@ layout(std140, binding=0) uniform MyUniformBlock
   int LightCount;
 };
 
-layout(binding = 0) uniform sampler2D DiffuseTex;
-layout(binding = 1) uniform sampler2D LightmapTex;
-layout(binding = 2) uniform sampler2D NormalTex;
+layout(binding = 1) uniform sampler2D DiffuseTex;
+layout(binding = 2) uniform sampler2D LightmapTex;
+layout(binding = 3) uniform sampler2D NormalTex;
 
 // Input Vertex Attributes
 layout(location = 0) in vec2 UV;

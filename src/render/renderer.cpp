@@ -179,14 +179,14 @@ struct MeshRenderPass
       int lightCount;
     };
 
-    // Texture Unit 0: Diffuse
-    model.diffuse->bind(0);
+    // Binding #1: Diffuse
+    model.diffuse->bind(1);
 
-    // Texture Unit 1: Lightmap
-    model.lightmap->bind(1);
+    // Binding #2: Lightmap
+    model.lightmap->bind(2);
 
-    // Texture Unit 2: Normalmap
-    model.normal->bind(2);
+    // Binding #3: Normalmap
+    model.normal->bind(3);
 
     auto const forward = cmd.camera.dir.rotate(Vec3f(1, 0, 0));
     auto const up = cmd.camera.dir.rotate(Vec3f(0, 0, 1));
