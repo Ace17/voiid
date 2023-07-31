@@ -54,6 +54,16 @@ struct MeshRenderPass
   {
     backend->setRenderTarget(dst.fb);
 
+    auto byMaterial = [] (const DrawCommand& a, const DrawCommand& b)
+      {
+        if(a.pMesh->transparency != b.pMesh->transparency)
+          return a.pMesh->transparency < b.pMesh->transparency;
+
+        return false;
+      };
+
+    std::sort(m_drawCommands.begin(), m_drawCommands.end(), byMaterial);
+
     for(auto& cmd : m_drawCommands)
       executeDrawCommand(cmd);
   }

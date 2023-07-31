@@ -42,6 +42,7 @@ struct Mesh
   std::vector<Property> properties;
 
   std::string material;
+  bool material_transparency = false;
   std::vector<Vertex> vertices;
   std::vector<Face> faces;
 };

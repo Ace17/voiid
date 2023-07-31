@@ -56,6 +56,8 @@ RenderMesh convertToRenderMesh(vector<Mesh> const& meshes, vector<string>& textu
 
     SingleRenderMesh& single = singlesByMaterial[mesh.material];
 
+    single.transparency = mesh.material_transparency;
+
     for(auto& face : mesh.faces)
     {
       single.vertices.push_back(convert(mesh.vertices[face.i1]));
@@ -90,6 +92,8 @@ void writeRenderMesh(string path, const RenderMesh& renderMesh)
 
   for(auto& single : renderMesh.singleMeshes)
   {
+    write(&single.transparency, 1);
+
     const int num = (int)single.vertices.size();
     write(&num, 4);
 

@@ -614,6 +614,8 @@ private:
         if(FbxTexture* tex = model.materials[0]->texture)
           mesh.material.assign(tex->filename.data, tex->filename.len);
 
+        mesh.material_transparency = model.materials[0]->transparency;
+
         enforce(model.geometry.size() <= 1, "Too many meshes for model '%.*s'", model.name.len, model.name.data, model.materials.size());
 
         for(auto& geom : model.geometry)
@@ -995,6 +997,9 @@ private:
       const auto objName = expectObjectBegin(tokenizer);
       switch(hashed(objName))
       {
+      case hashed("Properties70"):
+        parseSection_Material_Properties70(tokenizer, node);
+        break;
       default:
         skipObject(tokenizer);
         break;
@@ -1008,6 +1013,41 @@ private:
       table[node.handle] = { HandleEntry::Type::Material, index };
       materials.push_back(std::move(node));
     }
+  }
+
+  void parseSection_Material_Properties70(Tokenizer& tokenizer, FbxMaterial& material)
+  {
+    expect(tokenizer, Token::ObjectBegin);
+
+    while(tokenizer.tokenType != Token::ObjectEnd)
+    {
+      enforce(hashed(tokenizer.objName) == hashed("P"), "Unexpected object '%.*s'", tokenizer.objName.len, tokenizer.objName.data);
+
+      expect(tokenizer, Token::ObjectBegin);
+
+      const auto propName = expectString(tokenizer);
+      /* const auto propName2 = */ expectString(tokenizer);
+      /* const auto someString = */ expectString(tokenizer);
+      /* const auto theLetterA = */ expectString(tokenizer);
+      switch(hashed(propName))
+      {
+      case hashed("TransparencyFactor"):
+        {
+          material.transparency = expectDecimalNumber(tokenizer) > 0;
+          break;
+        }
+        break;
+      default:
+        {
+          while(tokenizer.tokenType != Token::ObjectEnd)
+            tokenizer.nextToken();
+        }
+      }
+
+      expect(tokenizer, Token::ObjectEnd);
+    }
+
+    expect(tokenizer, Token::ObjectEnd);
   }
 
   void parseSection_Texture(Tokenizer& tokenizer)
@@ -1338,6 +1378,7 @@ private:
 
   struct FbxMaterial : FbxNode
   {
+    bool transparency;
     // only valid after 'Connections' pass
     FbxTexture* texture {};
   };

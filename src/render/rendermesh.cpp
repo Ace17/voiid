@@ -91,10 +91,12 @@ RenderMesh loadBinaryRenderMesh(String path)
 
   while(readPosition < (int)data.size())
   {
+    SingleRenderMesh single;
+
+    read(&single.transparency, 1);
+
     int vertexCount = 0;
     read(&vertexCount, 4);
-
-    SingleRenderMesh single;
 
     for(int i = 0; i < vertexCount; ++i)
     {

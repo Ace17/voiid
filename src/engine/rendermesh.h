@@ -24,6 +24,7 @@ struct SingleRenderMesh
   std::shared_ptr<ITexture> diffuse;
   std::shared_ptr<ITexture> lightmap;
   std::shared_ptr<ITexture> normal;
+  bool transparency;
 
   // mesh data
   struct Vertex
