@@ -31,15 +31,16 @@ layout(location = 0) out vec4 color;
 void main()
 {
   vec3 totalLight = vec3(0, 0, 0);
+  vec4 diffuse = texture(DiffuseTex, UV);
 
   // highlight
   totalLight += fragOffset.rgb;
 
   // ambient
-  totalLight += ambientLight * texture(DiffuseTex, UV).rgb;
+  totalLight += ambientLight * diffuse.rgb;
 
   // lightmap
-  totalLight += texture(LightmapTex, UV_lightmap).rgb * 0.01 * texture(DiffuseTex, UV).rgb;
+  totalLight += texture(LightmapTex, UV_lightmap).rgb * 0.01 * diffuse.rgb;
 
   vec3 localN = texture(NormalTex, UV).rgb * 2.0 - 1.0;
   vec3 normal = TBN * localN;
@@ -53,7 +54,7 @@ void main()
     float incidenceRatio = max(0.0, dot(lightDir, normal));
 
     // diffuse
-    totalLight += LightColor[i] * incidenceRatio * attenuation * texture(DiffuseTex, UV).rgb;
+    totalLight += LightColor[i] * incidenceRatio * attenuation * diffuse.rgb * diffuse.a;
 
     // specular
     const float material_shininess = 256.0;
@@ -66,7 +67,7 @@ void main()
   }
 
   color.rgb = totalLight;
-  color.a = texture(DiffuseTex, UV).a;
+  color.a = diffuse.a;
 
   if(false)
   {
