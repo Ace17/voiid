@@ -4,8 +4,9 @@
 // published by the Free Software Foundation, either version 3 of the
 // License, or (at your option) any later version.
 
-#include "base/error.h"
 #include "file.h"
+
+#include "base/error.h"
 
 #include <cstdio>
 
@@ -47,9 +48,10 @@ void write(String path_, Span<const uint8_t> data)
   fclose(fp);
 }
 
-bool exists(String path)
+bool exists(String path_)
 {
-  FILE* fp = fopen(path.data, "rb");
+  string path(path_.data, path_.len);
+  FILE* fp = fopen(path.c_str(), "rb");
 
   if(!fp)
     return false;
