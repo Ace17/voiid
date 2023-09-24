@@ -11,7 +11,6 @@
 #include "engine/input.h"
 #include "SDL.h"
 #include <map>
-#include <string>
 
 namespace
 {
