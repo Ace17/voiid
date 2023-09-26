@@ -33,8 +33,8 @@ LDFLAGS+=$(PKG_LDFLAGS)
 
 CXXFLAGS+=-O3
 
-CXXFLAGS+=$(DBGFLAGS)
-LDFLAGS+=$(DBGFLAGS)
+#CXXFLAGS+=$(DBGFLAGS)
+#LDFLAGS+=$(DBGFLAGS)
 
 #------------------------------------------------------------------------------
 
