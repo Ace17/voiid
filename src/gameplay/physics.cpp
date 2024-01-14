@@ -15,8 +15,6 @@
 #include <memory>
 #include <vector>
 
-using namespace std;
-
 struct BoxShape : Shape
 {
   Trace raycast(Vec3f A, Vec3f B, Vec3f boxHalfSize) const override
