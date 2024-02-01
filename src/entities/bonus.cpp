@@ -62,7 +62,7 @@ struct Bonus : Entity
 
 std::unique_ptr<Entity> makeBonus(int action, int upgradeType, String msg)
 {
-  return make_unique<Bonus>(action, upgradeType, msg);
+  return std::make_unique<Bonus>(action, upgradeType, msg);
 }
 
 static auto const reg1 = registerEntity("upgrade_climb", [] (IEntityConfig*) { return makeBonus(4, UPGRADE_CLIMB, "jump while against wall"); });

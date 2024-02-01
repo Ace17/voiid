@@ -56,5 +56,5 @@ struct FinishLine : Entity
   int touchDelay = 0;
 };
 
-static auto const reg3_ = registerEntity("finish", [] (IEntityConfig*) -> unique_ptr<Entity> { return make_unique<FinishLine>(); });
+static auto const reg3_ = registerEntity("finish", [] (IEntityConfig*) -> std::unique_ptr<Entity> { return std::make_unique<FinishLine>(); });
 

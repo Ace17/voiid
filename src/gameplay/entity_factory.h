@@ -24,6 +24,6 @@ struct IEntityConfig
 // createEntity("door(4)");
 std::unique_ptr<Entity> createEntity(std::string name, IEntityConfig* config);
 
-using CreationFunc = unique_ptr<Entity>(*)(IEntityConfig* args);
+using CreationFunc = std::unique_ptr<Entity>(*)(IEntityConfig* args);
 int registerEntity(std::string type, CreationFunc func);
 

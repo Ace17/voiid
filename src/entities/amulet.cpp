@@ -40,5 +40,5 @@ struct Amulet : Entity
 };
 }
 
-static auto const reg = registerEntity("amulet", [] (IEntityConfig*) -> unique_ptr<Entity> { return make_unique<Amulet>(); });
+static auto const reg = registerEntity("amulet", [] (IEntityConfig*) -> std::unique_ptr<Entity> { return std::make_unique<Amulet>(); });
 

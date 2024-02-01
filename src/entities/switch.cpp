@@ -41,7 +41,7 @@ struct Switch : Entity, Switchable
 
   virtual void tick() override
   {
-    blinking = max(0, blinking - 1);
+    blinking = std::max(0, blinking - 1);
   }
 
   virtual void enter() override
@@ -57,7 +57,7 @@ struct Switch : Entity, Switchable
     state = !state;
     game->playSound(SND_SWITCH);
 
-    auto evt = make_unique<TriggerEvent>();
+    auto evt = std::make_unique<TriggerEvent>();
     evt->link = link;
     game->postEvent(std::move(evt));
   }
@@ -66,9 +66,9 @@ struct Switch : Entity, Switchable
   const int link;
 };
 
-unique_ptr<Entity> makeSwitch(int link)
+std::unique_ptr<Entity> makeSwitch(int link)
 {
-  return make_unique<Switch>(link);
+  return std::make_unique<Switch>(link);
 }
 
 struct DetectorSwitch : Entity
@@ -104,7 +104,7 @@ struct DetectorSwitch : Entity
 
         game->playSound(SND_SWITCH);
 
-        auto evt = make_unique<TriggerEvent>();
+        auto evt = std::make_unique<TriggerEvent>();
         evt->link = link;
         game->postEvent(std::move(evt));
 

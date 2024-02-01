@@ -5,10 +5,10 @@
 
 struct HandleWithDeleter : Handle
 {
-  HandleWithDeleter(function<void(void)> deleter_) : deleter(deleter_) {}
+  HandleWithDeleter(std::function<void(void)> deleter_) : deleter(deleter_) {}
 
   ~HandleWithDeleter() { deleter(); }
 
-  function<void(void)> deleter;
+  std::function<void(void)> deleter;
 };
 

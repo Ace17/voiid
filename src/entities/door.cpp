@@ -70,12 +70,12 @@ struct Door : Entity, IEventSink
   bool state = false;
   int openingDelay = 0;
   const int link;
-  unique_ptr<Handle> subscription;
+  std::unique_ptr<Handle> subscription;
 };
 
-unique_ptr<Entity> makeDoor(int link)
+std::unique_ptr<Entity> makeDoor(int link)
 {
-  return make_unique<Door>(link);
+  return std::make_unique<Door>(link);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -160,9 +160,9 @@ struct AutoDoor : Entity, Switchable
   int timer = 0;
 };
 
-unique_ptr<Entity> makeAutoDoor()
+std::unique_ptr<Entity> makeAutoDoor()
 {
-  return make_unique<AutoDoor>();
+  return std::make_unique<AutoDoor>();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -215,9 +215,9 @@ struct BreakableDoor : Entity, Damageable
   int life = 130;
 };
 
-unique_ptr<Entity> makeBreakableDoor()
+std::unique_ptr<Entity> makeBreakableDoor()
 {
-  return make_unique<BreakableDoor>();
+  return std::make_unique<BreakableDoor>();
 }
 
 static auto const reg1 = registerEntity("auto_door", [] (IEntityConfig*) { return makeAutoDoor(); });

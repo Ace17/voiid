@@ -62,12 +62,12 @@ struct Lamp : Entity, IEventSink
   int ticks = 0;
   bool enabled = false;
   const int link;
-  unique_ptr<Handle> subscription;
+  std::unique_ptr<Handle> subscription;
 };
 
-unique_ptr<Entity> makeLight(IEntityConfig* cfg)
+std::unique_ptr<Entity> makeLight(IEntityConfig* cfg)
 {
-  return make_unique<Lamp>(cfg);
+  return std::make_unique<Lamp>(cfg);
 }
 
 static auto const reg1 = registerEntity("lamp", [] (IEntityConfig* cfg) { return makeLight(cfg); });
