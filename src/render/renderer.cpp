@@ -7,6 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // High-level renderer
 
+#include <algorithm> // sort
 #include <chrono>
 #include <cstring>
 #include <memory>

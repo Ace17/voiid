@@ -1,6 +1,7 @@
 #include "base/matrix4.h"
 #include "engine/graphics_backend.h"
 #include "renderpass.h"
+#include <vector>
 
 namespace
 {
