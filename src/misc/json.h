@@ -11,7 +11,6 @@
 #include <map>
 #include <string>
 #include <vector>
-using namespace std;
 
 namespace json
 {
@@ -30,9 +29,9 @@ struct Value
 
   ////////////////////////////////////////
   // type == Type::String
-  string stringValue;
+  std::string stringValue;
 
-  operator string () const
+  operator std::string() const
   {
     enforceType(Type::String);
     return stringValue;
@@ -40,13 +39,13 @@ struct Value
 
   ////////////////////////////////////////
   // type == Type::Object
-  map<string, Value> members;
+  std::map<std::string, Value> members;
 
   Value const& operator [] (const char* name) const;
 
   ////////////////////////////////////////
   // type == Type::Array
-  vector<Value> elements;
+  std::vector<Value> elements;
 
   Value const& operator [] (int i)
   {

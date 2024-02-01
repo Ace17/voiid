@@ -18,7 +18,7 @@ static Vec3f toVec3f(Mesh::Vertex v)
   return Vec3f(v.x, v.y, v.z);
 }
 
-static bool startsWith(string s, string prefix)
+static bool startsWith(std::string s, std::string prefix)
 {
   return s.substr(0, prefix.size()) == prefix;
 }
@@ -67,7 +67,7 @@ void bevelSharpEdges(Mesh& mesh, Convex& brush)
 
     static EdgeId mk(Vec3f a, Vec3f b)
     {
-      return EdgeId { min(a, b), max(a, b) };
+      return EdgeId { std::min(a, b), std::max(a, b) };
     }
   };
 
@@ -76,7 +76,7 @@ void bevelSharpEdges(Mesh& mesh, Convex& brush)
     std::vector<Vec3f> normals; // must have .size()==2
   };
 
-  map<EdgeId, EdgeInfo> edges;
+  std::map<EdgeId, EdgeInfo> edges;
 
   for(auto f : mesh.faces)
   {
@@ -114,7 +114,7 @@ void bevelSharpEdges(Mesh& mesh, Convex& brush)
 }
 
 static
-vector<string> parseCall(string content)
+std::vector<std::string> parseCall(std::string content)
 {
   content += '\0';
   auto stream = content.c_str();
@@ -139,12 +139,12 @@ vector<string> parseCall(string content)
   auto expect = [&] (char what)
     {
       if(!accept(what))
-        throw runtime_error(string("Expected '") + what + "'");
+        throw std::runtime_error(std::string("Expected '") + what + "'");
     };
 
   auto parseString = [&] ()
     {
-      string r;
+      std::string r;
 
       while(!accept('"'))
       {
@@ -158,7 +158,7 @@ vector<string> parseCall(string content)
 
   auto parseIdentifier = [&] ()
     {
-      string r;
+      std::string r;
 
       while(isalnum(head()) || head() == '_' || head() == '-')
       {
@@ -178,7 +178,7 @@ vector<string> parseCall(string content)
         return parseIdentifier();
     };
 
-  vector<string> r;
+  std::vector<std::string> r;
   r.push_back(parseIdentifier());
 
   if(accept('('))
@@ -199,9 +199,9 @@ vector<string> parseCall(string content)
 }
 
 static
-map<string, string> parseFormula(string formula, string& name)
+std::map<std::string, std::string> parseFormula(std::string formula, std::string& name)
 {
-  map<string, string> r;
+  std::map<std::string, std::string> r;
 
   auto words = parseCall(formula);
   name = words[0];
@@ -210,7 +210,7 @@ map<string, string> parseFormula(string formula, string& name)
   int i = 0;
 
   for(auto& varValue : words)
-    r[to_string(i++)] = varValue;
+    r[std::to_string(i++)] = varValue;
 
   return r;
 }

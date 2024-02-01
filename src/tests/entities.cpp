@@ -43,8 +43,8 @@ struct NullGame : IGame
 {
   virtual void playSound(int) {}
   virtual void spawn(Entity*) {}
-  virtual void postEvent(unique_ptr<Event>) {}
-  virtual unique_ptr<Handle> subscribeForEvents(IEventSink*) { return nullptr; }
+  virtual void postEvent(std::unique_ptr<Event>) {}
+  virtual std::unique_ptr<Handle> subscribeForEvents(IEventSink*) { return nullptr; }
   virtual void unsubscribeForEvents(IEventSink*) {}
   virtual void textBox(String) {}
 };

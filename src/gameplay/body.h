@@ -13,8 +13,6 @@
 #include "trace.h"
 #include "vec.h"
 
-using namespace std;
-
 struct Shape
 {
   virtual ~Shape() = default;

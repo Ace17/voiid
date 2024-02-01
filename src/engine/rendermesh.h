@@ -9,7 +9,6 @@
 #include <memory>
 #include <stdint.h>
 #include <vector>
-using namespace std;
 
 #include "base/geom.h"
 #include "base/string.h"
@@ -37,12 +36,12 @@ struct SingleRenderMesh
     float lightmap_u, lightmap_v;
   };
 
-  vector<Vertex> vertices;
+  std::vector<Vertex> vertices;
 };
 
 struct RenderMesh
 {
-  vector<SingleRenderMesh> singleMeshes;
+  std::vector<SingleRenderMesh> singleMeshes;
 };
 
 RenderMesh loadRenderMesh(String path);

@@ -25,7 +25,7 @@ Trace Convex::trace(Vector A, Vector B, Vector boxSize) const
 
   for(auto& plane : planes)
   {
-    auto const radius = abs(boxSize.x * plane.N.x) + abs(boxSize.y * plane.N.y) + abs(boxSize.z * plane.N.z);
+    auto const radius = std::abs(boxSize.x * plane.N.x) + std::abs(boxSize.y * plane.N.y) + std::abs(boxSize.z * plane.N.z);
     auto const epsilon = 1.0f / 128.0f;
     auto const distA = plane.dist(A) - radius;
     auto const distB = plane.dist(B) - radius;
@@ -56,7 +56,7 @@ Trace Convex::trace(Vector A, Vector B, Vector boxSize) const
     {
       float fraction = (distA + epsilon) / (distA - distB);
       fraction = ::clamp(fraction, 0.0f, 1.0f);
-      leaveBrush = max(leaveBrush, fraction);
+      leaveBrush = std::max(leaveBrush, fraction);
 
       if(fraction < leaveBrush)
         leaveBrush = fraction;

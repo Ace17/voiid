@@ -207,11 +207,11 @@ struct Physics : IPhysics
   }
 
 private:
-  vector<Body*> m_bodies;
+  std::vector<Body*> m_bodies;
 };
 
-unique_ptr<IPhysics> createPhysics()
+std::unique_ptr<IPhysics> createPhysics()
 {
-  return make_unique<Physics>();
+  return std::make_unique<Physics>();
 }
 

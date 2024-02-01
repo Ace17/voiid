@@ -15,15 +15,15 @@ struct Entity;
 
 struct IEntityConfig
 {
-  virtual string getString(const char* varName, string defaultValue = "") = 0;
+  virtual std::string getString(const char* varName, std::string defaultValue = "") = 0;
   virtual int getInt(const char* varName, int defaultValue = 0) = 0;
 };
 
 // e.g:
 // createEntity("spider");
 // createEntity("door(4)");
-std::unique_ptr<Entity> createEntity(string name, IEntityConfig* config);
+std::unique_ptr<Entity> createEntity(std::string name, IEntityConfig* config);
 
 using CreationFunc = unique_ptr<Entity>(*)(IEntityConfig* args);
-int registerEntity(string type, CreationFunc func);
+int registerEntity(std::string type, CreationFunc func);
 

@@ -13,8 +13,6 @@
 #include <string>
 #include <vector>
 
-using namespace std;
-
 #include "base/mesh.h"
 #include "convex.h"
 
@@ -27,8 +25,8 @@ struct Room
   struct Thing
   {
     Vector pos;
-    string name;
-    map<string, string> config;
+    std::string name;
+    std::map<std::string, std::string> config;
   };
 
   struct Light
@@ -37,9 +35,9 @@ struct Room
     Vector color;
   };
 
-  vector<Thing> things;
-  vector<Convex> colliders;
-  vector<Light> lights;
+  std::vector<Thing> things;
+  std::vector<Convex> colliders;
+  std::vector<Light> lights;
 };
 
 Room loadRoom(String filename);

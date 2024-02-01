@@ -23,5 +23,5 @@ struct IPhysics : IPhysicsProbe
   virtual void removeBody(Body* body) = 0;
 };
 
-unique_ptr<IPhysics> createPhysics();
+std::unique_ptr<IPhysics> createPhysics();
 

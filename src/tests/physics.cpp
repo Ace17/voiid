@@ -54,7 +54,7 @@ struct BlockerShape : Shape
 
     if(targetX < 0)
     {
-      auto const fraction = abs(A.x - x0) / abs(delta.x);
+      auto const fraction = fabs(A.x - x0) / fabs(delta.x);
 
       if(fraction < r.fraction)
       {
@@ -65,7 +65,7 @@ struct BlockerShape : Shape
 
     if(targetY < 0)
     {
-      auto const fraction = abs(A.y - y0) / abs(delta.y);
+      auto const fraction = fabs(A.y - y0) / fabs(delta.y);
 
       if(fraction < r.fraction)
       {
@@ -91,7 +91,7 @@ struct Fixture
   }
 
   Body blocker;
-  unique_ptr<IPhysics> physics;
+  std::unique_ptr<IPhysics> physics;
   Body mover;
 };
 

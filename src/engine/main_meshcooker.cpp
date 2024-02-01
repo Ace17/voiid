@@ -11,12 +11,12 @@
 
 namespace
 {
-bool startsWith(string s, string prefix)
+bool startsWith(std::string s, std::string prefix)
 {
   return s.substr(0, prefix.size()) == prefix;
 }
 
-RenderMesh convertToRenderMesh(vector<Mesh> const& meshes, vector<string>& textures)
+RenderMesh convertToRenderMesh(std::vector<Mesh> const& meshes, std::vector<std::string>& textures)
 {
   RenderMesh r;
 
@@ -79,7 +79,7 @@ RenderMesh convertToRenderMesh(vector<Mesh> const& meshes, vector<string>& textu
   return r;
 }
 
-void writeRenderMesh(string path, const RenderMesh& renderMesh)
+void writeRenderMesh(std::string path, const RenderMesh& renderMesh)
 {
   std::vector<uint8_t> data;
 
@@ -112,13 +112,13 @@ int main(int argc, const char* argv[])
     if(argc != 4)
       return 1;
 
-    const auto input = string(argv[1]);
-    const auto textureDir = string(argv[2]);
+    const auto input = std::string(argv[1]);
+    const auto textureDir = std::string(argv[2]);
     const auto outputPathMesh = argv[3];
 
     auto scene = importMesh(input);
 
-    std::vector<string> textureFiles;
+    std::vector<std::string> textureFiles;
     auto renderMesh = convertToRenderMesh(scene.meshes, textureFiles);
     writeRenderMesh(outputPathMesh, renderMesh);
 
@@ -130,7 +130,7 @@ int main(int argc, const char* argv[])
       static uint8_t blue_png[] = { 0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x08, 0x08, 0x06, 0x00, 0x00, 0x00, 0xc4, 0x0f, 0xbe, 0x8b, 0x00, 0x00, 0x00, 0x16, 0x49, 0x44, 0x41, 0x54, 0x18, 0xd3, 0x63, 0x6c, 0x68, 0xf8, 0xff, 0x9f, 0x01, 0x0f, 0x60, 0x62, 0x20, 0x00, 0x86, 0x87, 0x02, 0x00, 0x16, 0xec, 0x03, 0x0e, 0x15, 0x2f, 0x52, 0x39, 0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82 };
 
       {
-        auto outputPathLightmap = setExtension(outputPathMesh, to_string(meshIndex) + ".lightmap.png");
+        auto outputPathLightmap = setExtension(outputPathMesh, std::to_string(meshIndex) + ".lightmap.png");
         File::write(outputPathLightmap, gray_png);
       }
 
@@ -142,7 +142,7 @@ int main(int argc, const char* argv[])
         // Diffuse map
 
         auto const inputPathDiffuse = textureDir + "/" + textureFiles[meshIndex];
-        auto const outputPathDiffuse = setExtension(outputPathMesh, to_string(meshIndex) + ".diffuse.png");
+        auto const outputPathDiffuse = setExtension(outputPathMesh, std::to_string(meshIndex) + ".diffuse.png");
 
         if(File::exists(inputPathDiffuse))
         {
@@ -159,7 +159,7 @@ int main(int argc, const char* argv[])
         // Normal map
 
         auto const inputPathNormalMap = textureDir + "/" + setExtension(textureFiles[meshIndex], "n.png");
-        auto const outputPathNormalMap = setExtension(outputPathMesh, to_string(meshIndex) + ".normal.png");
+        auto const outputPathNormalMap = setExtension(outputPathMesh, std::to_string(meshIndex) + ".normal.png");
 
         if(File::exists(inputPathNormalMap))
         {

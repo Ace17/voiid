@@ -93,7 +93,7 @@ struct Hero : Player, Damageable
 
     vel.x = ::clamp(vel.x, -MAX_HORZ_SPEED, MAX_HORZ_SPEED);
     vel.y = ::clamp(vel.y, -MAX_HORZ_SPEED, MAX_HORZ_SPEED);
-    vel.z = max(vel.z, -MAX_FALL_SPEED);
+    vel.z = std::max(vel.z, -MAX_FALL_SPEED);
   }
 
   void airMove(Control c)
@@ -253,6 +253,6 @@ struct Hero : Player, Damageable
 
 std::unique_ptr<Player> makeHero()
 {
-  return make_unique<Hero>();
+  return std::make_unique<Hero>();
 }
 

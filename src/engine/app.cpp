@@ -41,7 +41,7 @@ MixableAudio* createAudio();
 UserInput* createUserInput();
 
 // Implemented by the game-specific part
-Scene* createGame(View* view, Span<const string> argv);
+Scene* createGame(View* view, Span<const std::string> argv);
 
 class App : View, public IApp
 {
@@ -413,29 +413,29 @@ private:
   RateCounter m_fps;
   RateCounter m_tps;
   Control m_control {};
-  vector<string> m_args;
+  std::vector<std::string> m_args;
   bool m_slowMotion = false;
   bool m_fullscreen = false;
   bool m_paused = false;
   bool m_doGrab = true;
-  unique_ptr<MixableAudio> m_audio;
-  unique_ptr<IAudioBackend> m_audioBackend;
-  unique_ptr<IRenderer> m_renderer;
-  unique_ptr<IGraphicsBackend> m_graphicsBackend;
-  vector<Actor> m_actors;
-  vector<LightActor> m_lightActors;
-  unique_ptr<UserInput> m_input;
+  std::unique_ptr<MixableAudio> m_audio;
+  std::unique_ptr<IAudioBackend> m_audioBackend;
+  std::unique_ptr<IRenderer> m_renderer;
+  std::unique_ptr<IGraphicsBackend> m_graphicsBackend;
+  std::vector<Actor> m_actors;
+  std::vector<LightActor> m_lightActors;
+  std::unique_ptr<UserInput> m_input;
 
-  string m_textbox;
+  std::string m_textbox;
   int m_textboxDelay = 0;
 
-  unique_ptr<Scene> m_scene;
+  std::unique_ptr<Scene> m_scene;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
 
-unique_ptr<IApp> createApp(Span<char*> args)
+std::unique_ptr<IApp> createApp(Span<char*> args)
 {
-  return make_unique<App>(args);
+  return std::make_unique<App>(args);
 }
 

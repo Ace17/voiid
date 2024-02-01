@@ -13,9 +13,7 @@
 
 #include "string.h"
 
-using namespace std;
-
-inline bool endsWith(string const& value, string const& ending)
+inline bool endsWith(std::string const& value, std::string const& ending)
 {
   if(ending.size() > value.size())
     return false;
@@ -23,13 +21,13 @@ inline bool endsWith(string const& value, string const& ending)
   return equal(ending.rbegin(), ending.rend(), value.rbegin());
 }
 
-inline string setExtension(string name, string ext)
+inline std::string setExtension(std::string name, std::string ext)
 {
   auto e = name.rfind('.');
   return name.substr(0, e) + "." + ext;
 }
 
-inline string dirName(string path)
+inline std::string dirName(std::string path)
 {
   auto n = path.rfind('/');
 
@@ -85,9 +83,9 @@ inline auto allPairs(int n)
       int i;
       int j;
 
-      pair<int, int> operator * () const
+      std::pair<int, int> operator * () const
       {
-        return pair<int, int>(i, j);
+        return std::pair<int, int>(i, j);
       }
 
       bool operator != (State const& other) const
@@ -143,9 +141,9 @@ inline auto rasterScan(int cx, int cy)
       int cx;
       int i;
 
-      pair<int, int> operator * () const
+      std::pair<int, int> operator * () const
       {
-        return pair<int, int>(i % cx, i / cx);
+        return std::pair<int, int>(i % cx, i / cx);
       }
 
       bool operator != (State const& other) const
@@ -175,7 +173,7 @@ inline auto rasterScan(int cx, int cy)
 
 // Remove an element from a vector. Might change the ordering.
 template<typename T, typename Lambda>
-void unstableRemove(vector<T>& container, Lambda predicate)
+void unstableRemove(std::vector<T>& container, Lambda predicate)
 {
   for(int i = 0; i < (int)container.size(); ++i)
   {
@@ -183,7 +181,7 @@ void unstableRemove(vector<T>& container, Lambda predicate)
     {
       auto const j = (int)container.size() - 1;
 
-      swap(container[i], container[j]);
+      std::swap(container[i], container[j]);
 
       if(i != j)
         --i;

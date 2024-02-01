@@ -81,7 +81,7 @@ RenderMesh loadBinaryRenderMesh(String path)
   auto read = [&] (void* ptr, size_t size)
     {
       if(readPosition + size > data.size())
-        throw std::runtime_error("Truncated file '" + string(path.data) + "'");
+        throw std::runtime_error("Truncated file '" + std::string(path.data) + "'");
 
       memcpy(ptr, &data[readPosition], size);
       readPosition += size;

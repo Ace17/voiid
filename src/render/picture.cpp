@@ -61,7 +61,7 @@ Picture loadPicture(String path)
 
     auto const bpp = 4;
 
-    vector<uint8_t> img(pic.dim.x * pic.dim.y * bpp);
+    std::vector<uint8_t> img(pic.dim.x * pic.dim.y * bpp);
 
     auto src = pic.pixels.data();
     auto dst = img.data() + bpp * pic.dim.x * pic.dim.y;

@@ -42,6 +42,6 @@ struct Explosion : Entity
 
 std::unique_ptr<Entity> makeExplosion()
 {
-  return make_unique<Explosion>();
+  return std::make_unique<Explosion>();
 }
 
