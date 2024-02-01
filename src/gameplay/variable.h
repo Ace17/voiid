@@ -1,14 +1,14 @@
 #pragma once
 
+#include "base/delegate.h"
 #include "game.h"
-#include <functional>
 
 struct HandleWithDeleter : Handle
 {
-  HandleWithDeleter(std::function<void(void)> deleter_) : deleter(deleter_) {}
+  HandleWithDeleter(Delegate<void(void)>&& deleter_) : deleter(std::move(deleter_)) {}
 
   ~HandleWithDeleter() { deleter(); }
 
-  std::function<void(void)> deleter;
+  Delegate<void(void)> deleter;
 };
 

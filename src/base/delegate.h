@@ -18,6 +18,12 @@ struct Delegate<T(Args...)>
     invokable = std::make_unique<StaticInvokable>(f);
   }
 
+  Delegate(Delegate<T(Args...)>&& other)
+  {
+    invokable.reset(other.invokable.get());
+    other.invokable.release();
+  }
+
   void operator = (Delegate<T(Args...)>&& other)
   {
     invokable.reset(other.invokable.get());
