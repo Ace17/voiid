@@ -50,6 +50,8 @@ void ensureGl(char const* expr, const char* file, int line)
 
 namespace
 {
+Gauge ggDrawCalls("Draw calls");
+
 GLuint compileShader(Span<const uint8_t> code, int type)
 {
   auto shaderId = glCreateShader(type);
@@ -477,7 +479,7 @@ struct OpenGlGraphicsBackend : IGraphicsBackend
   {
     SDL_GL_SwapWindow(m_window);
     updateScreenSize();
-    Stat("Draw calls", m_drawCallCount);
+    ggDrawCalls = m_drawCallCount;
     m_drawCallCount = 0;
   }
 

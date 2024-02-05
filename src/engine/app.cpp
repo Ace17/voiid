@@ -40,6 +40,11 @@ IRenderer* createRenderer(IGraphicsBackend* backend);
 MixableAudio* createAudio();
 UserInput* createUserInput();
 
+Gauge ggFps("FPS");
+Gauge ggTps("TPS");
+Gauge ggTicksPerFrame("Ticks/Frame");
+Gauge ggTickDuration("Tick duration");
+
 // Implemented by the game-specific part
 Scene* createGame(View* view, Span<const std::string> argv);
 
@@ -107,11 +112,11 @@ private:
       {
         tickGameplay();
         m_tps.tick(now);
-        Stat("TPS", m_tps.slope());
+        ggTps = m_tps.slope();
       }
     }
 
-    Stat("Ticks/Frame", ticksPerFrame);
+    ggTicksPerFrame = ticksPerFrame;
 
     // draw the frame
     m_actors.clear();
@@ -120,7 +125,7 @@ private:
     draw();
 
     m_fps.tick(now);
-    Stat("FPS", m_fps.slope());
+    ggFps = m_fps.slope();
   }
 
   void tickGameplay()
@@ -137,7 +142,7 @@ private:
       m_scene.reset(next);
 
     auto const t1 = GetSteadyClockUs();
-    Stat("Tick duration", (t1 - t0) / 1000.0f);
+    ggTickDuration = (t1 - t0) / 1000.0f;
   }
 
   void registerUserInputActions()

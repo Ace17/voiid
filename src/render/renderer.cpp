@@ -34,6 +34,8 @@ std::unique_ptr<RenderPass> CreateSkyboxPass(IGraphicsBackend* backend, const Ca
 
 namespace
 {
+Gauge ggRenderTime("Render time (ms)");
+
 template<typename T>
 T blend(T a, T b, float alpha)
 {
@@ -358,7 +360,7 @@ struct Renderer : IRenderer, IScreenSizeListener
 
     const auto t1 = chrono::high_resolution_clock::now();
 
-    Stat("Render time (ms)", chrono::duration_cast<chrono::microseconds>(t1 - t0).count() / 1000.0);
+    ggRenderTime = chrono::duration_cast<chrono::microseconds>(t1 - t0).count() / 1000.0;
 
     backend->swap();
   }

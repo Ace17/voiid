@@ -22,6 +22,8 @@
 
 namespace
 {
+Gauge ggAudioVoices("Audio voices");
+
 using namespace std;
 
 template<typename T>
@@ -254,8 +256,7 @@ struct HighLevelAudio : MixableAudio
     }
 
     removeDeadVoices();
-
-    Stat("Audio voices", m_voices.size());
+    ggAudioVoices = m_voices.size();
   }
 
   void mixVoice(Voice& voice, Span<float> buf, Span<float> dst)
