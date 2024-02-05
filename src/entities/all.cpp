@@ -8,6 +8,5 @@
 
 #include "gameplay/entity_factory.h"
 
-#include "blocks.h"
 #include "conveyor.h"
 
