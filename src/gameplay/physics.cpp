@@ -189,23 +189,6 @@ struct Physics : IPhysics
       me.onCollision(&other);
   }
 
-  Body* getBodiesInBox(Box box, int collisionGroup, const Body* except) const override
-  {
-    for(auto& body : m_bodies)
-    {
-      if(body == except)
-        continue;
-
-      if(!(body->collisionGroup & collisionGroup))
-        continue;
-
-      if(overlaps(body->getBox(), box))
-        return body;
-    }
-
-    return nullptr;
-  }
-
 private:
   std::vector<Body*> m_bodies;
 };

@@ -84,11 +84,6 @@ struct NullPhysicsProbe : IPhysicsProbe
     r.fraction = 1;
     return r;
   }
-
-  Body* getBodiesInBox(Box, int, const Body*) const override
-  {
-    return nullptr;
-  }
 };
 
 unittest("Entity: pickup bonus")

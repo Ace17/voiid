@@ -19,6 +19,5 @@ struct IPhysicsProbe
   };
   virtual Trace moveBody(Body* body, Vector delta) = 0;
   virtual Trace traceBox(Box box, Vector delta, const Body* except) const = 0;
-  virtual Body* getBodiesInBox(Box box, int collisionGroup, const Body* except = nullptr) const = 0;
 };
 
