@@ -15,6 +15,8 @@
 #include <memory>
 #include <vector>
 
+namespace
+{
 struct BoxShape : Shape
 {
   Trace raycast(Vec3f A, Vec3f B, Vec3f boxHalfSize) const override
@@ -64,12 +66,6 @@ struct AffineTransformShape : Shape
   {
     return scale(v - pos);
   }
-};
-
-const Shape* getShapeBox()
-{
-  static const BoxShape boxShape;
-  return &boxShape;
 };
 
 struct Physics : IPhysics
@@ -191,6 +187,13 @@ struct Physics : IPhysics
 
 private:
   std::vector<Body*> m_bodies;
+};
+}
+
+const Shape* getShapeBox()
+{
+  static const BoxShape boxShape;
+  return &boxShape;
 };
 
 std::unique_ptr<IPhysics> createPhysics()
