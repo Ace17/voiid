@@ -32,6 +32,7 @@ struct Body
 
   // shape used for collision detection
   Size size = UnitSize;
+  const Shape* shape = getShapeBox();
 
   // collision masks
   int collisionGroup = 1;
@@ -43,14 +44,7 @@ struct Body
   // only called if (this->collidesWith & other->collisionGroup)
   Delegate<void(Body*)> onCollision = [] (Body*) {};
 
-  Box getBox() const
-  {
-    Box r;
-    r.pos = pos;
-    r.size = size;
-    return r;
-  }
+  Box getBox() const { return Box { pos, size }; }
 
-  const Shape* shape = getShapeBox();
 };
 
