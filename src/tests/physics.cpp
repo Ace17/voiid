@@ -7,7 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #define assertNearlyEquals(u, v) \
-  assertNearlyEqualsFunc(u, v, __FILE__, __LINE__)
+        assertNearlyEqualsFunc(u, v, __FILE__, __LINE__)
 
 static inline
 std::ostream& operator << (std::ostream& o, const Vector& v)

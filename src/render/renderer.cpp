@@ -391,7 +391,7 @@ struct Renderer : IRenderer, IScreenSizeListener
     auto& model = m_Models.at(modelId);
 
     for(auto& single : model.singleMeshes)
-      m_meshRenderPass.m_drawCommands.push_back({& single, where, orientation, m_camera, blinking });
+      m_meshRenderPass.m_drawCommands.push_back({ &single, where, orientation, m_camera, blinking });
   }
 
   void drawText(Vec2f pos, String text) override
@@ -410,7 +410,7 @@ struct Renderer : IRenderer, IScreenSizeListener
     for(auto c : text)
     {
       for(auto& single : m_fontModel[c].singleMeshes)
-        m_uiRenderPass.m_drawCommands.push_back({& single, rect, orientation, cam, false });
+        m_uiRenderPass.m_drawCommands.push_back({ &single, rect, orientation, cam, false });
 
       rect.pos.x += rect.size.x;
     }

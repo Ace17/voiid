@@ -19,7 +19,10 @@ struct Picture
   int stride;
   std::vector<uint8_t> pixels;
 
-  operator PictureView () { return { dim, stride, pixels.data() }; }
+  operator PictureView ()
+  {
+    return { dim, stride, pixels.data() };
+  }
 };
 
 Picture addBorderToTiles(PictureView src, int cols, int rows);

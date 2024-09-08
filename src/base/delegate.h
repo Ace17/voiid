@@ -13,12 +13,12 @@ struct Delegate<T(Args...)>
 
   Delegate() = default;
 
-  Delegate(T(*f)(Args...))
+  Delegate(T (*f)(Args...))
   {
     invokable = std::make_unique<StaticInvokable>(f);
   }
 
-  Delegate(Delegate<T(Args...)>&& other)
+  Delegate(Delegate<T(Args...)> && other)
   {
     invokable.reset(other.invokable.get());
     other.invokable.release();
@@ -47,7 +47,10 @@ struct Delegate<T(Args...)>
     invokable = std::make_unique<LambdaInvokable<Lambda>>(func);
   }
 
-  operator bool () const { return invokable.ptr; }
+  operator bool () const
+  {
+    return invokable.ptr;
+  }
 
 private:
   struct Invokable
@@ -61,7 +64,9 @@ private:
   // concrete invokable types
   struct StaticInvokable : Invokable
   {
-    StaticInvokable(T(*f)(Args...)) : funcPtr(f) {}
+    StaticInvokable(T (*f)(Args...)) : funcPtr(f)
+    {
+    }
     T call(Args... args) override { return (*funcPtr)(args...); }
     T (* funcPtr)(Args...) = nullptr;
   };
@@ -69,7 +74,9 @@ private:
   template<typename Lambda>
   struct LambdaInvokable : Invokable
   {
-    LambdaInvokable(Lambda f) : funcPtr(f) {}
+    LambdaInvokable(Lambda f) : funcPtr(f)
+    {
+    }
     T call(Args... args) override { return funcPtr(args...); }
     Lambda funcPtr {};
   };

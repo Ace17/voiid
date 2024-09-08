@@ -5,9 +5,14 @@
 
 struct HandleWithDeleter : Handle
 {
-  HandleWithDeleter(Delegate<void(void)>&& deleter_) : deleter(std::move(deleter_)) {}
+  HandleWithDeleter(Delegate<void(void)> && deleter_) : deleter(std::move(deleter_))
+  {
+  }
 
-  ~HandleWithDeleter() { deleter(); }
+  ~HandleWithDeleter()
+  {
+    deleter();
+  }
 
   Delegate<void(void)> deleter;
 };

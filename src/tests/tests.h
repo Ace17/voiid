@@ -12,24 +12,24 @@
 #include <sstream>
 
 #define unittest(name) \
-  unittestWithCounter(__COUNTER__, name)
+        unittestWithCounter(__COUNTER__, name)
 
 #define assertTrue(expr) \
-  assertTrueFunc(__FILE__, __LINE__, # expr, expr)
+        assertTrueFunc(__FILE__, __LINE__, # expr, expr)
 
 #define assertEquals(expected, actual) \
-  assertEqualsFunc(__FILE__, __LINE__, # actual, expected, actual)
+        assertEqualsFunc(__FILE__, __LINE__, # actual, expected, actual)
 
 #define assertThrown(expr) \
-  do { try{ expr; failUnitTest(__FILE__, __LINE__, "No exception was thrown: " # expr); }catch(...){} \
-  } while (0)
+        do { try{ expr; failUnitTest(__FILE__, __LINE__, "No exception was thrown: " # expr); }catch(...){} \
+        } while(0)
 
 int RegisterTest(void (* f)(), const char* testName);
 void RunTests(const char* filter);
 
 struct Registrator
 {
-  Registrator(void(*f)(), char const* name)
+  Registrator(void (*f)(), char const* name)
   {
     RegisterTest(f, name);
   }
@@ -78,13 +78,13 @@ struct Test
 };
 
 #define unittestWithCounter(counter, name) \
-  unittest2(counter, name)
+        unittest2(counter, name)
 
 #define unittest2(counter, name) \
-  static void g_myTest ## counter(); \
-  static Test g_myTestInfo ## counter = { &g_myTest ## counter, name }; \
-  static auto g_registration ## counter = RegisterTest(g_myTestInfo ## counter); \
-  static void g_myTest ## counter()
+        static void g_myTest ## counter(); \
+        static Test g_myTestInfo ## counter = { &g_myTest ## counter, name }; \
+        static auto g_registration ## counter = RegisterTest(g_myTestInfo ## counter); \
+        static void g_myTest ## counter()
 
 struct Registration {};
 Registration RegisterTest(Test& test);

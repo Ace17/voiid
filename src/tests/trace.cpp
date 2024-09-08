@@ -20,7 +20,7 @@ void assertNearlyEqualsFunc(float expected, float actual, const char* file, int 
 }
 
 #define assertNearlyEquals(u, v) \
-  assertNearlyEqualsFunc(u, v, __FILE__, __LINE__)
+        assertNearlyEqualsFunc(u, v, __FILE__, __LINE__)
 
 auto const ZeroSize = Vec3f(0, 0, 0);
 auto const HalfSize = Vec3f(0.5, 0.5, 0.5);

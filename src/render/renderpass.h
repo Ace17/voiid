@@ -5,7 +5,7 @@
 #include <cstdint>
 
 #define OFFSET(VertexType, Attribute) \
-  (uintptr_t)(&(((VertexType*)nullptr)->Attribute))
+        (uintptr_t)(&(((VertexType*)nullptr)->Attribute))
 
 struct IFrameBuffer;
 

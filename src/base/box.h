@@ -14,8 +14,12 @@
 struct Rect2f
 {
   Rect2f() = default;
-  Rect2f(float x, float y, float cx, float cy) : pos(x, y), size(cx, cy) {}
-  Rect2f(Vec2f pos_, Vec2f size_) : pos(pos_), size(size_) {}
+  Rect2f(float x, float y, float cx, float cy) : pos(x, y), size(cx, cy)
+  {
+  }
+  Rect2f(Vec2f pos_, Vec2f size_) : pos(pos_), size(size_)
+  {
+  }
   Vec2f pos;
   Vec2f size;
 };
@@ -29,8 +33,12 @@ struct Rect2i
 struct Rect3f
 {
   Rect3f() = default;
-  Rect3f(float x, float y, float z, float cx, float cy, float cz) : pos(x, y, z), size(cx, cy, cz) {}
-  Rect3f(Vec3f pos_, Vec3f size_) : pos(pos_), size(size_) {}
+  Rect3f(float x, float y, float z, float cx, float cy, float cz) : pos(x, y, z), size(cx, cy, cz)
+  {
+  }
+  Rect3f(Vec3f pos_, Vec3f size_) : pos(pos_), size(size_)
+  {
+  }
   Vec3f pos;
   Vec3f size;
 };

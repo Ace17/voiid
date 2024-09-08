@@ -21,7 +21,7 @@ unittest("Entity: explosion")
 
 struct NullPlayer : Player
 {
-  virtual void think(Control const&) override
+  virtual void think(Control const &) override
   {
   }
 

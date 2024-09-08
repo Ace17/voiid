@@ -17,9 +17,9 @@ struct Matrix2
   Matrix2() = default;
 
   Matrix2(Matrix2 const &) = delete;
-  void operator = (Matrix2 const&) = delete;
+  void operator = (Matrix2 const &) = delete;
 
-  Matrix2(Matrix2&& other)
+  Matrix2(Matrix2 && other)
   {
     data = other.data;
     size = other.size;
@@ -57,13 +57,13 @@ struct Matrix2
 
   Vec2i size = Vec2i(0, 0);
 
-  T & get(int x, int y)
+  T& get(int x, int y)
   {
     assert(isInside(x, y));
     return data[raster(x, y)];
   }
 
-  const T & get(int x, int y) const
+  const T& get(int x, int y) const
   {
     assert(isInside(x, y));
     return data[raster(x, y)];
