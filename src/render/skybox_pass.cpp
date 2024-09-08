@@ -92,7 +92,7 @@ struct SkyboxPass : RenderPass
     backend->useVertexBuffer(m_vb.get());
     backend->enableVertexAttribute(0, 3, sizeof(CubeVertex), OFFSET(CubeVertex, x));
 
-    backend->draw(std::size(UnitCube));
+    backend->draw(Span<const CubeVertex>(UnitCube).len);
   }
 
   IGraphicsBackend* const backend;
