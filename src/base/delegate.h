@@ -1,74 +1,80 @@
-#pragma once
+// Copyright (C) 2023 - Sebastien Alaiwan
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
 
-#include <memory>
+// lightweight functor
+#pragma once
 
 template<class>
 struct Delegate;
 
-template<typename T, typename... Args>
-struct Delegate<T(Args...)>
+template<typename RetType, typename... Args>
+struct Delegate<RetType(Args...)>
 {
   // invokes the delegate
-  T operator () (Args... args) { return invokable->call(args...); }
+  RetType operator () (Args... args) const { return invokable->call(args...); }
 
   Delegate() = default;
+  Delegate(Delegate &&) = default;
 
-  Delegate(T (*f)(Args...))
+  Delegate(RetType (*f)(Args...))
   {
-    invokable = std::make_unique<StaticInvokable>(f);
+    reset(new StaticInvokable(f));
   }
 
-  Delegate(Delegate<T(Args...)> && other)
+  void operator = (Delegate<RetType(Args...)>&& other)
   {
-    invokable.reset(other.invokable.get());
-    other.invokable.release();
+    reset(other.invokable);
+    other.invokable = nullptr;
   }
 
-  void operator = (Delegate<T(Args...)>&& other)
+  void operator = (RetType (* f)(Args...))
   {
-    invokable.reset(other.invokable.get());
-    other.invokable.release();
-  }
-
-  void operator = (T (* f)(Args...))
-  {
-    invokable = std::make_unique<StaticInvokable>(f);
+    reset(new StaticInvokable(f));
   }
 
   template<typename Lambda>
   Delegate(const Lambda& func)
   {
-    invokable = std::make_unique<LambdaInvokable<Lambda>>(func);
+    reset(new LambdaInvokable<Lambda>(func));
   }
 
   template<typename Lambda>
   void operator = (const Lambda& func)
   {
-    invokable = std::make_unique<LambdaInvokable<Lambda>>(func);
+    reset(new LambdaInvokable<Lambda>(func));
   }
 
   operator bool () const
   {
-    return invokable.ptr;
+    return invokable;
   }
 
 private:
   struct Invokable
   {
     virtual ~Invokable() = default;
-    virtual T call(Args... args) = 0;
+    virtual RetType call(Args... args) = 0;
   };
 
-  std::unique_ptr<Invokable> invokable;
+  Invokable* invokable = nullptr;
+
+  void reset(Invokable* i)
+  {
+    delete invokable;
+    invokable = i;
+  }
 
   // concrete invokable types
   struct StaticInvokable : Invokable
   {
-    StaticInvokable(T (*f)(Args...)) : funcPtr(f)
+    StaticInvokable(RetType (*f)(Args...)) : funcPtr(f)
     {
     }
-    T call(Args... args) override { return (*funcPtr)(args...); }
-    T (* funcPtr)(Args...) = nullptr;
+    RetType call(Args... args) override { return (*funcPtr)(args...); }
+    RetType (* funcPtr)(Args...) = nullptr;
   };
 
   template<typename Lambda>
@@ -77,7 +83,7 @@ private:
     LambdaInvokable(Lambda f) : funcPtr(f)
     {
     }
-    T call(Args... args) override { return funcPtr(args...); }
+    RetType call(Args... args) override { return funcPtr(args...); }
     Lambda funcPtr {};
   };
 };
