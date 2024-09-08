@@ -45,6 +45,5 @@ struct Body
   Delegate<void(Body*)> onCollision = [] (Body*) {};
 
   Box getBox() const { return Box { pos, size }; }
-
 };
 

@@ -61,11 +61,8 @@ struct EntityConfigImpl : IEntityConfig
   std::map<std::string, std::string> values;
 };
 
-void spawnEntities(Room const& room, IGame* game, int levelIdx)
+void spawnEntities(Room const& room, IGame* game)
 {
-  // avoid collisions between static entities from different rooms
-  int id = levelIdx * 1000;
-
   for(auto& spawner : room.things)
   {
     EntityConfigImpl config;
@@ -74,8 +71,6 @@ void spawnEntities(Room const& room, IGame* game, int levelIdx)
     auto entity = createEntity(spawner.name, &config);
     entity->pos = spawner.pos;
     game->spawn(entity.release());
-
-    ++id;
   }
 }
 
@@ -279,7 +274,7 @@ struct GameState : Scene, private IGame
 
       m_player->pos = Vector(level.startpos_x, level.startpos_y, level.startpos_z);
 
-      spawnEntities(level, this, levelIdx);
+      spawnEntities(level, this);
 
       m_staticLevelLights.clear();
 
