@@ -9,18 +9,14 @@
 #define assertNearlyEquals(u, v) \
         assertNearlyEqualsFunc(u, v, __FILE__, __LINE__)
 
-static inline
-std::ostream& operator << (std::ostream& o, const Vector& v)
+template<>
+struct ToStringImpl<Vec3f>
 {
-  o << "(";
-  o << v.x;
-  o << ", ";
-  o << v.y;
-  o << ", ";
-  o << v.z;
-  o << ")";
-  return o;
-}
+  static std::string call(const Vec3f& val)
+  {
+    return "(" + std::to_string(val.x) + ", " + std::to_string(val.y) + ", " + std::to_string(val.z) + ")";
+  }
+};
 
 void assertNearlyEqualsFunc(Vector expected, Vector actual, const char* file, int line)
 {
@@ -28,12 +24,12 @@ void assertNearlyEqualsFunc(Vector expected, Vector actual, const char* file, in
 
   if(fabs(delta.x) > 0.1 || fabs(delta.y) > 0.1 || fabs(delta.z) > 0.1)
   {
-    using namespace std;
-    stringstream ss;
-    ss << "Assertion failure" << endl;
-    ss << file << "(" << line << ")" << endl;
-    ss << "Expected '" << expected << "', got '" << actual << "'" << endl;
-    throw logic_error(ss.str());
+    std::string ss;
+    ss += "Assertion failure\n";
+    ss += std::string(file) + "(" + std::to_string(line) + ")\n";
+    ss += "Expected '" + testValueToString(expected) + "', got '" + testValueToString(actual) + "'\n";
+    fprintf(stderr, "%s", ss.c_str());
+    abort();
   }
 }
 

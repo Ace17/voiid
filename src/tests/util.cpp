@@ -7,9 +7,43 @@
 #include "base/delegate.h"
 #include "base/util.h"
 #include "tests.h"
-#include <algorithm>
+#include <cstring>
 #include <vector>
 using namespace std;
+
+template<>
+struct ToStringImpl<std::pair<int, int>>
+{
+  static std::string call(const std::pair<int, int>& val)
+  {
+    return "(" + std::to_string(val.first) + ", " + std::to_string(val.second) + ")";
+  }
+};
+
+template<>
+struct ToStringImpl<std::vector<std::pair<int, int>>>
+{
+  static std::string call(const std::vector<std::pair<int, int>>& val)
+  {
+    std::string r;
+
+    bool first = true;
+    r += "[";
+
+    for(auto& element : val)
+    {
+      if(!first)
+        r += ", ";
+
+      r += testValueToString(element);
+      first = false;
+    }
+
+    r += "]";
+
+    return r;
+  }
+};
 
 unittest("Util: allPairs(1)")
 {
@@ -58,6 +92,44 @@ unittest("Util: rasterScan simple")
     result.push_back(p);
 
   assertEquals(expected, result);
+}
+
+unittest("Util: endsWith")
+{
+  assertTrue(endsWith("Hello World", "World"));
+  assertTrue(!endsWith("Hello World", "You"));
+}
+
+unittest("Util: setExtension")
+{
+  assertEquals(std::string("test.obj"), setExtension("test.source", "obj"));
+}
+
+static bool operator == (const String& a, const String& b)
+{
+  if(a.len != b.len)
+    return false;
+
+  return memcmp(a.data, b.data, a.len) == 0;
+}
+
+template<>
+struct ToStringImpl<String>
+{
+  static std::string call(const String& val)
+  {
+    return std::string(val.data, val.len);
+  }
+};
+
+unittest("Util: dirName")
+{
+  assertEquals(std::string("Hello/World"), dirName("Hello/World/Goodbye.txt"));
+}
+
+unittest("Util: baseName")
+{
+  assertEquals(std::string("Goodbye.txt"), baseName("Hello/World/Goodbye.txt"));
 }
 
 unittest("Delegate: lambdas")

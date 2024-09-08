@@ -17,7 +17,7 @@ bool jsonOk(string text)
     json::parse(text.c_str(), text.size());
     return true;
   }
-  catch(exception const&)
+  catch(...)
   {
     return false;
   }
@@ -50,6 +50,7 @@ unittest("Json parser: booleans")
 {
   assertTrue(jsonOk("{ \"var\": true }"));
   assertTrue(jsonOk("{ \"var\": false }"));
+  assertTrue(jsonOk("{ \"var\": null }"));
 
   {
     auto o = jsonParse("{ \"isCool\" : true }");
@@ -91,7 +92,7 @@ unittest("Json parser: returned value")
     auto o = jsonParse("{ \"N\" : \"hello\"}");
     assertEquals(1u, o.members.size());
     auto s = o.members["N"];
-    assertEquals("hello", s.stringValue);
+    assertEquals(std::string("hello"), s.stringValue);
   }
   {
     auto o = jsonParse("{ \"N\" : -1234 }");
@@ -99,6 +100,14 @@ unittest("Json parser: returned value")
     auto s = o.members["N"];
     assertEquals((int)json::Value::Type::Integer, (int)s.type);
     assertEquals(-1234, s.intValue);
+  }
+  {
+    auto o = jsonParse("{ \"D\" : 543.210 }");
+    assertEquals(1u, o.members.size());
+    auto s = o.members["D"];
+    assertEquals((int)json::Value::Type::Integer, (int)s.type);
+    assertEquals(543210, s.intValue);
+    assertEquals(-3, s.intPow10);
   }
 }
 

@@ -7,9 +7,10 @@
 #pragma once
 
 ///////////////////////////////////////////////////////////////////////////////
-// Unit test framework: API
+// User-code API
 
-#include <sstream>
+#include <cstdint>
+#include <string>
 
 #define unittest(name) \
         unittestWithCounter(__COUNTER__, name)
@@ -21,51 +22,16 @@
         assertEqualsFunc(__FILE__, __LINE__, # actual, expected, actual)
 
 #define assertThrown(expr) \
-        do { try{ expr; failUnitTest(__FILE__, __LINE__, "No exception was thrown: " # expr); }catch(...){} \
+        do { \
+          try \
+          { \
+            expr; \
+            failUnitTest(__FILE__, __LINE__, "No exception was thrown: " # expr); \
+          } \
+          catch(...){} \
         } while(0)
 
-int RegisterTest(void (* f)(), const char* testName);
-void RunTests(const char* filter);
-
-struct Registrator
-{
-  Registrator(void (*f)(), char const* name)
-  {
-    RegisterTest(f, name);
-  }
-};
-
-static inline
-std::ostream& operator << (std::ostream& o, const std::pair<int, int>& p)
-{
-  o << "(";
-  o << p.first;
-  o << ", ";
-  o << p.second;
-  o << ")";
-  return o;
-}
-
-// match std::vector
-template<typename T, typename = decltype(((T*)nullptr)->emplace({}))>
-std::ostream& operator << (std::ostream& o, const T& container)
-{
-  bool comma = false;
-  o << "[";
-
-  for(auto& element : container)
-  {
-    if(comma)
-      o << ", ";
-
-    o << element;
-    comma = true;
-  }
-
-  o << "]";
-
-  return o;
-}
+void runTests(const char* filter);
 
 ///////////////////////////////////////////////////////////////////////////////
 // implementation details
@@ -83,21 +49,105 @@ struct Test
 #define unittest2(counter, name) \
         static void g_myTest ## counter(); \
         static Test g_myTestInfo ## counter = { &g_myTest ## counter, name }; \
-        static auto g_registration ## counter = RegisterTest(g_myTestInfo ## counter); \
+        static auto g_registration ## counter = registerTest(g_myTestInfo ## counter); \
         static void g_myTest ## counter()
 
 struct Registration {};
-Registration RegisterTest(Test& test);
+Registration registerTest(Test& test);
 
 void failUnitTest(char const* file, int line, const char* msg);
 
-template<typename T>
-inline void assertTrueFunc(char const* file, int line, const char* caption, T const& expr)
-{
-  if(expr)
-    return;
+template<typename U, typename dummy = void>
+struct ToStringImpl;
 
-  failUnitTest(file, line, caption);
+template<typename T>
+std::string testValueToString(const T& val)
+{
+  return ToStringImpl<T>::call(val);
+}
+
+template<typename T>
+extern T* DummyInstance();
+
+// match std::vector
+template<typename T>
+struct ToStringImpl<T, decltype(DummyInstance<T>()->push_back((typename T::value_type) {}))>
+{
+  static std::string call(const T& val)
+  {
+    std::string r;
+
+    bool first = true;
+    r += "[";
+
+    for(auto& element : val)
+    {
+      if(!first)
+        r += ", ";
+
+      r += testValueToString(element);
+      first = false;
+    }
+
+    r += "]";
+
+    return r;
+  }
+};
+
+// match std::string
+template<>
+struct ToStringImpl<std::string>
+{
+  static std::string call(const std::string& val) { return val; }
+};
+
+template<>
+struct ToStringImpl<char>
+{
+  static std::string call(const char& val) { return std::to_string(val); }
+};
+
+template<>
+struct ToStringImpl<float>
+{
+  static std::string call(const float& val) { return std::to_string(val); }
+};
+
+template<>
+struct ToStringImpl<unsigned char>
+{
+  static std::string call(const unsigned char& val) { return std::to_string(val); }
+};
+
+template<>
+struct ToStringImpl<unsigned int>
+{
+  static std::string call(const unsigned int& val) { return std::to_string(val); }
+};
+
+template<>
+struct ToStringImpl<bool>
+{
+  static std::string call(const bool& val) { return val ? "true" : "false"; }
+};
+
+template<>
+struct ToStringImpl<int>
+{
+  static std::string call(const int& val) { return std::to_string(val); }
+};
+
+template<>
+struct ToStringImpl<uint64_t>
+{
+  static std::string call(const size_t& val) { return std::to_string(val); }
+};
+
+inline void assertTrueFunc(char const* file, int line, const char* caption, bool expr)
+{
+  if(!expr)
+    failUnitTest(file, line, caption);
 }
 
 template<typename T, typename U>
@@ -106,10 +156,10 @@ inline void assertEqualsFunc(const char* file, int line, const char* caption, T 
   if(expected == actual)
     return;
 
-  std::stringstream ss;
-  ss << "'" << caption << "' has an invalid value\n";
-  ss << "  Expect: '" << expected << "'\n";
-  ss << "  Actual: '" << actual << "'\n";
-  failUnitTest(file, line, ss.str().c_str());
+  std::string ss;
+  ss += "'" + std::string(caption) + "' has an invalid value\n";
+  ss += "  Expect: '" + testValueToString(expected) + "'\n";
+  ss += "  Actual: '" + testValueToString(actual) + "'\n";
+  failUnitTest(file, line, ss.c_str());
 }
 

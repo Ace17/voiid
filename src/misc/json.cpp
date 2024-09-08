@@ -7,7 +7,8 @@
 // Simplistic standalone JSON-parser
 
 #include "json.h"
-#include <stdexcept>
+
+#include "base/error.h"
 
 namespace json
 {
@@ -17,7 +18,7 @@ Value const& Value::operator [] (const char* name) const
   auto it = members.find(name);
 
   if(it == members.end())
-    throw std::runtime_error("Member '" + std::string(name) + "' was not found");
+    throw Error("Member '" + std::string(name) + "' was not found");
 
   return it->second;
 }
@@ -25,7 +26,7 @@ Value const& Value::operator [] (const char* name) const
 void Value::enforceType(Type expected) const
 {
   if(type != expected)
-    throw std::runtime_error("Type error");
+    throw Error("Type error");
 }
 }
 
@@ -140,6 +141,14 @@ private:
       expect('e');
       break;
 
+    case 'n':
+      curr.type = Token::BOOLEAN;
+      expect('n');
+      expect('u');
+      expect('l');
+      expect('l');
+      break;
+
     case '-':
     case '0':
     case '1':
@@ -160,6 +169,14 @@ private:
         while(isdigit(frontChar()))
           accept();
 
+        if(frontChar() == '.')
+        {
+          accept();
+
+          while(isdigit(frontChar()))
+            accept();
+        }
+
         break;
       }
     default:
@@ -167,7 +184,7 @@ private:
         std::string msg = "Unknown char '";
         msg += frontChar();
         msg += "'";
-        throw std::runtime_error(msg);
+        throw Error(msg);
       }
     }
   }
@@ -175,7 +192,7 @@ private:
   void expect(char c)
   {
     if(frontChar() != c)
-      throw std::runtime_error("Unexpected character");
+      throw Error(std::string("Unexpected character: '") + c + "'");
 
     accept();
   }
@@ -196,7 +213,7 @@ private:
 
   static bool whitespace(char c)
   {
-    return c == ' ' || c == '\n';
+    return c == ' ' || c == '\n' || c == '\t';
   }
 
   const char* text;
@@ -260,7 +277,39 @@ Value parseValue(Tokenizer& tk)
   {
     Value r;
     r.type = Value::Type::Integer;
-    r.intValue = atoi(expect(tk, Token::NUMBER).c_str());
+    auto s = expect(tk, Token::NUMBER);
+    r.intValue = 0;
+    int i = 0;
+    int sign = 1;
+
+    if(s[i] == '-')
+    {
+      sign = -1;
+      ++i;
+    }
+
+    for(; i < (int)s.size(); ++i)
+    {
+      if(s[i] == '.')
+        break;
+
+      r.intValue *= 10;
+      r.intValue += s[i] - '0';
+    }
+
+    if(s[i] == '.')
+    {
+      ++i;
+
+      for(; i < (int)s.size(); ++i)
+      {
+        r.intValue *= 10;
+        r.intValue += s[i] - '0';
+        r.intPow10--;
+      }
+    }
+
+    r.intValue *= sign;
     return r;
   }
   else
@@ -310,7 +359,7 @@ std::string expect(Tokenizer& tk, Token::Type type)
       msg += " instead of " + std::to_string(type);
     }
 
-    throw std::runtime_error(msg);
+    throw Error(msg);
   }
 
   std::string r = front.lexem;

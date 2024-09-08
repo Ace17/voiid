@@ -43,6 +43,11 @@ struct Value
 
   Value const& operator [] (const char* name) const;
 
+  bool has(const char* name) const
+  {
+    return members.find(name) != members.end();
+  }
+
   ////////////////////////////////////////
   // type == Type::Array
   std::vector<Value> elements;
@@ -60,6 +65,7 @@ struct Value
   ////////////////////////////////////////
   // type == Type::Integer
   int intValue {};
+  int intPow10 = 0;
 
   operator int () const
   {

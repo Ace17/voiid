@@ -2,6 +2,7 @@
 #include "tests.h"
 
 #include <cmath>
+#include <sstream>
 
 static
 void assertNearlyEqualsFunc(float expected, float actual, const char* file, int line)
