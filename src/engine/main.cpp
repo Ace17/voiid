@@ -17,8 +17,6 @@
 #define SDL_MAIN_HANDLED
 #include "SDL.h"
 
-using namespace std;
-
 #ifdef __EMSCRIPTEN__
 extern "C"
 {
@@ -56,7 +54,7 @@ int main(int argc, char* argv[])
     runMainLoop(app.get());
     return 0;
   }
-  catch(exception const& e)
+  catch(std::exception const& e)
   {
     fflush(stdout);
     logMsg("Fatal: %s\n", e.what());

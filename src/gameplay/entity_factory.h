@@ -9,8 +9,6 @@
 #include <memory>
 #include <string>
 
-using namespace std;
-
 struct Entity;
 
 struct IEntityConfig

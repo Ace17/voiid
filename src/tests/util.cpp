@@ -9,7 +9,6 @@
 #include "tests.h"
 #include <cstring>
 #include <vector>
-using namespace std;
 
 template<>
 struct ToStringImpl<std::pair<int, int>>
@@ -47,9 +46,9 @@ struct ToStringImpl<std::vector<std::pair<int, int>>>
 
 unittest("Util: allPairs(1)")
 {
-  auto expected = vector<pair<int, int>>({});
+  auto expected = std::vector<std::pair<int, int>>({});
 
-  vector<pair<int, int>> result;
+  std::vector<std::pair<int, int>> result;
 
   for(auto p : allPairs(1))
     result.push_back(p);
@@ -59,14 +58,14 @@ unittest("Util: allPairs(1)")
 
 unittest("Util: allPairs simple")
 {
-  auto expected = vector<pair<int, int>>(
+  auto expected = std::vector<std::pair<int, int>>(
   {
-    make_pair(0, 1),
-    make_pair(0, 2),
-    make_pair(1, 2),
+    std::make_pair(0, 1),
+    std::make_pair(0, 2),
+    std::make_pair(1, 2),
   });
 
-  vector<pair<int, int>> result;
+  std::vector<std::pair<int, int>> result;
 
   for(auto p : allPairs(3))
     result.push_back(p);
@@ -76,17 +75,17 @@ unittest("Util: allPairs simple")
 
 unittest("Util: rasterScan simple")
 {
-  auto expected = vector<pair<int, int>>(
+  auto expected = std::vector<std::pair<int, int>>(
   {
-    make_pair(0, 0),
-    make_pair(1, 0),
-    make_pair(0, 1),
-    make_pair(1, 1),
-    make_pair(0, 2),
-    make_pair(1, 2),
+    std::make_pair(0, 0),
+    std::make_pair(1, 0),
+    std::make_pair(0, 1),
+    std::make_pair(1, 1),
+    std::make_pair(0, 2),
+    std::make_pair(1, 2),
   });
 
-  vector<pair<int, int>> result;
+  std::vector<std::pair<int, int>> result;
 
   for(auto p : rasterScan(2, 3))
     result.push_back(p);

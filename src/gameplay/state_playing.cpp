@@ -24,8 +24,6 @@
 #include "state_machine.h"
 #include "variable.h"
 
-using namespace std;
-
 std::unique_ptr<Player> makeHero();
 
 namespace
@@ -40,7 +38,7 @@ Actor getDebugActor(Entity* entity)
 
 struct EntityConfigImpl : IEntityConfig
 {
-  string getString(const char* varName, string defaultValue) override
+  std::string getString(const char* varName, std::string defaultValue) override
   {
     auto i = values.find(varName);
 
@@ -60,7 +58,7 @@ struct EntityConfigImpl : IEntityConfig
     return atoi(i->second.c_str());
   }
 
-  map<string, string> values;
+  std::map<std::string, std::string> values;
 };
 
 void spawnEntities(Room const& room, IGame* game, int levelIdx)
@@ -226,7 +224,7 @@ struct GameState : Scene, private IGame
     m_spawned.clear();
   }
 
-  static bool isDead(unique_ptr<Entity> const& e)
+  static bool isDead(std::unique_ptr<Entity> const& e)
   {
     return e->dead;
   }
@@ -312,7 +310,7 @@ struct GameState : Scene, private IGame
   bool m_levelIsLoaded = false;
   std::vector<LightActor> m_staticLevelLights;
 
-  vector<unique_ptr<Event>> m_eventQueue;
+  std::vector<std::unique_ptr<Event>> m_eventQueue;
 
   ////////////////////////////////////////////////////////////////
   // IGame: game, as seen by the entities
@@ -324,21 +322,21 @@ struct GameState : Scene, private IGame
 
   void spawn(Entity* e) override
   {
-    m_spawned.push_back(unique_ptr<Entity>(e));
+    m_spawned.push_back(std::unique_ptr<Entity>(e));
   }
 
-  void postEvent(unique_ptr<Event> event) override
+  void postEvent(std::unique_ptr<Event> event) override
   {
     m_eventQueue.push_back(std::move(event));
   }
 
-  unique_ptr<Handle> subscribeForEvents(IEventSink* sink) override
+  std::unique_ptr<Handle> subscribeForEvents(IEventSink* sink) override
   {
     auto it = m_listeners.insert(m_listeners.begin(), sink);
 
     auto unsubscribe = [ = ] () { m_listeners.erase(it); };
 
-    return make_unique<HandleWithDeleter>(unsubscribe);
+    return std::make_unique<HandleWithDeleter>(unsubscribe);
   }
 
   void textBox(String msg) override
@@ -347,25 +345,25 @@ struct GameState : Scene, private IGame
   }
 
   Player* m_player = nullptr;
-  vector<unique_ptr<Entity>> m_spawned;
+  std::vector<std::unique_ptr<Entity>> m_spawned;
   View* const m_view;
-  unique_ptr<IPhysics> m_physics;
+  std::unique_ptr<IPhysics> m_physics;
 
   bool m_gameFinished = false;
 
-  list<IEventSink*> m_listeners;
+  std::list<IEventSink*> m_listeners;
 
   std::vector<Brush> m_brushes;
   bool m_debug;
   bool m_debugFirstTime = true;
 
-  vector<unique_ptr<Entity>> m_entities;
+  std::vector<std::unique_ptr<Entity>> m_entities;
 };
 }
 
 Scene* createPlayingStateAtLevel(View* view, int level)
 {
-  auto gameState = make_unique<GameState>(view);
+  auto gameState = std::make_unique<GameState>(view);
   gameState->m_level = level;
   return gameState.release();
 }

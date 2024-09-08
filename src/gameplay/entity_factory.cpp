@@ -11,29 +11,27 @@
 #include <map>
 #include <stdexcept>
 
-using namespace std;
-
 namespace
 {
-map<string, CreationFunc>& g_registry()
+std::map<std::string, CreationFunc>& g_registry()
 {
-  static map<string, CreationFunc> registry;
+  static std::map<std::string, CreationFunc> registry;
   return registry;
 }
 }
 
-int registerEntity(string type, CreationFunc func)
+int registerEntity(std::string type, CreationFunc func)
 {
   g_registry()[type] = func;
   return 0; // ignored
 }
 
-unique_ptr<Entity> createEntity(string name, IEntityConfig* args)
+std::unique_ptr<Entity> createEntity(std::string name, IEntityConfig* args)
 {
   auto i_func = g_registry().find(name);
 
   if(i_func == g_registry().end())
-    throw runtime_error("unknown entity type: '" + name + "'");
+    throw std::runtime_error("unknown entity type: '" + name + "'");
 
   return (*i_func).second(args);
 }

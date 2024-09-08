@@ -6,7 +6,6 @@
 
 #include "tests.h"
 #include <vector>
-using namespace std;
 
 #include "base/mesh.h"
 #include "misc/decompress.h"
@@ -634,7 +633,7 @@ const uint8_t compressedFbxData[] =
 
 unittest("FBX: simple")
 {
-  vector<uint8_t> fbxData = gzipDecompress(compressedFbxData);
+  std::vector<uint8_t> fbxData = gzipDecompress(compressedFbxData);
   auto scene = parseFbx(fbxData);
   assertEquals(2u, scene.meshes.size());
   assertEquals(3u, scene.lights.size());

@@ -11,12 +11,11 @@ void assertNearlyEqualsFunc(float expected, float actual, const char* file, int 
 
   if(fabs(delta) > 0.01)
   {
-    using namespace std;
-    stringstream ss;
-    ss << "Assertion failure" << endl;
-    ss << file << "(" << line << ")" << endl;
-    ss << "Expected '" << expected << "', got '" << actual << "'" << endl;
-    throw logic_error(ss.str());
+    std::stringstream ss;
+    ss << "Assertion failure" << std::endl;
+    ss << file << "(" << line << ")" << std::endl;
+    ss << "Expected '" << expected << "', got '" << actual << "'" << std::endl;
+    throw std::logic_error(ss.str());
   }
 }
 

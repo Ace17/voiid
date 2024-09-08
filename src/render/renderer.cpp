@@ -29,7 +29,6 @@
 #include "renderpass.h"
 #include "weakcache.h"
 
-using namespace std;
 std::unique_ptr<RenderPass> CreateSkyboxPass(IGraphicsBackend* backend, const Camera* camera);
 
 namespace
@@ -180,7 +179,7 @@ struct MeshRenderPass
   IGraphicsBackend* backend {};
   std::unique_ptr<IGpuProgram> m_meshShader;
   std::vector<DrawCommand> m_drawCommands;
-  vector<Light> m_lights;
+  std::vector<Light> m_lights;
   float m_ambientLight = 0;
   float m_aspectRatio = 1.0;
 };
@@ -313,9 +312,9 @@ struct Renderer : IRenderer, IScreenSizeListener
 
     for(auto& single : m_Models[modelId].singleMeshes)
     {
-      single.diffuse = m_textureCache.fetch(setExtension(string(path.data), to_string(i) + ".diffuse.png"));
-      single.lightmap = m_textureCache.fetch(setExtension(string(path.data), to_string(i) + ".lightmap.png"));
-      single.normal = m_textureCache.fetch(setExtension(string(path.data), to_string(i) + ".normal.png"));
+      single.diffuse = m_textureCache.fetch(setExtension(std::string(path.data), std::to_string(i) + ".diffuse.png"));
+      single.lightmap = m_textureCache.fetch(setExtension(std::string(path.data), std::to_string(i) + ".lightmap.png"));
+      single.normal = m_textureCache.fetch(setExtension(std::string(path.data), std::to_string(i) + ".normal.png"));
 
       ++i;
     }
@@ -354,13 +353,13 @@ struct Renderer : IRenderer, IScreenSizeListener
 
   void endDraw() override
   {
-    const auto t0 = chrono::high_resolution_clock::now();
+    const auto t0 = std::chrono::high_resolution_clock::now();
 
     doRender();
 
-    const auto t1 = chrono::high_resolution_clock::now();
+    const auto t1 = std::chrono::high_resolution_clock::now();
 
-    ggRenderTime = chrono::duration_cast<chrono::microseconds>(t1 - t0).count() / 1000.0;
+    ggRenderTime = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() / 1000.0;
 
     backend->swap();
   }
@@ -431,8 +430,8 @@ private:
   Camera m_camera;
   bool m_cameraValid = false;
   IGraphicsBackend* const backend;
-  vector<RenderMesh> m_Models;
-  vector<RenderMesh> m_fontModel;
+  std::vector<RenderMesh> m_Models;
+  std::vector<RenderMesh> m_fontModel;
 
   bool m_enableFsaa = false;
   bool m_enablePostProcessing = true;
