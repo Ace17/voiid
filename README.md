@@ -67,11 +67,7 @@ $ CXX=emcc make
 
 However, in practice, more options need to be injected to the makefile,
 like setting EXT (program extension) to ".html", etc.
-There's a make wrapper that does exactly that:
-
-```
-$ ./scripts/asmjs-make
-```
+See the function 'deliverWebVersion' in the file scripts/deliver.
 
 Run the game
 ------------
