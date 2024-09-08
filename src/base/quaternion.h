@@ -23,7 +23,7 @@ struct Quaternion
   {
     auto const& p = *this;
     Quaternion r;
-    // p * q = [( pS qV + qS pV + pV × qV ), ( pS qS − pV qV )]
+    // p * q = [( pS qV + qS pV + pV x qV ), ( pS qS - pV qV )]
     r.v = p.s * q.v + q.s * p.v + crossProduct(p.v, q.v);
     r.s = p.s * q.s - dotProduct(p.v, q.v);
     return r;
