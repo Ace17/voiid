@@ -11,17 +11,33 @@ outputMeshPath = argv[0]
 
 def run():
 
-  # Force triangulation of all objects before export
-  for obj in bpy.context.scene.objects:
-    #sys.stderr.write(f"{obj.type} {obj.name}\t\t\t\t{obj}\n")
-    mod = obj.modifiers.new("Toto", 'TRIANGULATE')
-
   bpy.ops.export_scene.fbx(filepath=outputMeshPath,
-          axis_up="Z",
-          axis_forward="Y",
-          use_custom_props=True,
-          use_tspace=True,
-          bake_anim=False)
+    bake_anim=False,
+    global_scale = 1.0,
+    apply_unit_scale = True,
+    apply_scale_options = 'FBX_SCALE_NONE',
+    use_space_transform = True,
+    bake_space_transform = False,
+    object_types = {'LIGHT', 'EMPTY', 'MESH'},
+    use_mesh_modifiers = True,
+    use_mesh_modifiers_render = True,
+    mesh_smooth_type = 'OFF',
+    use_subsurf = False,
+    use_mesh_edges = False,
+    use_tspace = True,
+    use_triangles = True,
+    use_custom_props=True,
+    add_leaf_bones = True,
+    primary_bone_axis = 'Y',
+    secondary_bone_axis = 'X',
+    use_armature_deform_only = False,
+    armature_nodetype = 'NULL',
+    path_mode = 'AUTO',
+    embed_textures = False,
+    batch_mode = 'OFF',
+    use_batch_own_dir = True,
+    axis_forward = 'Y',
+    axis_up = 'Z')
 
 try:
   run()

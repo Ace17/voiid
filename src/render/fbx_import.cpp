@@ -21,7 +21,7 @@
 
 namespace
 {
-static const Matrix4f identity = scale({ 1, 1, 1 });
+const Matrix4f identity = scale({ 1, 1, 1 });
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -1100,6 +1100,9 @@ private:
       case hashed("Normals"):
         parseSection_Normals(tokenizer, m_vertexNormals);
         break;
+      case hashed("NormalsIndex"):
+        parseSection_NormalsIndex(tokenizer, m_vertexNormals);
+        break;
       default:
         skipObject(tokenizer);
         break;
@@ -1281,6 +1284,28 @@ private:
     tokenizer.nextToken();
 
     enforce(tokenizer.tokenType == Token::ObjectEnd, "Unexpected extra child/value in 'Normals'");
+
+    expect(tokenizer, Token::ObjectEnd);
+  }
+
+  void parseSection_NormalsIndex(Tokenizer& tokenizer, std::vector<Vec3f>& normals)
+  {
+    expect(tokenizer, Token::ObjectBegin);
+
+    enforce(tokenizer.tokenType == Token::Value, "No values in 'NormalsIndex'");
+    enforce(tokenizer.valueType == ValueType::IntegerArray, "Unexpected value (type: %d) in 'NormalsIndex'", tokenizer.valueType);
+
+    auto ints = tokenizer.m_valueIntegerArray;
+
+    auto normalValues = std::move(normals);
+
+    normals.clear();
+    normals.reserve(ints.len);
+
+    for(auto idx : ints)
+      normals.push_back(normalValues[idx]);
+
+    tokenizer.nextToken();
 
     expect(tokenizer, Token::ObjectEnd);
   }
