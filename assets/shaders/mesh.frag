@@ -43,7 +43,7 @@ void main()
   totalLight += texture(LightmapTex, UV_lightmap).rgb * 0.01 * diffuse.rgb;
 
   vec3 localN = texture(NormalTex, UV).rgb * 2.0 - 1.0;
-  vec3 normal = TBN * localN;
+  vec3 normal = normalize(TBN * localN);
 
   // dynamic lights
   for(int i=0;i < LightCount;++i)
