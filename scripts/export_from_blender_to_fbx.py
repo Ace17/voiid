@@ -11,6 +11,30 @@ outputMeshPath = argv[0]
 
 def run():
 
+  for obj in bpy.context.scene.objects:
+      if obj.instance_type == 'COLLECTION':
+          collection = obj.instance_collection
+          # Create a new collection for the duplicated objects
+          new_collection = bpy.data.collections.new("real_" + collection.name)
+          bpy.context.scene.collection.children.link(new_collection)
+
+          # Duplicate all objects from the instanced collection
+          for item in collection.objects:
+              new_obj = item.copy()
+              new_obj.data = item.data.copy()
+              new_collection.objects.link(new_obj)
+
+          # Position and parent the new objects to match the instance
+          for new_obj in new_collection.objects:
+              new_obj.matrix_world = obj.matrix_world @ new_obj.matrix_world
+              new_obj.parent = obj.parent
+              if obj.parent_bone:
+                  new_obj.parent_bone = obj.parent_bone
+                  new_obj.parent_type = obj.parent_type
+
+          # Delete the instance
+          bpy.data.objects.remove(obj, do_unlink=True)
+
   bpy.ops.export_scene.fbx(filepath=outputMeshPath,
     bake_anim=False,
     global_scale = 1.0,
