@@ -82,7 +82,7 @@ SRCS_MESHCOOKER:=\
 
 SRCS_GAME:=\
 	src/entities/all.cpp\
-	src/entities/amulet.cpp\
+	src/entities/debug_cube.cpp\
 	src/entities/bonus.cpp\
 	src/entities/door.cpp\
 	src/entities/explosion.cpp\

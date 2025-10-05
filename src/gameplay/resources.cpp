@@ -30,7 +30,7 @@ static const Resource resources[] =
   { ResourceType::Model, MDL_ENDING, "res/sprites/ending.render" },
   { ResourceType::Model, MDL_DOOR, "res/sprites/door.render" },
   { ResourceType::Model, MDL_RECT, "res/sprites/rect.render" },
-  { ResourceType::Model, MDL_AMULET, "res/sprites/amulet.render" },
+  { ResourceType::Model, MDL_CUBE, "res/sprites/cube.render" },
   { ResourceType::Model, MDL_INVRECT, "res/sprites/invrect.render" },
   { ResourceType::Model, MDL_SWITCH, "res/sprites/switch.render" },
   { ResourceType::Model, MDL_TELEPORTER, "res/sprites/teleporter.render" },

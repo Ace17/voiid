@@ -23,7 +23,7 @@ struct Amulet : Entity
 
   void onDraw(View* view) const override
   {
-    auto r = Actor(pos, MDL_AMULET);
+    auto r = Actor(pos, MDL_CUBE);
     r.scale = size;
     r.orientation = Quaternion::fromEuler(yaw, pitch, 0);
     view->sendActor(r);
@@ -40,5 +40,5 @@ struct Amulet : Entity
 };
 }
 
-static auto const reg = registerEntity("amulet", [] (IEntityConfig*) -> std::unique_ptr<Entity> { return std::make_unique<Amulet>(); });
+static auto const reg = registerEntity("debug_cube", [] (IEntityConfig*) -> std::unique_ptr<Entity> { return std::make_unique<Amulet>(); });
 
