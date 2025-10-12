@@ -8,6 +8,7 @@
 
 #include "base/scene.h"
 #include "base/view.h"
+#include <math.h>
 #include <memory>
 
 #include "models.h" // MDL_SPLASH
@@ -16,7 +17,7 @@
 #include "toggle.h"
 
 static const float LIGHT_ON = 1;
-static const float LIGHT_OFF = -2.7;
+static const float LIGHT_OFF = 0;
 
 template<typename T>
 T blend(T a, T b, float alpha)
@@ -52,8 +53,7 @@ struct SplashState : Scene
 
     if(activated)
     {
-      time++;
-      const float alpha = 1.0 - delay / float(FADE_TIME);
+      const float alpha = sqrt(1.0 - delay / float(FADE_TIME));
       view->setAmbientLight(blend(LIGHT_ON, LIGHT_OFF, alpha));
 
       if(decrement(delay))
@@ -69,10 +69,8 @@ struct SplashState : Scene
 
   void draw() override
   {
-    double t = time * 0.01;
     view->setCameraPos(Vec3f(0, 0, 0), Quaternion::fromEuler(0, 0, 0));
     Actor panel = Actor(Vec3f(2.5, 0, +0.15), MDL_SPLASH);
-    panel.scale = panel.scale * (1.0 / (1.0 + t));
     view->sendActor(panel);
   }
 
@@ -80,7 +78,6 @@ private:
   View* const view;
   bool activated = false;
   int delay = 0;
-  int time = 0;
 };
 
 Scene* createSplashState(View* view)

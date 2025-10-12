@@ -86,6 +86,7 @@ SRCS_GAME:=\
 	src/entities/bonus.cpp\
 	src/entities/door.cpp\
 	src/entities/explosion.cpp\
+	src/entities/fragment.cpp\
 	src/entities/hero.cpp\
 	src/entities/lamp.cpp\
 	src/entities/move.cpp\

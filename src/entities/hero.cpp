@@ -19,9 +19,11 @@
 #include "hero.h"
 #include "move.h"
 
+#include <cstdio>
+
 auto const GRAVITY = Vec3f(0, 0, -0.005);
 auto const JUMP_SPEED = 0.15;
-auto const WALK_SPEED = 0.075f;
+auto const WALK_SPEED = 0.035f;
 auto const MAX_HORZ_SPEED = 0.2f;
 auto const MAX_FALL_SPEED = 0.2f;
 auto const HURT_DELAY = 50;
@@ -87,6 +89,12 @@ struct Hero : Player, Damageable
       vel.z = JUMP_SPEED;
     }
 
+    if(ground)
+    {
+      if((c.forward || c.backward || c.left || c.right) && tryActivate(footstepTimer, rand() % 25 + 50))
+        game->playSound(SND_FOOTSTEP_1 + rand() % 7);
+    }
+
     // stop jump if the player release the button early
     if(vel.z > 0 && !c.jump)
       vel.z = 0;
@@ -132,6 +140,7 @@ struct Hero : Player, Damageable
   {
     decrement(blinking);
     decrement(hurtDelay);
+    decrement(footstepTimer);
 
     if(hurtDelay || life <= 0)
     {
@@ -168,7 +177,7 @@ struct Hero : Player, Damageable
       if(vel.z < 0 && !ground)
       {
         if(tryActivate(debounceLanding, 15))
-          game->playSound(SND_LAND);
+          game->playSound(SND_FOOTSTEP_1);
 
         ground = true;
         vel.z = 0;
@@ -236,6 +245,7 @@ struct Hero : Player, Damageable
 
   int debounceLanding = 0;
   int debounceUse = 0;
+  int footstepTimer = 0;
   float lookAngleHorz = 0;
   float lookAngleVert = 0;
   bool ground = false;
