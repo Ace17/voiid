@@ -68,6 +68,13 @@ struct MeshRenderPass
 
     for(auto& cmd : m_drawCommands)
       executeDrawCommand(cmd);
+
+    backend->enableVertexAttribute(MeshShader::Attribute::positionLoc, 0, 0, 0);
+    backend->enableVertexAttribute(MeshShader::Attribute::normalLoc, 0, 0, 0);
+    backend->enableVertexAttribute(MeshShader::Attribute::binormalLoc, 0, 0, 0);
+    backend->enableVertexAttribute(MeshShader::Attribute::tangentLoc, 0, 0, 0);
+    backend->enableVertexAttribute(MeshShader::Attribute::uvDiffuseLoc, 0, 0, 0);
+    backend->enableVertexAttribute(MeshShader::Attribute::uvLightmapLoc, 0, 0, 0);
   }
 
   void executeDrawCommand(const DrawCommand& cmd)

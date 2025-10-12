@@ -415,8 +415,15 @@ struct OpenGlGraphicsBackend : IGraphicsBackend
 
   void enableVertexAttribute(int id, int dim, int stride, int offset) override
   {
-    SAFE_GL(glEnableVertexAttribArray(id));
-    SAFE_GL(glVertexAttribPointer(id, dim, GL_FLOAT, GL_FALSE, stride, (void*)(uintptr_t)offset));
+    if(dim == 0)
+    {
+      SAFE_GL(glDisableVertexAttribArray(id));
+    }
+    else
+    {
+      SAFE_GL(glEnableVertexAttribArray(id));
+      SAFE_GL(glVertexAttribPointer(id, dim, GL_FLOAT, GL_FALSE, stride, (void*)(uintptr_t)offset));
+    }
   }
 
   void setUniformBlock(void* ptr, size_t size) override

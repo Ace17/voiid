@@ -101,6 +101,9 @@ struct PostProcessing
       oneBlurringPass(srcFb->getColorTexture(), dstFb);
       std::swap(srcFb, dstFb);
     }
+
+    backend->enableVertexAttribute(BloomShader::Attribute::positionLoc, 0, 0, 0);
+    backend->enableVertexAttribute(BloomShader::Attribute::uvLoc, 0, 0, 0);
   }
 
   void drawHdrBuffer()
@@ -119,6 +122,9 @@ struct PostProcessing
     backend->enableVertexAttribute(HdrShader::Attribute::uvLoc, 2, sizeof(QuadVertex), OFFSET(QuadVertex, u));
 
     backend->draw(6);
+
+    backend->enableVertexAttribute(BloomShader::Attribute::positionLoc, 0, 0, 0);
+    backend->enableVertexAttribute(BloomShader::Attribute::uvLoc, 0, 0, 0);
   }
 
   const Vec2i m_resolution;
