@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include "base/geom.h"
 #include "base/string.h"
 
 struct Audio
@@ -23,9 +24,13 @@ struct Audio
   virtual void stopVoice(VoiceId id) = 0;
 
   virtual void setVoiceVolume(VoiceId id, float vol) = 0;
+
+  // spatialization
+  virtual void setListenerPosition(Vec3f pos) = 0;
+  virtual void setVoicePosition(VoiceId id, Vec3f pos) = 0;
 };
 
-// Called by audio backends
+// Called by the audio backends
 struct IAudioMixer
 {
   virtual void mixAudio(Span<float> dst) = 0;

@@ -310,9 +310,9 @@ struct GameState : Scene, private IGame
   ////////////////////////////////////////////////////////////////
   // IGame: game, as seen by the entities
 
-  void playSound(int sound) override
+  void playSound(int sound, const Vec3f* position) override
   {
-    m_view->playSound(sound);
+    m_view->playSound(sound, position);
   }
 
   void spawn(Entity* e) override

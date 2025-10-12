@@ -41,7 +41,7 @@ struct NullPlayer : Player
 
 struct NullGame : IGame
 {
-  virtual void playSound(int) {}
+  virtual void playSound(int, const Vec3f*) {}
   virtual void spawn(Entity*) {}
   virtual void postEvent(std::unique_ptr<Event>) {}
   virtual std::unique_ptr<Handle> subscribeForEvents(IEventSink*) { return nullptr; }

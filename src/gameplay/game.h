@@ -46,7 +46,7 @@ struct IGame
 
   // visual
   virtual void textBox(String msg) = 0;
-  virtual void playSound(int id) = 0;
+  virtual void playSound(int id, const Vec3f* position = nullptr) = 0;
 
   // logic
   virtual void spawn(Entity* e) = 0;

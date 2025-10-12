@@ -53,7 +53,7 @@ struct View
   virtual void textBox(String msg) = 0;
   virtual void playMusic(int id) = 0;
   virtual void stopMusic() = 0;
-  virtual void playSound(int id) = 0;
+  virtual void playSound(int id, const Vec3f* position = nullptr) = 0;
   virtual void setCameraPos(Vec3f pos, Quaternion orientation) = 0;
   virtual void setAmbientLight(float amount) = 0;
 

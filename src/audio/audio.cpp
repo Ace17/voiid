@@ -150,6 +150,16 @@ struct HighLevelAudio : MixableAudio
     m_commandQueue.push({ Opcode::SetVoiceVolume, id, vol });
   }
 
+  void setListenerPosition(Vec3f pos) override
+  {
+    m_commandQueue.push({ Opcode::SetListenerPosition, -1, 0, nullptr, 0, pos });
+  }
+
+  void setVoicePosition(VoiceId id, Vec3f pos) override
+  {
+    m_commandQueue.push({ Opcode::SetVoicePosition, id, 0, nullptr, 0, pos });
+  }
+
   void playVoice(VoiceId id, int soundId, bool looped) override
   {
     auto i_sound = m_sounds.find(soundId);
@@ -182,6 +192,8 @@ struct HighLevelAudio : MixableAudio
     PlayVoiceLooped,
     StopVoice,
     SetVoiceVolume,
+    SetVoicePosition,
+    SetListenerPosition,
   };
 
   struct Command
@@ -191,6 +203,7 @@ struct HighLevelAudio : MixableAudio
     float floatVal {};
     std::shared_ptr<Sound> sound {};
     uint8_t flags {};
+    Vec3f vec3Val {};
   };
 
   Fifo<Command> m_commandQueue;
@@ -222,6 +235,8 @@ struct HighLevelAudio : MixableAudio
     Fader vol = Fader(1.0);
 
     float commandVolume = 1;
+    bool spatialized = false;
+    Vec3f position {};
     bool released = false;
     bool loop = false;
     bool finished = false;
@@ -230,6 +245,7 @@ struct HighLevelAudio : MixableAudio
   };
 
   std::unordered_map<VoiceId, Voice> m_voices;
+  Vec3f m_listenerPosition {};
 
   void mixAudio(Span<float> dst) override
   {
@@ -264,14 +280,19 @@ struct HighLevelAudio : MixableAudio
       if(!voice.source)
         voice.source = voice.sound->createSource();
 
+      float attenuation = 1.0;
+
+      if(voice.spatialized)
+        attenuation = std::min(1.0, 4.0 / magnitude(m_listenerPosition - voice.position));
+
       const int len = voice.source->read(buf);
 
       for(int i = 0; i < len / 2; ++i)
       {
         voice.vol.update();
 
-        dst[2 * i + 0] += buf[2 * i + 0] * voice.vol;
-        dst[2 * i + 1] += buf[2 * i + 1] * voice.vol;
+        dst[2 * i + 0] += buf[2 * i + 0] * voice.vol * attenuation;
+        dst[2 * i + 1] += buf[2 * i + 1] * voice.vol * attenuation;
       }
 
       buf += len;
@@ -357,6 +378,13 @@ struct HighLevelAudio : MixableAudio
       case Opcode::SetVoiceVolume:
         m_voices[cmd.id].commandVolume = cmd.floatVal;
         m_voices[cmd.id].vol.target = cmd.floatVal;
+        break;
+      case Opcode::SetVoicePosition:
+        m_voices[cmd.id].position = cmd.vec3Val;
+        m_voices[cmd.id].spatialized = true;
+        break;
+      case Opcode::SetListenerPosition:
+        m_listenerPosition = cmd.vec3Val;
         break;
       }
     }

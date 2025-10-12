@@ -370,15 +370,23 @@ private:
   Audio::VoiceId m_musicVoice = -1;
   int m_currMusicName = -1;
 
-  void playSound(int soundId) override
+  void playSound(int soundId, const Vec3f* position = nullptr) override
   {
     auto voiceId = m_audio->createVoice();
+
+    if(position)
+    {
+      m_audio->setVoiceVolume(voiceId, 1);
+      m_audio->setVoicePosition(voiceId, *position);
+    }
+
     m_audio->playVoice(voiceId, soundId);
     m_audio->releaseVoice(voiceId, true);
   }
 
   void setCameraPos(Vec3f pos, Quaternion orientation) override
   {
+    m_audio->setListenerPosition(pos);
     m_renderer->setCamera(pos, orientation);
   }
 
