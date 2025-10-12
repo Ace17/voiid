@@ -219,9 +219,7 @@ Room loadRoom(String filename)
 {
   Room r;
 
-  r.startpos_x = 0;
-  r.startpos_y = 0;
-  r.startpos_z = 2;
+  r.startpos = Vec3f(0, 0, 2);
 
   auto importedMesh = importMesh(filename);
 
@@ -265,9 +263,7 @@ Room loadRoom(String filename)
 
       if(typeName == "start")
       {
-        r.startpos_x = pos.x;
-        r.startpos_y = pos.y;
-        r.startpos_z = pos.z;
+        r.startpos = Vec3f(pos.x, pos.y, pos.z);
       }
       else
       {

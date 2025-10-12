@@ -18,9 +18,7 @@
 
 struct Room
 {
-  int startpos_x;
-  int startpos_y;
-  int startpos_z;
+  Vec3f startpos;
 
   struct Thing
   {
