@@ -425,8 +425,8 @@ private:
   bool m_doGrab = true;
   std::unique_ptr<MixableAudio> m_audio;
   std::unique_ptr<IAudioBackend> m_audioBackend;
-  std::unique_ptr<IRenderer> m_renderer;
   std::unique_ptr<IGraphicsBackend> m_graphicsBackend;
+  std::unique_ptr<IRenderer> m_renderer;
   std::vector<Actor> m_actors;
   std::vector<LightActor> m_lightActors;
   std::unique_ptr<UserInput> m_input;
