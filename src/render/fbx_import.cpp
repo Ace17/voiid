@@ -596,6 +596,23 @@ private:
     {
       switch(hashed(model.type))
       {
+      case hashed("Null"): // Blender's "Empty" objects
+        {
+          Mesh mesh;
+          mesh.name.assign(model.name.data, model.name.len);
+          mesh.transform = model.transform;
+
+          for(auto& prop : model.properties)
+          {
+            Mesh::Property mp;
+            mp.name.assign(prop.name.data, prop.name.len);
+            mp.value.assign(prop.value.data, prop.value.len);
+            mesh.properties.push_back(std::move(mp));
+          }
+
+          scene.meshes.push_back(std::move(mesh));
+          break;
+        }
       case hashed("Light"):
         {
           auto pos = model.transform * Vec4f{ 0, 0, 0, 1 };

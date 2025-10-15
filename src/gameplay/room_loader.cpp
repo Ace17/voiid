@@ -232,12 +232,6 @@ Room loadRoom(String filename)
   {
     auto& name = mesh.name;
 
-    if(mesh.vertices.empty())
-    {
-      fprintf(stderr, "WARNING: object '%s' has no vertices\n", name.c_str());
-      continue;
-    }
-
     if(startsWith(name, "nocollide."))
       continue;
 
@@ -270,6 +264,12 @@ Room loadRoom(String filename)
         r.things.push_back({ Vec3f(pos.x, pos.y, pos.z), typeName, config });
       }
 
+      continue;
+    }
+
+    if(mesh.vertices.empty())
+    {
+      fprintf(stderr, "WARNING: mesh object '%s' has no vertices\n", name.c_str());
       continue;
     }
 
