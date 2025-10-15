@@ -565,6 +565,8 @@ private:
     case HandleEntry::Type::Model:
       // ignore child models
       break;
+    case HandleEntry::Type::Unknown:
+      break; // occurs with ignored attribute nodes
     default:
       char buffer[256];
       throw Error(format(buffer, "Unexpected child object type for model '%.*s' : '%d'", model.name.len, model.name.data, (int)entry->second.type));
@@ -592,55 +594,60 @@ private:
 
     for(auto& model : models)
     {
-      if(model.lights.size())
+      switch(hashed(model.type))
       {
-        auto pos = model.transform * Vec4f{ 0, 0, 0, 1 };
-        Light light;
-        light.x = pos.x;
-        light.y = pos.y;
-        light.z = pos.z;
-        light.r = model.lights[0]->rgb.x * model.lights[0]->intensity;
-        light.g = model.lights[0]->rgb.y * model.lights[0]->intensity;
-        light.b = model.lights[0]->rgb.z * model.lights[0]->intensity;
-        scene.lights.push_back(light);
-      }
-      else
-      {
-        enforce(model.materials.size() > 0, "The model '%.*s' has no material", model.name.len, model.name.data);
-
-        Mesh mesh;
-        mesh.name.assign(model.name.data, model.name.len);
-
-        for(auto& fbxMaterial : model.materials)
+      case hashed("Light"):
         {
-          std::string materialName;
-
-          if(FbxTexture* tex = fbxMaterial->texture)
-            materialName.assign(tex->filename.data, tex->filename.len);
-
-          mesh.materials.push_back(materialName);
-
-          mesh.materials_transparency.push_back(model.materials[0]->transparency);
+          auto pos = model.transform * Vec4f{ 0, 0, 0, 1 };
+          Light light;
+          light.x = pos.x;
+          light.y = pos.y;
+          light.z = pos.z;
+          light.r = model.lights[0]->rgb.x * model.lights[0]->intensity;
+          light.g = model.lights[0]->rgb.y * model.lights[0]->intensity;
+          light.b = model.lights[0]->rgb.z * model.lights[0]->intensity;
+          scene.lights.push_back(light);
+          break;
         }
-
-        enforce(model.geometry.size() <= 1, "Too many meshes for model '%.*s'", model.name.len, model.name.data, model.materials.size());
-
-        for(auto& geom : model.geometry)
+      case hashed("Mesh"):
         {
-          mesh.vertices = geom->vertices;
-          mesh.faces = geom->faces;
-          mesh.transform = model.transform;
-        }
+          enforce(model.materials.size() > 0, "The model '%.*s' has no material", model.name.len, model.name.data);
 
-        for(auto& prop : model.properties)
-        {
-          Mesh::Property mp;
-          mp.name.assign(prop.name.data, prop.name.len);
-          mp.value.assign(prop.value.data, prop.value.len);
-          mesh.properties.push_back(std::move(mp));
-        }
+          Mesh mesh;
+          mesh.name.assign(model.name.data, model.name.len);
 
-        scene.meshes.push_back(std::move(mesh));
+          for(auto& fbxMaterial : model.materials)
+          {
+            std::string materialName;
+
+            if(FbxTexture* tex = fbxMaterial->texture)
+              materialName.assign(tex->filename.data, tex->filename.len);
+
+            mesh.materials.push_back(materialName);
+
+            mesh.materials_transparency.push_back(model.materials[0]->transparency);
+          }
+
+          enforce(model.geometry.size() <= 1, "Too many meshes for model '%.*s'", model.name.len, model.name.data, model.materials.size());
+
+          for(auto& geom : model.geometry)
+          {
+            mesh.vertices = geom->vertices;
+            mesh.faces = geom->faces;
+            mesh.transform = model.transform;
+          }
+
+          for(auto& prop : model.properties)
+          {
+            Mesh::Property mp;
+            mp.name.assign(prop.name.data, prop.name.len);
+            mp.value.assign(prop.value.data, prop.value.len);
+            mesh.properties.push_back(std::move(mp));
+          }
+
+          scene.meshes.push_back(std::move(mesh));
+          break;
+        }
       }
     }
 
@@ -794,12 +801,7 @@ private:
   void parseSection_NodeAttribute(Tokenizer& tokenizer)
   {
     expect(tokenizer, Token::ObjectBegin);
-
-    FbxLight light {};
-
-    light.intensity = 1;
-    light.rgb = { 1, 1, 1 };
-    light.handle = expectInteger(tokenizer);
+    auto handle = expectInteger(tokenizer);
     /* auto name = */ expectString(tokenizer);
     auto type = expectString(tokenizer);
 
@@ -807,6 +809,12 @@ private:
 
     if(hashed(type) == hashed("Light"))
     {
+      FbxLight light {};
+
+      light.intensity = 1;
+      light.rgb = { 1, 1, 1 };
+      light.handle = handle;
+
       while(tokenizer.tokenType != Token::ObjectEnd)
       {
         const auto objName = expectObjectBegin(tokenizer);
@@ -820,20 +828,23 @@ private:
           break;
         }
       }
+
+      {
+        const int index = (int)lights.size();
+        table[handle] = { HandleEntry::Type::Light, index };
+        lights.push_back(std::move(light));
+      }
     }
     else
     {
       while(tokenizer.tokenType != Token::ObjectEnd)
         skipObject(tokenizer);
+
+      // push dummy attribute, will be ignored
+      table[handle] = { HandleEntry::Type::Unknown, 0 };
     }
 
     expect(tokenizer, Token::ObjectEnd);
-
-    {
-      const int index = (int)lights.size();
-      table[light.handle] = { HandleEntry::Type::Light, index };
-      lights.push_back(std::move(light));
-    }
   }
 
   void parseSection_Model(Tokenizer& tokenizer)
@@ -844,6 +855,7 @@ private:
 
     model.handle = expectInteger(tokenizer);
     model.name = expectString(tokenizer);
+    model.type = expectString(tokenizer);
     model.transform = identity;
 
     skipValues(tokenizer);
@@ -1484,6 +1496,7 @@ private:
 
   struct FbxModel : FbxNode
   {
+    String type;
     Matrix4f transform;
     std::vector<FbxProperty> properties;
 
