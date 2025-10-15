@@ -51,15 +51,17 @@ RenderMesh convertToRenderMesh(std::vector<Mesh> const& meshes, std::vector<std:
     if(startsWith(mesh.name, "f."))
       continue;
 
-    if(mesh.material == "invisible" || mesh.material.empty())
-      continue;
-
-    SingleRenderMesh& single = singlesByMaterial[mesh.material];
-
-    single.transparency = mesh.material_transparency;
-
     for(auto& face : mesh.faces)
     {
+      const std::string& materialName = mesh.materials[face.material];
+
+      if(materialName == "invisible" || materialName.empty())
+        continue;
+
+      SingleRenderMesh& single = singlesByMaterial[materialName];
+
+      single.transparency = mesh.materials_transparency[face.material];
+
       single.vertices.push_back(convert(mesh.vertices[face.i1]));
       single.vertices.push_back(convert(mesh.vertices[face.i2]));
       single.vertices.push_back(convert(mesh.vertices[face.i3]));

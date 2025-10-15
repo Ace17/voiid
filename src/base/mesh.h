@@ -29,6 +29,7 @@ struct Mesh
   struct Face
   {
     int i1, i2, i3;
+    int material;
   };
 
   struct Property
@@ -41,8 +42,8 @@ struct Mesh
   Matrix4f transform;
   std::vector<Property> properties;
 
-  std::string material;
-  bool material_transparency = false;
+  std::vector<std::string> materials;
+  std::vector<bool> materials_transparency;
   std::vector<Vertex> vertices;
   std::vector<Face> faces;
 };

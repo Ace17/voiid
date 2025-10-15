@@ -606,15 +606,22 @@ private:
       }
       else
       {
-        enforce(model.materials.size() == 1, "Invalid material count for model '%.*s': %d", model.name.len, model.name.data, model.materials.size());
+        enforce(model.materials.size() > 0, "The model '%.*s' has no material", model.name.len, model.name.data);
 
         Mesh mesh;
         mesh.name.assign(model.name.data, model.name.len);
 
-        if(FbxTexture* tex = model.materials[0]->texture)
-          mesh.material.assign(tex->filename.data, tex->filename.len);
+        for(auto& fbxMaterial : model.materials)
+        {
+          std::string materialName;
 
-        mesh.material_transparency = model.materials[0]->transparency;
+          if(FbxTexture* tex = fbxMaterial->texture)
+            materialName.assign(tex->filename.data, tex->filename.len);
+
+          mesh.materials.push_back(materialName);
+
+          mesh.materials_transparency.push_back(model.materials[0]->transparency);
+        }
 
         enforce(model.geometry.size() <= 1, "Too many meshes for model '%.*s'", model.name.len, model.name.data, model.materials.size());
 
@@ -764,6 +771,9 @@ private:
         break;
       case hashed("LayerElementUV"):
         parseSection_LayerElementUV(tokenizer);
+        break;
+      case hashed("LayerElementMaterial"):
+        parseSection_LayerElementMaterial(tokenizer);
         break;
       default:
         skipObject(tokenizer);
@@ -1215,6 +1225,51 @@ private:
     expect(tokenizer, Token::ObjectEnd);
   }
 
+  void parseSection_LayerElementMaterial(Tokenizer& tokenizer)
+  {
+    expect(tokenizer, Token::ObjectBegin);
+
+    skipValues(tokenizer);
+
+    while(tokenizer.tokenType != Token::ObjectEnd)
+    {
+      const auto objName = expectObjectBegin(tokenizer);
+      switch(hashed(objName))
+      {
+      case hashed("Materials"):
+        {
+          expect(tokenizer, Token::ObjectBegin);
+
+          enforce(tokenizer.tokenType == Token::Value, "No values in 'Materials'");
+          enforce(tokenizer.valueType == ValueType::IntegerArray, "Unexpected value type %d in 'Materials'", tokenizer.valueType);
+
+          auto& ints = tokenizer.m_valueIntegerArray;
+          enforce(ints.len == 1 || ints.len == int(m_faceIndices.size()) / 3, "Unexpected face count (%d) in 'Materials'", ints.len);
+
+          if(ints.len == 1)
+          {
+            m_faceMaterials.clear();
+            m_faceMaterials.resize(m_faceIndices.size() / 3, ints[0]);
+          }
+          else
+          {
+            m_faceMaterials.assign(ints.data, ints.data + ints.len);
+          }
+
+          tokenizer.nextToken();
+
+          expect(tokenizer, Token::ObjectEnd);
+        }
+        break;
+      default:
+        skipObject(tokenizer);
+        break;
+      }
+    }
+
+    expect(tokenizer, Token::ObjectEnd);
+  }
+
   void parseSection_Vertices(Tokenizer& tokenizer)
   {
     expect(tokenizer, Token::ObjectBegin);
@@ -1368,7 +1423,7 @@ private:
         node.vertices.push_back(toVertex(m_vertexPos.at(k1), m_vertexNormals.at(i1), m_vertexBinormals.at(i1), m_vertexTangents.at(i1), m_vertexUv[m_vertexUvIndices[i1]]));
         node.vertices.push_back(toVertex(m_vertexPos.at(k2), m_vertexNormals.at(i2), m_vertexBinormals.at(i2), m_vertexTangents.at(i2), m_vertexUv[m_vertexUvIndices[i2]]));
 
-        node.faces.push_back({ f0, f0 + 1, f0 + 2 });
+        node.faces.push_back({ f0, f0 + 1, f0 + 2, m_faceMaterials.at(i / 3) });
       }
     }
 
@@ -1379,6 +1434,7 @@ private:
     m_faceIndices.clear();
     m_vertexUv.clear();
     m_vertexUvIndices.clear();
+    m_faceMaterials.clear();
   }
 
   // intermediate data
@@ -1389,6 +1445,7 @@ private:
   std::vector<Vec2f> m_vertexUv;
   std::vector<int> m_vertexUvIndices;
   std::vector<int> m_faceIndices;
+  std::vector<int> m_faceMaterials;
 
   struct FbxNode
   {
