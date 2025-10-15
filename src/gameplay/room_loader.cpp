@@ -113,108 +113,6 @@ void bevelSharpEdges(Mesh& mesh, Convex& brush)
   }
 }
 
-static
-std::vector<std::string> parseCall(std::string content)
-{
-  content += '\0';
-  auto stream = content.c_str();
-
-  auto head = [&] ()
-    {
-      return *stream;
-    };
-
-  auto accept = [&] (char what)
-    {
-      if(!*stream)
-        return false;
-
-      if(head() != what)
-        return false;
-
-      stream++;
-      return true;
-    };
-
-  auto expect = [&] (char what)
-    {
-      if(!accept(what))
-        throw std::runtime_error(std::string("Expected '") + what + "'");
-    };
-
-  auto parseString = [&] ()
-    {
-      std::string r;
-
-      while(!accept('"'))
-      {
-        char c = head();
-        accept(c);
-        r += c;
-      }
-
-      return r;
-    };
-
-  auto parseIdentifier = [&] ()
-    {
-      std::string r;
-
-      while(isalnum(head()) || head() == '_' || head() == '-')
-      {
-        char c = head();
-        accept(c);
-        r += c;
-      }
-
-      return r;
-    };
-
-  auto parseArgument = [&] ()
-    {
-      if(accept('"'))
-        return parseString();
-      else
-        return parseIdentifier();
-    };
-
-  std::vector<std::string> r;
-  r.push_back(parseIdentifier());
-
-  if(accept('('))
-  {
-    bool first = true;
-
-    while(!accept(')'))
-    {
-      if(!first)
-        expect(',');
-
-      r.push_back(parseArgument());
-      first = false;
-    }
-  }
-
-  return r;
-}
-
-static
-std::map<std::string, std::string> parseFormula(std::string formula, std::string& name)
-{
-  std::map<std::string, std::string> r;
-
-  auto words = parseCall(formula);
-  name = words[0];
-  words.erase(words.begin());
-
-  int i = 0;
-
-  for(auto& varValue : words)
-    r[std::to_string(i++)] = varValue;
-
-  return r;
-}
-
 Room loadRoom(String filename)
 {
   Room r;
@@ -238,9 +136,6 @@ Room loadRoom(String filename)
     std::string typeName;
 
     std::map<std::string, std::string> config;
-
-    if(startsWith(name, "f."))
-      config = parseFormula(name.substr(2), typeName);
 
     for(auto& prop : mesh.properties)
     {
