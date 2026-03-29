@@ -46,7 +46,6 @@ SRCS_ENGINE:=\
 	src/base/string.cpp\
 	src/engine/app.cpp\
 	src/engine/main.cpp\
-	src/engine/stats.cpp\
 	src/audio/audio.cpp\
 	src/audio/sound_ogg.cpp\
 	src/base/logger.cpp\
@@ -54,6 +53,7 @@ SRCS_ENGINE:=\
 	src/misc/decompress.cpp\
 	src/misc/file.cpp\
 	src/misc/json.cpp\
+	src/misc/stats.cpp\
 	src/misc/time.cpp\
 	src/render/renderer.cpp\
 	src/render/rendermesh.cpp\

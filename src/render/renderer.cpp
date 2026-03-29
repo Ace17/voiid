@@ -21,7 +21,7 @@
 #include "engine/graphics_backend.h"
 #include "engine/renderer.h"
 #include "engine/rendermesh.h"
-#include "engine/stats.h"
+#include "misc/stats.h"
 #include "misc/time.h"
 
 #include "picture.h"

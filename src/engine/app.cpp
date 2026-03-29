@@ -20,6 +20,7 @@
 #include "base/scene.h"
 #include "base/view.h"
 #include "misc/file.h"
+#include "misc/stats.h"
 #include "misc/time.h"
 
 #include "audio.h"
@@ -28,7 +29,6 @@
 #include "input.h"
 #include "ratecounter.h"
 #include "renderer.h"
-#include "stats.h"
 #include "video_capture.h"
 
 auto const TIMESTEP = 10;

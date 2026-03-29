@@ -11,12 +11,15 @@
 #include "base/util.h"
 #include "body.h"
 #include "convex.h"
+#include "misc/stats.h"
 #include "physics.h"
 #include <memory>
 #include <vector>
 
 namespace
 {
+Gauge ggOverlapChecks("Overlap Checks");
+
 struct BoxShape : Shape
 {
   Trace raycast(Vec3f A, Vec3f B, Vec3f boxHalfSize) const override
@@ -169,6 +172,8 @@ struct Physics : IPhysics
 
   void checkForOverlaps() override
   {
+    int overlapCheckCount = 0;
+
     for(auto me : m_bodies)
     {
       for(auto other : m_bodies)
@@ -176,10 +181,14 @@ struct Physics : IPhysics
         if(me == other)
           continue;
 
+        ++overlapCheckCount;
+
         if(overlaps(me->getBox(), other->getBox()))
           collideBodies(*me, *other);
       }
     }
+
+    ggOverlapChecks = overlapCheckCount;
   }
 
   void collideBodies(Body& me, Body& other)

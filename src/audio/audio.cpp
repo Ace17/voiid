@@ -9,8 +9,8 @@
 #include "base/error.h"
 #include "base/logger.h"
 #include "engine/audio.h"
-#include "engine/stats.h"
 #include "misc/file.h" // exists
+#include "misc/stats.h"
 #include "sound.h"
 
 #include <atomic>
