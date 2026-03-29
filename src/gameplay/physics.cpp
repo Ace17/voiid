@@ -176,6 +176,9 @@ struct Physics : IPhysics
 
     for(auto me : m_bodies)
     {
+      if(me->collidesWith == 0)
+        continue; // early out
+
       for(auto other : m_bodies)
       {
         if(me == other)

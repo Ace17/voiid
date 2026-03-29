@@ -267,6 +267,7 @@ struct GameState : Scene, private IGame
         m_brushes[i].body = std::make_unique<Body>();
         m_brushes[i].body->shape = &m_brushes[i].shape;
         m_brushes[i].body->solid = 1;
+        m_brushes[i].body->collidesWith = 0;
       }
 
       if(!m_player)
