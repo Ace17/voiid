@@ -93,7 +93,10 @@ struct Physics : IPhysics
     box.pos += delta;
 
     if(trace.blocker)
+    {
       collideBodies(*body, *trace.blocker);
+      collideBodies(*trace.blocker, *body);
+    }
 
     body->pos += delta;
 
@@ -181,9 +184,6 @@ struct Physics : IPhysics
 
   void collideBodies(Body& me, Body& other)
   {
-    if(other.collidesWith & me.collisionGroup)
-      other.onCollision(&me);
-
     if(me.collidesWith & other.collisionGroup)
       me.onCollision(&other);
   }

@@ -34,12 +34,13 @@ struct Body
   Size size = UnitSize;
   const Shape* shape = getShapeBox();
 
-  // collision masks
-  int collisionGroup = 1;
-  int collidesWith = 0xFFFF;
-
   // the body we rest on (if any)
   Body* ground = nullptr;
+
+  // Collision masks, used for filtering calls to onCollision.
+  // Has no impact on moves.
+  int collisionGroup = 1;
+  int collidesWith = 0xFFFF;
 
   // only called if (this->collidesWith & other->collisionGroup)
   Delegate<void(Body*)> onCollision = [] (Body*) {};
