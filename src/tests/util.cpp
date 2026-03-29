@@ -44,35 +44,6 @@ struct ToStringImpl<std::vector<std::pair<int, int>>>
   }
 };
 
-unittest("Util: allPairs(1)")
-{
-  auto expected = std::vector<std::pair<int, int>>({});
-
-  std::vector<std::pair<int, int>> result;
-
-  for(auto p : allPairs(1))
-    result.push_back(p);
-
-  assertEquals(expected, result);
-}
-
-unittest("Util: allPairs simple")
-{
-  auto expected = std::vector<std::pair<int, int>>(
-  {
-    std::make_pair(0, 1),
-    std::make_pair(0, 2),
-    std::make_pair(1, 2),
-  });
-
-  std::vector<std::pair<int, int>> result;
-
-  for(auto p : allPairs(3))
-    result.push_back(p);
-
-  assertEquals(expected, result);
-}
-
 unittest("Util: rasterScan simple")
 {
   auto expected = std::vector<std::pair<int, int>>(

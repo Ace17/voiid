@@ -71,64 +71,6 @@ bool exists(Container const& c, Element const& e)
   return c.find(e) != c.end();
 }
 
-inline auto allPairs(int n)
-{
-  struct Range
-  {
-    int n;
-
-    struct State
-    {
-      int n;
-      int i;
-      int j;
-
-      std::pair<int, int> operator * () const
-      {
-        return std::pair<int, int>(i, j);
-      }
-
-      bool operator != (State const& other) const
-      {
-        return n != other.n || i != other.i || j != other.j;
-      }
-
-      void operator ++ ()
-      {
-        ++j;
-
-        if(j >= n)
-        {
-          ++i;
-          j = i + 1;
-        }
-
-        if(i >= n || j >= n)
-        {
-          n = -1;
-          i = -1;
-          j = -1;
-        }
-      }
-    };
-
-    auto end()
-    {
-      return State({ -1, -1, -1 });
-    }
-
-    auto begin()
-    {
-      if(n <= 1)
-        return end();
-
-      return State({ n, 0, 1 });
-    }
-  };
-
-  return Range({ n });
-}
-
 inline auto rasterScan(int cx, int cy)
 {
   struct Iterable

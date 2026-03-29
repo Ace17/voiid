@@ -166,13 +166,16 @@ struct Physics : IPhysics
 
   void checkForOverlaps() override
   {
-    for(auto p : allPairs((int)m_bodies.size()))
+    for(auto me : m_bodies)
     {
-      auto& me = *m_bodies[p.first];
-      auto& other = *m_bodies[p.second];
+      for(auto other : m_bodies)
+      {
+        if(me == other)
+          continue;
 
-      if(overlaps(me.getBox(), other.getBox()))
-        collideBodies(me, other);
+        if(overlaps(me->getBox(), other->getBox()))
+          collideBodies(*me, *other);
+      }
     }
   }
 
