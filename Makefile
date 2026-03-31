@@ -129,6 +129,7 @@ SRCS_TESTS:=\
 	src/tests/tests_main.cpp\
 	src/tests/audio.cpp\
 	src/tests/base64.cpp\
+	src/tests/convex.cpp\
 	src/tests/decompress.cpp\
 	src/tests/fbx.cpp\
 	src/tests/json.cpp\

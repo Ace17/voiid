@@ -17,3 +17,12 @@ struct Convex
   Trace trace(Vector A, Vector B, Vector boxSize = {}) const;
 };
 
+struct Triangle
+{
+  Vec3f vertices[3];
+  Vec3f normal;
+  Vec3f edgeDirs[3]; // normalized
+};
+
+Trace raycastBoxVsTriangle(Vec3f A, Vec3f B, Vec3f boxHalfSize, const Triangle& t);
+

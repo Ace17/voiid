@@ -33,8 +33,13 @@ struct Room
     Vector color;
   };
 
+  struct Triangle
+  {
+    Vec3f p[3];
+  };
+
   std::vector<Thing> things;
-  std::vector<Convex> colliders;
+  std::vector<Triangle> colliders;
   std::vector<Light> lights;
 };
 

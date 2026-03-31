@@ -4,6 +4,8 @@
 
 void slideMove(IPhysicsProbe* physics, Body* body, Vector delta)
 {
+  const float epsilon = 1.0f / 128.0f;
+
   for(int i = 0; i < 5; ++i)
   {
     auto tr = physics->moveBody(body, delta);
@@ -16,7 +18,7 @@ void slideMove(IPhysicsProbe* physics, Body* body, Vector delta)
     delta -= actual;
 
     // remove from 'delta' its component along the collision normal
-    delta -= dotProduct(delta, tr.plane.N) * tr.plane.N;
+    delta -= (dotProduct(delta, tr.plane.N) - epsilon) * tr.plane.N;
   }
 }
 

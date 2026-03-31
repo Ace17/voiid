@@ -74,20 +74,24 @@ void spawnEntities(Room const& room, IGame* game)
   }
 }
 
-struct ShapePolyhedron : Shape
+struct TriangleSoup : Shape
 {
   Trace raycast(Vec3f A, Vec3f B, Vec3f boxHalfSize) const override
   {
-    return convex.trace(A, B, boxHalfSize);
+    Trace minTrace { 1, {} };
+
+    for(auto& t : triangles)
+    {
+      auto tr = raycastBoxVsTriangle(A, B, boxHalfSize, t);
+
+      if(tr.fraction < minTrace.fraction)
+        minTrace = tr;
+    }
+
+    return minTrace;
   }
 
-  Convex convex {};
-};
-
-struct Brush
-{
-  std::unique_ptr<Body> body;
-  ShapePolyhedron shape;
+  std::vector<Triangle> triangles;
 };
 
 struct GameState : Scene, private IGame
@@ -101,9 +105,7 @@ struct GameState : Scene, private IGame
   void resetPhysics()
   {
     m_physics = createPhysics();
-
-    for(auto& brush : m_brushes)
-      m_physics->addBody(brush.body.get());
+    m_physics->addBody(m_triangleSoupBody.get());
   }
 
   ////////////////////////////////////////////////////////////////
@@ -259,15 +261,31 @@ struct GameState : Scene, private IGame
 
       auto level = loadRoom(filename);
 
-      m_brushes.resize(level.colliders.size());
+      m_triangleSoupBody = std::make_unique<Body>();
+      m_triangleSoupBody->shape = &m_triangleSoup;
+      m_triangleSoupBody->solid = 1;
+      m_triangleSoupBody->collidesWith = 0;
 
-      for(int i = 0; i < (int)m_brushes.size(); ++i)
+      m_triangleSoup.triangles.clear();
+
+      for(auto& srcTriangle : level.colliders)
       {
-        m_brushes[i].shape.convex = level.colliders[i];
-        m_brushes[i].body = std::make_unique<Body>();
-        m_brushes[i].body->shape = &m_brushes[i].shape;
-        m_brushes[i].body->solid = 1;
-        m_brushes[i].body->collidesWith = 0;
+        m_triangleSoup.triangles.push_back({});
+        auto& t = m_triangleSoup.triangles.back();
+        t.vertices[0] = srcTriangle.p[0];
+        t.vertices[1] = srcTriangle.p[1];
+        t.vertices[2] = srcTriangle.p[2];
+        assert(!(t.vertices[0] == t.vertices[1]));
+        assert(!(t.vertices[1] == t.vertices[2]));
+        assert(!(t.vertices[2] == t.vertices[0]));
+        t.normal = normalize(crossProduct(t.vertices[1] - t.vertices[0], t.vertices[2] - t.vertices[0]));
+        t.edgeDirs[0] = normalize(srcTriangle.p[1] - srcTriangle.p[0]);
+        t.edgeDirs[1] = normalize(srcTriangle.p[2] - srcTriangle.p[1]);
+        t.edgeDirs[2] = normalize(srcTriangle.p[0] - srcTriangle.p[2]);
+
+        // drop invalid triangles
+        if(!(t.normal == t.normal))
+          m_triangleSoup.triangles.pop_back();
       }
 
       if(!m_player)
@@ -291,7 +309,7 @@ struct GameState : Scene, private IGame
 
     removeDeadThings();
 
-    printf("[gameplay] level loaded : %d brushes, %d lights\n", (int)m_brushes.size(), (int)m_staticLevelLights.size());
+    printf("[gameplay] level loaded : %d triangles, %d lights\n", (int)m_triangleSoup.triangles.size(), (int)m_staticLevelLights.size());
   }
 
   void endLevel() override
@@ -349,7 +367,9 @@ struct GameState : Scene, private IGame
 
   std::list<IEventSink*> m_listeners;
 
-  std::vector<Brush> m_brushes;
+  TriangleSoup m_triangleSoup;
+  std::unique_ptr<Body> m_triangleSoupBody;
+
   bool m_debug;
   bool m_debugFirstTime = true;
 
