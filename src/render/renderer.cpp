@@ -26,6 +26,7 @@
 
 #include "picture.h"
 #include "postprocess.h"
+#include "renderer_quads.h"
 #include "renderpass.h"
 #include "weakcache.h"
 
@@ -185,76 +186,6 @@ struct MeshRenderPass
   float m_aspectRatio = 1.0;
 };
 
-struct UiRenderPass : RenderPass
-{
-  void execute(FrameBuffer dst) override
-  {
-    backend->setRenderTarget(dst.fb);
-
-    for(auto& cmd : m_drawCommands)
-      executeDrawCommand(cmd);
-  }
-
-  void executeDrawCommand(const DrawCommand& cmd)
-  {
-    auto& model = *cmd.pMesh;
-    auto& where = cmd.where;
-
-    backend->useGpuProgram(m_textShader.get());
-
-    // Texture Unit 0: Diffuse
-    model.diffuse->bind(1);
-
-    auto const forward = Vec3f(0, 1, 0);
-    auto const up = Vec3f(0, 0, 1);
-
-    auto const target = cmd.camera.pos + forward;
-    auto const view = ::lookAt(cmd.camera.pos, target, up);
-    auto const pos = ::translate(where.pos);
-    auto const scale = ::scale(where.size);
-
-    static const float fovy = (float)((60.0f / 180) * PI);
-    static const float near_ = 0.1f;
-    static const float far_ = 100.0f;
-    const auto perspective = ::perspective(fovy, m_aspectRatio, near_, far_);
-
-    auto MV = pos * scale;
-
-    // Must match the uniform block in text.vert and text.frag
-    struct MyUniformBlock
-    {
-      Matrix4f MVP;
-    };
-
-    MyUniformBlock ub {};
-    ub.MVP = perspective * view * MV;
-    ub.MVP = transpose(ub.MVP);
-
-    backend->setUniformBlock(&ub, sizeof ub);
-
-    backend->useVertexBuffer(model.vb.get());
-
-    backend->enableVertexAttribute(TextShader::Attribute::positionLoc, 3, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, x));
-    backend->enableVertexAttribute(TextShader::Attribute::uvDiffuseLoc, 2, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, diffuse_u));
-
-    backend->draw(model.vertices.size());
-  }
-
-  struct TextShader
-  {
-    enum Attribute
-    {
-      positionLoc = 0,
-      uvDiffuseLoc = 1,
-    };
-  };
-
-  IGraphicsBackend* backend {};
-  std::unique_ptr<IGpuProgram> m_textShader;
-  std::vector<DrawCommand> m_drawCommands;
-  float m_aspectRatio = 1.0;
-};
-
 struct Renderer : IRenderer, IScreenSizeListener
 {
   Renderer(IGraphicsBackend* backend_) : backend(backend_), m_skyboxPass(CreateSkyboxPass(backend_, &m_camera))
@@ -268,8 +199,8 @@ struct Renderer : IRenderer, IScreenSizeListener
     m_meshRenderPass.m_meshShader = backend->createGpuProgram("mesh", true);
     m_meshRenderPass.backend = backend;
 
-    m_uiRenderPass.m_textShader = backend->createGpuProgram("text", false);
-    m_uiRenderPass.backend = backend;
+    m_quadsRenderPass.m_textShader = backend->createGpuProgram("text", false);
+    m_quadsRenderPass.backend = backend;
 
     m_postprocRenderPass.setup(backend, m_screenSize);
   }
@@ -346,7 +277,7 @@ struct Renderer : IRenderer, IScreenSizeListener
 
   void beginDraw() override
   {
-    m_uiRenderPass.m_drawCommands.clear();
+    m_quadsRenderPass.m_drawCommands.clear();
     m_meshRenderPass.m_drawCommands.clear();
     m_meshRenderPass.m_lights.clear();
   }
@@ -381,8 +312,8 @@ struct Renderer : IRenderer, IScreenSizeListener
     if(m_enablePostProcessing)
       m_postprocRenderPass.execute(screen);
 
-    m_uiRenderPass.m_aspectRatio = aspectRatio;
-    m_uiRenderPass.execute(screen);
+    m_quadsRenderPass.m_aspectRatio = aspectRatio;
+    m_quadsRenderPass.execute(screen);
   }
 
   void drawActor(Rect3f where, Quaternion orientation, int modelId, bool blinking) override
@@ -403,13 +334,10 @@ struct Renderer : IRenderer, IScreenSizeListener
     rect.pos.y = 0;
     rect.pos.z = pos.y;
 
-    auto cam = (Camera { Vec3f(0, -10, 0), Quaternion::fromEuler(PI / 2, 0, 0) });
-    auto orientation = Quaternion::identity();
-
     for(auto c : text)
     {
       for(auto& single : m_fontModel[c].singleMeshes)
-        m_uiRenderPass.m_drawCommands.push_back({ &single, rect, orientation, cam, false });
+        m_quadsRenderPass.m_drawCommands.push_back({ &single, rect });
 
       rect.pos.x += rect.size.x;
     }
@@ -438,7 +366,7 @@ private:
 
   std::unique_ptr<RenderPass> m_skyboxPass;
   MeshRenderPass m_meshRenderPass;
-  UiRenderPass m_uiRenderPass;
+  QuadsRenderPass m_quadsRenderPass;
   PostProcessRenderPass m_postprocRenderPass;
 
   WeakCache<std::string, ITexture> m_textureCache;
