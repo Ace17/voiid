@@ -6,6 +6,7 @@
 
 #include "base/geom.h"
 #include "engine/rendermesh.h"
+#include "misc/decompress.h"
 #include "misc/file.h"
 #include <cassert>
 #include <stdexcept>
@@ -75,7 +76,8 @@ RenderMesh boxModel()
 static
 RenderMesh loadBinaryRenderMesh(String path)
 {
-  auto data = File::read(path);
+  auto compressedData = File::read(path);
+  auto data = gzipDecompress(Span<const uint8_t>((const uint8_t*)compressedData.data(), compressedData.size()));
   int readPosition = 0;
 
   auto read = [&] (void* ptr, size_t size)
@@ -98,9 +100,8 @@ RenderMesh loadBinaryRenderMesh(String path)
     int vertexCount = 0;
     read(&vertexCount, 4);
 
-
     if(vertexCount <= 0)
-        throw std::runtime_error("Mesh with no vertices in '" + std::string(path.data) + "'");
+      throw std::runtime_error("Mesh with no vertices in '" + std::string(path.data) + "'");
 
     for(int i = 0; i < vertexCount; ++i)
     {

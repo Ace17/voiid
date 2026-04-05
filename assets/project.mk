@@ -40,7 +40,9 @@ res/%.fbx: assets/%.blend ./scripts/export_from_blender_to_fbx.py
 
 res/%.render: res/%.fbx $(BIN_HOST)/meshcooker.exe
 	@mkdir -p $(dir $@)
-	$(BIN_HOST)/meshcooker.exe "$<" "$(dir assets/$*)" "res/$*.render"
+	$(BIN_HOST)/meshcooker.exe "$<" "$(dir assets/$*)" "$@.inflated"
+	gzip "$@.inflated" -n -c > "$@"
+	rm -f "$@.inflated"
 
 #-----------------------------------
 # Shaders
