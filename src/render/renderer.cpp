@@ -74,7 +74,6 @@ struct MeshRenderPass
     backend->enableVertexAttribute(MeshShader::Attribute::binormalLoc, 0, 0, 0);
     backend->enableVertexAttribute(MeshShader::Attribute::tangentLoc, 0, 0, 0);
     backend->enableVertexAttribute(MeshShader::Attribute::uvDiffuseLoc, 0, 0, 0);
-    backend->enableVertexAttribute(MeshShader::Attribute::uvLightmapLoc, 0, 0, 0);
   }
 
   void executeDrawCommand(const DrawCommand& cmd)
@@ -100,11 +99,8 @@ struct MeshRenderPass
     // Binding #1: Diffuse
     model.diffuse->bind(1);
 
-    // Binding #2: Lightmap
-    model.lightmap->bind(2);
-
-    // Binding #3: Normalmap
-    model.normal->bind(3);
+    // Binding #2: Normalmap
+    model.normal->bind(2);
 
     auto const forward = cmd.camera.dir.rotate(Vec3f(1, 0, 0));
     auto const up = cmd.camera.dir.rotate(Vec3f(0, 0, 1));
@@ -159,7 +155,6 @@ struct MeshRenderPass
     backend->enableVertexAttribute(MeshShader::Attribute::binormalLoc, 3, sizeof(SingleRenderMesh::Vertex), offsetof(SingleRenderMesh::Vertex, bx));
     backend->enableVertexAttribute(MeshShader::Attribute::tangentLoc, 3, sizeof(SingleRenderMesh::Vertex), offsetof(SingleRenderMesh::Vertex, tx));
     backend->enableVertexAttribute(MeshShader::Attribute::uvDiffuseLoc, 2, sizeof(SingleRenderMesh::Vertex), offsetof(SingleRenderMesh::Vertex, diffuse_u));
-    backend->enableVertexAttribute(MeshShader::Attribute::uvLightmapLoc, 2, sizeof(SingleRenderMesh::Vertex), offsetof(SingleRenderMesh::Vertex, lightmap_u));
 
     backend->draw(model.vertices.size());
   }
@@ -170,10 +165,9 @@ struct MeshRenderPass
     {
       positionLoc = 0,
       uvDiffuseLoc = 1,
-      uvLightmapLoc = 2,
-      normalLoc = 3,
-      binormalLoc = 4,
-      tangentLoc = 5,
+      normalLoc = 2,
+      binormalLoc = 3,
+      tangentLoc = 4,
     };
   };
 
@@ -320,7 +314,6 @@ struct Renderer : IRenderer, IScreenSizeListener
     for(auto& single : m_Models[modelId].singleMeshes)
     {
       single.diffuse = m_textureCache.fetch(setExtension(std::string(path.data), std::to_string(i) + ".diffuse.png"));
-      single.lightmap = m_textureCache.fetch(setExtension(std::string(path.data), std::to_string(i) + ".lightmap.png"));
       single.normal = m_textureCache.fetch(setExtension(std::string(path.data), std::to_string(i) + ".normal.png"));
 
       ++i;
@@ -457,11 +450,9 @@ private:
 
     m_fontTexture = backend->createTexture();
     m_fontTexture->upload(addBorderToTiles(loadPicture(path), COLS, ROWS));
-    auto lightmap = m_textureCache.fetch("res/white.png");
 
     // don't repeat fonts
     m_fontTexture->setNoRepeat();
-    lightmap->setNoRepeat();
 
     for(int i = 0; i < COLS * ROWS; ++i)
     {
@@ -476,18 +467,17 @@ private:
 
       const SingleRenderMesh::Vertex vertices[] =
       {
-        { 0, 0, 0, /* N */ 0, 1, 0, /* BN */ 1, 0, 0, /* T */ 0, 0, 1, /* uv diffuse */ u0, v0, /* uv lightmap */ u0, v0, },
-        { 1, 0, 1, /* N */ 0, 1, 0, /* BN */ 1, 0, 0, /* T */ 0, 0, 1, /* uv diffuse */ u1, v1, /* uv lightmap */ u1, v1, },
-        { 0, 0, 1, /* N */ 0, 1, 0, /* BN */ 1, 0, 0, /* T */ 0, 0, 1, /* uv diffuse */ u0, v1, /* uv lightmap */ u0, v1, },
+        { 0, 0, 0, /* N */ 0, 1, 0, /* BN */ 1, 0, 0, /* T */ 0, 0, 1, /* uv diffuse */ u0, v0 },
+        { 1, 0, 1, /* N */ 0, 1, 0, /* BN */ 1, 0, 0, /* T */ 0, 0, 1, /* uv diffuse */ u1, v1 },
+        { 0, 0, 1, /* N */ 0, 1, 0, /* BN */ 1, 0, 0, /* T */ 0, 0, 1, /* uv diffuse */ u0, v1 },
 
-        { 0, 0, 0, /* N */ 0, 1, 0, /* BN */ 1, 0, 0, /* T */ 0, 0, 1, /* uv diffuse */ u0, v0, /* uv lightmap */ u0, v0, },
-        { 1, 0, 0, /* N */ 0, 1, 0, /* BN */ 1, 0, 0, /* T */ 0, 0, 1, /* uv diffuse */ u1, v0, /* uv lightmap */ u0, v1, },
-        { 1, 0, 1, /* N */ 0, 1, 0, /* BN */ 1, 0, 0, /* T */ 0, 0, 1, /* uv diffuse */ u1, v1, /* uv lightmap */ u1, v1, },
+        { 0, 0, 0, /* N */ 0, 1, 0, /* BN */ 1, 0, 0, /* T */ 0, 0, 1, /* uv diffuse */ u0, v0 },
+        { 1, 0, 0, /* N */ 0, 1, 0, /* BN */ 1, 0, 0, /* T */ 0, 0, 1, /* uv diffuse */ u1, v0 },
+        { 1, 0, 1, /* N */ 0, 1, 0, /* BN */ 1, 0, 0, /* T */ 0, 0, 1, /* uv diffuse */ u1, v1 },
       };
 
       SingleRenderMesh sm;
       sm.diffuse = m_fontTexture;
-      sm.lightmap = lightmap;
 
       for(auto& v : vertices)
         sm.vertices.push_back(v);

@@ -16,22 +16,19 @@ layout(binding=0, std140) uniform MyUniformBlock
 // Input Vertex Attributes
 layout(location = 0) in vec4 vertexPos_model;
 layout(location = 1) in vec2 vertexUV;
-layout(location = 2) in vec2 vertexUV_lightmap;
-layout(location = 3) in vec3 a_normal;
-layout(location = 4) in vec3 a_binormal;
-layout(location = 5) in vec3 a_tangent;
+layout(location = 2) in vec3 a_normal;
+layout(location = 3) in vec3 a_binormal;
+layout(location = 4) in vec3 a_tangent;
 
 // Output Vertex Attributes
 layout(location = 0) out vec2 UV;
-layout(location = 1) out vec2 UV_lightmap;
-layout(location = 2) out vec3 vPos;
-layout(location = 3) out mat3 TBN;
+layout(location = 1) out vec3 vPos;
+layout(location = 2) out mat3 TBN;
 
 void main()
 {
   gl_Position = MVP * vertexPos_model;
   UV = vertexUV;
-  UV_lightmap = vertexUV_lightmap;
 
   vPos = (M * vertexPos_model).xyz;
 
