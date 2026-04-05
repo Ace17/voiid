@@ -167,7 +167,7 @@ struct OpenGlTexture : ITexture
   void upload(PictureView pic) override
   {
     glBindTexture(GL_TEXTURE_2D, texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, pic.dim.x, pic.dim.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, pic.pixels);
+    SAFE_GL(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, pic.dim.x, pic.dim.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, pic.pixels));
     SAFE_GL(glGenerateMipmap(GL_TEXTURE_2D));
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -245,7 +245,8 @@ struct OpenGlFrameBuffer : IFrameBuffer
 
 struct OpenGlVertexBuffer : IVertexBuffer
 {
-  OpenGlVertexBuffer()
+  OpenGlVertexBuffer(bool isDynamic)
+    : dynamic(isDynamic)
   {
     SAFE_GL(glGenBuffers(1, &vbo));
   }
@@ -258,11 +259,12 @@ struct OpenGlVertexBuffer : IVertexBuffer
   void upload(const void* data, size_t len) override
   {
     SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, vbo));
-    SAFE_GL(glBufferData(GL_ARRAY_BUFFER, len, data, GL_STATIC_DRAW));
+    SAFE_GL(glBufferData(GL_ARRAY_BUFFER, len, data, dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW));
     SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, 0));
   }
 
   GLuint vbo;
+  const bool dynamic;
 };
 
 struct OpenGlGraphicsBackend : IGraphicsBackend
@@ -433,9 +435,9 @@ struct OpenGlGraphicsBackend : IGraphicsBackend
     glBindBufferBase(GL_UNIFORM_BUFFER, 0, m_uniformBuffer);
   }
 
-  std::unique_ptr<IVertexBuffer> createVertexBuffer() override
+  std::unique_ptr<IVertexBuffer> createVertexBuffer(bool dynamic) override
   {
-    return std::make_unique<OpenGlVertexBuffer>();
+    return std::make_unique<OpenGlVertexBuffer>(dynamic);
   }
 
   std::unique_ptr<IFrameBuffer> createFrameBuffer(Vec2i resolution, bool depth) override

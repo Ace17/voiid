@@ -188,7 +188,7 @@ struct MeshRenderPass
 
 struct Renderer : IRenderer, IScreenSizeListener
 {
-  Renderer(IGraphicsBackend* backend_) : backend(backend_), m_skyboxPass(CreateSkyboxPass(backend_, &m_camera))
+  Renderer(IGraphicsBackend* backend_) : backend(backend_), m_skyboxPass(CreateSkyboxPass(backend_, &m_camera)), m_quadsRenderPass(backend_)
   {
     m_textureCache.onCacheMiss = [this] (String path) { return loadTexture(path); };
 
@@ -198,9 +198,6 @@ struct Renderer : IRenderer, IScreenSizeListener
 
     m_meshRenderPass.m_meshShader = backend->createGpuProgram("mesh", true);
     m_meshRenderPass.backend = backend;
-
-    m_quadsRenderPass.m_textShader = backend->createGpuProgram("text", false);
-    m_quadsRenderPass.backend = backend;
 
     m_postprocRenderPass.setup(backend, m_screenSize);
   }
@@ -277,7 +274,7 @@ struct Renderer : IRenderer, IScreenSizeListener
 
   void beginDraw() override
   {
-    m_quadsRenderPass.m_drawCommands.clear();
+    m_quadsRenderPass.m_quadsToDraw.clear();
     m_meshRenderPass.m_drawCommands.clear();
     m_meshRenderPass.m_lights.clear();
   }
@@ -326,18 +323,16 @@ struct Renderer : IRenderer, IScreenSizeListener
 
   void drawText(Vec2f pos, String text) override
   {
-    Rect3f rect;
+    Rect2f rect;
     rect.size.x = 0.25;
-    rect.size.y = 0;
-    rect.size.z = 0.25;
+    rect.size.y = 0.25;
     rect.pos.x = pos.x - text.len * rect.size.x / 2;
-    rect.pos.y = 0;
-    rect.pos.z = pos.y;
+    rect.pos.y = pos.y;
 
     for(auto c : text)
     {
-      for(auto& single : m_fontModel[c].singleMeshes)
-        m_quadsRenderPass.m_drawCommands.push_back({ &single, rect });
+      for(auto& mesh : m_fontModel[c].singleMeshes)
+        m_quadsRenderPass.m_quadsToDraw.push_back({ mesh.diffuse.get(), mesh.vb.get(), rect, (int)mesh.vertices.size() });
 
       rect.pos.x += rect.size.x;
     }
@@ -395,13 +390,13 @@ private:
 
       const SingleRenderMesh::Vertex vertices[] =
       {
-        { 0, 0, 0, /* N */ 0, 1, 0, /* BN */ 1, 0, 0, /* T */ 0, 0, 1, /* uv diffuse */ u0, v0 },
-        { 1, 0, 1, /* N */ 0, 1, 0, /* BN */ 1, 0, 0, /* T */ 0, 0, 1, /* uv diffuse */ u1, v1 },
-        { 0, 0, 1, /* N */ 0, 1, 0, /* BN */ 1, 0, 0, /* T */ 0, 0, 1, /* uv diffuse */ u0, v1 },
+        { 0, 0, 0, /* N */ 0, 0, 1, /* BN */ 1, 0, 0, /* T */ 0, 0, 1, /* uv diffuse */ u0, v0 },
+        { 1, 1, 0, /* N */ 0, 0, 1, /* BN */ 1, 0, 0, /* T */ 0, 0, 1, /* uv diffuse */ u1, v1 },
+        { 0, 1, 0, /* N */ 0, 0, 1, /* BN */ 1, 0, 0, /* T */ 0, 0, 1, /* uv diffuse */ u0, v1 },
 
-        { 0, 0, 0, /* N */ 0, 1, 0, /* BN */ 1, 0, 0, /* T */ 0, 0, 1, /* uv diffuse */ u0, v0 },
-        { 1, 0, 0, /* N */ 0, 1, 0, /* BN */ 1, 0, 0, /* T */ 0, 0, 1, /* uv diffuse */ u1, v0 },
-        { 1, 0, 1, /* N */ 0, 1, 0, /* BN */ 1, 0, 0, /* T */ 0, 0, 1, /* uv diffuse */ u1, v1 },
+        { 0, 0, 0, /* N */ 0, 0, 1, /* BN */ 1, 0, 0, /* T */ 0, 0, 1, /* uv diffuse */ u0, v0 },
+        { 1, 0, 0, /* N */ 0, 0, 1, /* BN */ 1, 0, 0, /* T */ 0, 0, 1, /* uv diffuse */ u1, v0 },
+        { 1, 1, 0, /* N */ 0, 0, 1, /* BN */ 1, 0, 0, /* T */ 0, 0, 1, /* uv diffuse */ u1, v1 },
       };
 
       SingleRenderMesh sm;

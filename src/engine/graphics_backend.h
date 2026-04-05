@@ -58,7 +58,7 @@ struct IGraphicsBackend
   virtual void readPixels(Span<uint8_t> dstRgbPixels) = 0;
 
   virtual std::unique_ptr<ITexture> createTexture() = 0;
-  virtual std::unique_ptr<IVertexBuffer> createVertexBuffer() = 0;
+  virtual std::unique_ptr<IVertexBuffer> createVertexBuffer(bool dynamic = false) = 0;
   virtual std::unique_ptr<IFrameBuffer> createFrameBuffer(Vec2i resolution, bool depth = true) = 0;
   virtual std::unique_ptr<IGpuProgram> createGpuProgram(String name, bool zTest) = 0;
 
