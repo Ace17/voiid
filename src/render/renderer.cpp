@@ -192,7 +192,7 @@ struct Renderer : IRenderer, IScreenSizeListener
   {
     m_textureCache.onCacheMiss = [this] (String path) { return loadTexture(path); };
 
-    m_fontModel = loadFontModels("res/font.png", 16, 16);
+    loadFontModels("res/font.png", 16, 16);
 
     backend->setScreenSizeListener(this);
 
@@ -329,10 +329,21 @@ struct Renderer : IRenderer, IScreenSizeListener
     rect.pos.x = pos.x - text.len * rect.size.x / 2;
     rect.pos.y = pos.y;
 
+    const auto COLS = 16;
+    const auto ROWS = 16;
+
     for(auto c : text)
     {
-      for(auto& mesh : m_fontModel[c].singleMeshes)
-        m_quadsRenderPass.m_quadsToDraw.push_back({ mesh.diffuse.get(), mesh.vb.get(), rect, (int)mesh.vertices.size() });
+      const float col = (c % COLS);
+      const float row = (c / COLS);
+
+      const float u0 = (col + 0) / COLS;
+      const float u1 = (col + 1) / COLS;
+
+      const float v0 = 1.0f - (row + 1) / ROWS;
+      const float v1 = 1.0f - (row + 0) / ROWS;
+
+      m_quadsRenderPass.m_quadsToDraw.push_back({ m_fontTexture.get(), rect, { { u0, v0 }, { u1, v1 } } });
 
       rect.pos.x += rect.size.x;
     }
@@ -354,7 +365,6 @@ private:
   bool m_cameraValid = false;
   IGraphicsBackend* const backend;
   std::vector<RenderMesh> m_Models;
-  std::vector<RenderMesh> m_fontModel;
 
   bool m_enableFsaa = false;
   bool m_enablePostProcessing = true;
@@ -367,7 +377,7 @@ private:
   WeakCache<std::string, ITexture> m_textureCache;
   std::shared_ptr<ITexture> m_fontTexture;
 
-  std::vector<RenderMesh> loadFontModels(String path, int COLS, int ROWS)
+  void loadFontModels(String path, int COLS, int ROWS)
   {
     std::vector<RenderMesh> r;
 
@@ -376,42 +386,6 @@ private:
 
     // don't repeat fonts
     m_fontTexture->setNoRepeat();
-
-    for(int i = 0; i < COLS * ROWS; ++i)
-    {
-      const float col = (i % COLS);
-      const float row = (i / COLS);
-
-      const float u0 = (col + 0) / COLS;
-      const float u1 = (col + 1) / COLS;
-
-      const float v0 = 1.0f - (row + 1) / ROWS;
-      const float v1 = 1.0f - (row + 0) / ROWS;
-
-      const SingleRenderMesh::Vertex vertices[] =
-      {
-        { 0, 0, 0, /* N */ 0, 0, 1, /* BN */ 1, 0, 0, /* T */ 0, 0, 1, /* uv diffuse */ u0, v0 },
-        { 1, 1, 0, /* N */ 0, 0, 1, /* BN */ 1, 0, 0, /* T */ 0, 0, 1, /* uv diffuse */ u1, v1 },
-        { 0, 1, 0, /* N */ 0, 0, 1, /* BN */ 1, 0, 0, /* T */ 0, 0, 1, /* uv diffuse */ u0, v1 },
-
-        { 0, 0, 0, /* N */ 0, 0, 1, /* BN */ 1, 0, 0, /* T */ 0, 0, 1, /* uv diffuse */ u0, v0 },
-        { 1, 0, 0, /* N */ 0, 0, 1, /* BN */ 1, 0, 0, /* T */ 0, 0, 1, /* uv diffuse */ u1, v0 },
-        { 1, 1, 0, /* N */ 0, 0, 1, /* BN */ 1, 0, 0, /* T */ 0, 0, 1, /* uv diffuse */ u1, v1 },
-      };
-
-      SingleRenderMesh sm;
-      sm.diffuse = m_fontTexture;
-
-      for(auto& v : vertices)
-        sm.vertices.push_back(v);
-
-      RenderMesh glyph {};
-      glyph.singleMeshes.push_back(sm);
-      uploadVerticesToGPU(glyph);
-      r.push_back(glyph);
-    }
-
-    return r;
   }
 
   void uploadVerticesToGPU(RenderMesh& mesh)

@@ -5,15 +5,15 @@
 struct QuadToDraw
 {
   ITexture* tex;
-  IVertexBuffer* vb;
   Rect2f where;
-  int vertexCount;
+  Vec2f uv[2];
 };
 
 struct QuadsRenderPass : RenderPass
 {
   QuadsRenderPass(IGraphicsBackend * backend_) : backend(backend_)
     , m_textShader(backend->createGpuProgram("text", false))
+    , m_vb(backend->createVertexBuffer(true))
   {
   }
 
@@ -21,55 +21,70 @@ struct QuadsRenderPass : RenderPass
   {
     backend->setRenderTarget(dst.fb);
 
-    for(auto& cmd : m_quadsToDraw)
-      executeDrawCommand(cmd);
-  }
+    auto byLexico = [](const QuadToDraw& a, const QuadToDraw& b)
+      {
+        if(a.tex != b.tex)
+          return a.tex < b.tex;
 
-  void executeDrawCommand(const QuadToDraw& cmd)
-  {
-    const Vec2f size = cmd.where.size;
-    const Vec2f pos = cmd.where.pos;
+        return false;
+      };
 
     backend->useGpuProgram(m_textShader.get());
 
-    // Texture Unit 0: Diffuse
-    cmd.tex->bind(1);
+    std::sort(m_quadsToDraw.begin(), m_quadsToDraw.end(), byLexico);
 
-    auto const forward = Vec3f(0, 0, -1);
-    auto const up = Vec3f(0, 1, 0);
+    ITexture* currTexture = nullptr;
 
-    Vec3f camPos(0, 0, 10);
+    std::vector<SingleRenderMesh::Vertex> pendingVertices;
 
-    auto const target = camPos + forward;
-    auto const view = ::lookAt(camPos, target, up);
-    auto const trans = ::translate(Vec3f(pos.x, pos.y, 0));
-    auto const scale = ::scale(Vec3f(size.x, size.y, 1));
+    auto flushQuads = [&]()
+      {
+        if(pendingVertices.empty())
+          return;
 
-    static const float fovy = (float)((60.0f / 180) * PI);
-    static const float near_ = 0;
-    static const float far_ = 1;
-    const auto perspective = ::perspective(fovy, m_aspectRatio, near_, far_);
+        m_vb->upload(pendingVertices.data(), pendingVertices.size() * sizeof(pendingVertices[0]));
+        backend->useVertexBuffer(m_vb.get());
 
-    auto MV = trans * scale;
+        backend->enableVertexAttribute(TextShader::Attribute::positionLoc, 2, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, x));
+        backend->enableVertexAttribute(TextShader::Attribute::uvDiffuseLoc, 2, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, diffuse_u));
 
-    // Must match the uniform block in text.vert and text.frag
-    struct MyUniformBlock
+        backend->draw(pendingVertices.size());
+
+        pendingVertices.clear();
+      };
+
+    for(auto& cmd : m_quadsToDraw)
     {
-      Matrix4f MVP;
-    };
+      if(cmd.tex != currTexture)
+      {
+        flushQuads();
+        cmd.tex->bind(1);
+        currTexture = cmd.tex;
+      }
 
-    MyUniformBlock ub {};
-    ub.MVP = perspective * view * MV;
-    ub.MVP = transpose(ub.MVP);
+      const Vec2f size = cmd.where.size * 0.1;
+      const Vec2f pos = cmd.where.pos * 0.1;
 
-    backend->setUniformBlock(&ub, sizeof ub);
+      const auto x0 = pos.x;
+      const auto x1 = pos.x + size.x;
+      const auto y0 = pos.y;
+      const auto y1 = pos.y + size.y * m_aspectRatio;
 
-    backend->useVertexBuffer(cmd.vb);
+      const auto u0 = cmd.uv[0].x;
+      const auto u1 = cmd.uv[1].x;
+      const auto v0 = cmd.uv[0].y;
+      const auto v1 = cmd.uv[1].y;
 
-    backend->enableVertexAttribute(TextShader::Attribute::positionLoc, 2, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, x));
-    backend->enableVertexAttribute(TextShader::Attribute::uvDiffuseLoc, 2, sizeof(SingleRenderMesh::Vertex), OFFSET(SingleRenderMesh::Vertex, diffuse_u));
+      pendingVertices.push_back({ x0, y0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /*UV*/ u0, v0 });
+      pendingVertices.push_back({ x1, y0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /*UV*/ u1, v0 });
+      pendingVertices.push_back({ x1, y1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /*UV*/ u1, v1 });
 
-    backend->draw(cmd.vertexCount);
+      pendingVertices.push_back({ x0, y0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /*UV*/ u0, v0 });
+      pendingVertices.push_back({ x1, y1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /*UV*/ u1, v1 });
+      pendingVertices.push_back({ x0, y1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /*UV*/ u0, v1 });
+    }
+
+    flushQuads();
   }
 
   struct TextShader

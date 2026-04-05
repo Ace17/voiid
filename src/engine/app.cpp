@@ -215,7 +215,7 @@ private:
       {
         auto stat = getStat(i);
         char buf[256];
-        m_renderer->drawText(Vec2f(0, 4 - i * 0.25), format(buf, "%s: %.2f", stat.name, stat.val));
+        m_renderer->drawText(Vec2f(0, 4 - i * 0.5), format(buf, "%s: %.2f", stat.name, stat.val));
       }
     }
 
