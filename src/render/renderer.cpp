@@ -106,6 +106,9 @@ struct MeshRenderPass
     // Binding #2: Normalmap
     model.normal->bind(2);
 
+    // Binding #3: Emissive
+    model.emissive->bind(3);
+
     auto const forward = cmd.camera.dir.rotate(Vec3f(1, 0, 0));
     auto const up = cmd.camera.dir.rotate(Vec3f(0, 0, 1));
 
@@ -246,6 +249,7 @@ struct Renderer : IRenderer, IScreenSizeListener
     {
       single.diffuse = m_textureCache.fetch(setExtension(std::string(path.data), std::to_string(i) + ".diffuse.png"));
       single.normal = m_textureCache.fetch(setExtension(std::string(path.data), std::to_string(i) + ".normal.png"));
+      single.emissive = m_textureCache.fetch(setExtension(std::string(path.data), std::to_string(i) + ".emissive.png"));
 
       ++i;
     }

@@ -10,11 +10,6 @@
 #include <string>
 #include <vector>
 
-struct Material
-{
-  std::string diffuse;
-};
-
 struct Mesh
 {
   struct Vertex

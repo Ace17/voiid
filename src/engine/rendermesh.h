@@ -22,6 +22,7 @@ struct SingleRenderMesh
   std::shared_ptr<IVertexBuffer> vb;
   std::shared_ptr<ITexture> diffuse;
   std::shared_ptr<ITexture> normal;
+  std::shared_ptr<ITexture> emissive;
   bool transparency;
 
   // mesh data

@@ -17,6 +17,7 @@ layout(binding=0, std140) uniform MyUniformBlock
 
 layout(binding = 1) uniform sampler2D DiffuseTex;
 layout(binding = 2) uniform sampler2D NormalTex;
+layout(binding = 3) uniform sampler2D EmissiveTex;
 
 // Input Vertex Attributes
 layout(location = 0) in vec2 UV;
@@ -36,6 +37,9 @@ void main()
 
   // ambient
   totalLight += ambientLight * diffuse.rgb;
+
+  // emissive
+  totalLight += texture(EmissiveTex, UV).rgb * 5.0;
 
   vec3 localN = texture(NormalTex, UV).rgb * 2.0 - 1.0;
   vec3 normal = normalize(TBN * localN);
