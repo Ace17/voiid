@@ -49,7 +49,7 @@ enum Attribute
 struct PostProcessing
 {
   PostProcessing(IGraphicsBackend* backend, Vec2i resolution)
-    : m_resolution(resolution), backend(backend)
+    : backend(backend)
   {
     m_hdrShader = backend->createGpuProgram("hdr", false);
     m_bloomShader = backend->createGpuProgram("bloom", false);
@@ -127,8 +127,6 @@ struct PostProcessing
     backend->enableVertexAttribute(BloomShader::Attribute::uvLoc, 0, 0, 0);
   }
 
-  const Vec2i m_resolution;
-
   IGraphicsBackend* const backend;
 
   std::unique_ptr<IGpuProgram> m_hdrShader;
@@ -141,7 +139,7 @@ struct PostProcessing
 
 RenderPass::FrameBuffer PostProcessRenderPass::getInputFrameBuffer()
 {
-  return { postproc->m_hdrFramebuffer.get(), postproc->m_resolution };
+  return { postproc->m_hdrFramebuffer.get() };
 }
 
 void PostProcessRenderPass::execute(RenderPass::FrameBuffer dst)

@@ -16,7 +16,6 @@ struct RenderPass
   struct FrameBuffer
   {
     IFrameBuffer* fb;
-    Vec2i dim;
   };
 
   virtual void execute(FrameBuffer dst) = 0;

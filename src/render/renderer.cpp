@@ -298,7 +298,7 @@ struct Renderer : IRenderer, IScreenSizeListener
   void doRender()
   {
     const auto aspectRatio = float(m_screenSize.x) / m_screenSize.y;
-    auto screen = RenderPass::FrameBuffer{ nullptr, m_screenSize };
+    auto screen = RenderPass::FrameBuffer{ nullptr };
     auto meshRenderTarget = m_enablePostProcessing ? m_postprocRenderPass.getInputFrameBuffer() : screen;
 
     backend->setRenderTarget(meshRenderTarget.fb);
