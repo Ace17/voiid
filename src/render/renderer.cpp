@@ -42,6 +42,9 @@ T blend(T a, T b, float alpha)
   return a * (1 - alpha) + b * alpha;
 }
 
+const int COLS = 16;
+const int ROWS = 16;
+
 struct DrawCommand
 {
   SingleRenderMesh* pMesh;
@@ -192,7 +195,7 @@ struct Renderer : IRenderer, IScreenSizeListener
   {
     m_textureCache.onCacheMiss = [this] (String path) { return loadTexture(path); };
 
-    loadFontModels("res/font.png", 16, 16);
+    loadFontTexture("res/font.png", COLS, ROWS);
 
     backend->setScreenSizeListener(this);
 
@@ -329,9 +332,6 @@ struct Renderer : IRenderer, IScreenSizeListener
     rect.pos.x = pos.x - text.len * rect.size.x / 2;
     rect.pos.y = pos.y;
 
-    const auto COLS = 16;
-    const auto ROWS = 16;
-
     for(auto c : text)
     {
       const float col = (c % COLS);
@@ -377,14 +377,10 @@ private:
   WeakCache<std::string, ITexture> m_textureCache;
   std::shared_ptr<ITexture> m_fontTexture;
 
-  void loadFontModels(String path, int COLS, int ROWS)
+  void loadFontTexture(String path, int COLS, int ROWS)
   {
-    std::vector<RenderMesh> r;
-
     m_fontTexture = backend->createTexture();
     m_fontTexture->upload(addBorderToTiles(loadPicture(path), COLS, ROWS));
-
-    // don't repeat fonts
     m_fontTexture->setNoRepeat();
   }
 
