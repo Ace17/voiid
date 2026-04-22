@@ -27,7 +27,7 @@ struct Switch : Entity, Switchable
     solid = true;
   }
 
-  virtual void onDraw(View* view) const override
+  void onDraw(View* view) const override
   {
     auto r = Actor(pos, MDL_SWITCH);
     r.scale = size;
@@ -39,12 +39,12 @@ struct Switch : Entity, Switchable
     view->sendActor(r);
   }
 
-  virtual void tick() override
+  void tick() override
   {
     blinking = std::max(0, blinking - 1);
   }
 
-  virtual void enter() override
+  void enter() override
   {
   }
 
@@ -82,19 +82,19 @@ struct DetectorSwitch : Entity
     collidesWith = CG_PLAYER | CG_SOLIDPLAYER;
   }
 
-  virtual void onDraw(View* view) const override
+  void onDraw(View* view) const override
   {
     auto r = Actor(pos, MDL_RECT);
     r.scale = size;
     view->sendActor(r);
   }
 
-  virtual void tick() override
+  void tick() override
   {
     decrement(touchDelay);
   }
 
-  virtual void enter() override
+  void enter() override
   {
     Body::onCollision =
       [ = ] (Body*)

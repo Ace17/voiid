@@ -43,7 +43,7 @@ struct Hero : Player, Damageable
     respawnPoint = pos;
   }
 
-  virtual void onDraw(View* view) const override
+  void onDraw(View* view) const override
   {
     auto r = Actor(pos, MDL_INVRECT);
     r.scale = size;
@@ -70,7 +70,7 @@ struct Hero : Player, Damageable
     return ::clamp(life / 31.0f, 0.0f, 1.0f);
   }
 
-  virtual void addUpgrade(int upgrade) override
+  void addUpgrade(int upgrade) override
   {
     upgrades |= upgrade;
     blinking = 2000;
@@ -136,7 +136,7 @@ struct Hero : Player, Damageable
       vel.z = 0;
   }
 
-  virtual void tick() override
+  void tick() override
   {
     decrement(blinking);
     decrement(hurtDelay);
@@ -215,7 +215,7 @@ struct Hero : Player, Damageable
         die();
   }
 
-  virtual void onDamage(int amount) override
+  void onDamage(int amount) override
   {
     if(life <= 0)
       return;

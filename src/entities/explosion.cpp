@@ -16,7 +16,7 @@ struct Explosion : Entity
     size = UnitSize * 0.1;
   }
 
-  virtual void tick() override
+  void tick() override
   {
     time++;
 
@@ -27,7 +27,7 @@ struct Explosion : Entity
     }
   }
 
-  virtual void onDraw(View* view) const override
+  void onDraw(View* view) const override
   {
     auto r = Actor(pos, MDL_RECT);
 

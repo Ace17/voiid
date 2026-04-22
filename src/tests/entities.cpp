@@ -21,22 +21,10 @@ unittest("Entity: explosion")
 
 struct NullPlayer : Player
 {
-  virtual void think(Control const &) override
-  {
-  }
-
-  virtual float health() override
-  {
-    return 0;
-  }
-
-  virtual void addUpgrade(int) override
-  {
-  }
-
-  virtual void onDraw(View*) const override
-  {
-  }
+  void think(Control const &) override {}
+  float health() override { return 0; }
+  void addUpgrade(int) override {}
+  void onDraw(View*) const override {}
 };
 
 struct NullGame : IGame
@@ -74,7 +62,7 @@ struct NullPhysicsProbe : IPhysicsProbe
     return box.pos.y < 0;
   }
 
-  virtual Trace traceBox(Box box, Vec3f delta, const Body* except) const override
+  Trace traceBox(Box box, Vec3f delta, const Body* except) const override
   {
     (void)box;
     (void)delta;

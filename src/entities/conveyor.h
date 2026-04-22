@@ -16,7 +16,7 @@ struct Conveyor : Entity
     solid = 1;
   }
 
-  virtual void onDraw(View* view) const override
+  void onDraw(View* view) const override
   {
     auto r = Actor(pos, MDL_RECT);
     r.action = 2;
@@ -24,7 +24,7 @@ struct Conveyor : Entity
     view->sendActor(r);
   }
 
-  virtual void enter() override
+  void enter() override
   {
     Body::onCollision = [this] (Body* other) { touch(other); };
   }

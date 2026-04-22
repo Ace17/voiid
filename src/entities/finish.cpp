@@ -26,7 +26,7 @@ struct FinishLine : Entity
     collidesWith = CG_PLAYER | CG_SOLIDPLAYER;
   }
 
-  virtual void onDraw(View* view) const override
+  void onDraw(View* view) const override
   {
     auto r = Actor(pos, MDL_TELEPORTER);
     r.scale = size;
@@ -37,13 +37,13 @@ struct FinishLine : Entity
       view->sendLight({ pos + Vec3f(0.5, 0.5, 1), Vec3f(5, 5, 5) });
   }
 
-  virtual void tick() override
+  void tick() override
   {
     if(decrement(touchDelay))
       game->endLevel();
   }
 
-  virtual void onCollide(Entity*) override
+  void onCollide(Entity*) override
   {
     if(touchDelay)
       return;

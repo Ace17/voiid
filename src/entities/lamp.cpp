@@ -30,9 +30,9 @@ struct Lamp : Entity, IEventSink
     subscription.reset();
   }
 
-  virtual void tick() override { ++ticks; }
+  void tick() override { ++ticks; }
 
-  virtual void onDraw(View* view) const override
+  void onDraw(View* view) const override
   {
     if(enabled)
     {
@@ -43,7 +43,7 @@ struct Lamp : Entity, IEventSink
     }
   }
 
-  virtual void notify(const Event* evt) override
+  void notify(const Event* evt) override
   {
     if(enabled)
       return;

@@ -27,7 +27,7 @@ struct MovingPlatform : Entity
     dir = dir_;
   }
 
-  virtual void onDraw(View* view) const override
+  void onDraw(View* view) const override
   {
     auto r = Actor(pos, MDL_RECT);
     r.scale = size;

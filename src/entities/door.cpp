@@ -31,7 +31,7 @@ struct Door : Entity, IEventSink
     subscription.reset();
   }
 
-  virtual void tick() override
+  void tick() override
   {
     decrement(openingDelay);
 
@@ -42,7 +42,7 @@ struct Door : Entity, IEventSink
     }
   }
 
-  virtual void onDraw(View* view) const override
+  void onDraw(View* view) const override
   {
     auto r = Actor(pos, MDL_DOOR);
     r.action = 1;
@@ -50,7 +50,7 @@ struct Door : Entity, IEventSink
     view->sendActor(r);
   }
 
-  virtual void notify(const Event* evt) override
+  void notify(const Event* evt) override
   {
     if(auto trg = evt->as<TriggerEvent>())
     {
@@ -88,13 +88,13 @@ struct AutoDoor : Entity, Switchable
     solid = true;
   }
 
-  virtual void enter() override
+  void enter() override
   {
     pos -= size * 0.5;
     basePos = pos;
   }
 
-  virtual void tick() override
+  void tick() override
   {
     switch(state)
     {
@@ -129,7 +129,7 @@ struct AutoDoor : Entity, Switchable
     }
   }
 
-  virtual void onDraw(View* view) const override
+  void onDraw(View* view) const override
   {
     auto r = Actor(pos, MDL_DOOR);
     r.action = 1;
@@ -137,7 +137,7 @@ struct AutoDoor : Entity, Switchable
     view->sendActor(r);
   }
 
-  virtual void onSwitch() override
+  void onSwitch() override
   {
     if(state != State::Closed)
       return;
@@ -178,7 +178,7 @@ struct BreakableDoor : Entity, Damageable
     collisionGroup = CG_WALLS;
   }
 
-  virtual void onDraw(View* view) const override
+  void onDraw(View* view) const override
   {
     auto r = Actor(pos, MDL_DOOR);
     r.scale = size;
@@ -189,12 +189,12 @@ struct BreakableDoor : Entity, Damageable
     view->sendActor(r);
   }
 
-  virtual void tick() override
+  void tick() override
   {
     decrement(blinking);
   }
 
-  virtual void onDamage(int amount) override
+  void onDamage(int amount) override
   {
     blinking = 200;
     life -= amount;
