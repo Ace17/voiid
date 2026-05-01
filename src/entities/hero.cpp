@@ -23,7 +23,7 @@
 
 auto const GRAVITY = Vec3f(0, 0, -0.005);
 auto const JUMP_SPEED = 0.15;
-auto const WALK_SPEED = 0.035f;
+auto const WALK_SPEED = 0.1f;
 auto const MAX_HORZ_SPEED = 0.2f;
 auto const MAX_FALL_SPEED = 0.2f;
 auto const HURT_DELAY = 50;
