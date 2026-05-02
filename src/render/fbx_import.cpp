@@ -1236,7 +1236,6 @@ private:
           enforce(tokenizer.valueType == ValueType::IntegerArray, "Unexpected value (type: %d) in 'UVIndex'", tokenizer.valueType);
 
           auto& ints = tokenizer.m_valueIntegerArray;
-          enforce(ints.len % 2 == 0, "Unexpected double count (%d) in 'UVIndex'", ints.len);
 
           m_vertexUvIndices.assign(ints.data, ints.data + ints.len);
 
