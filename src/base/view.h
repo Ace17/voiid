@@ -40,6 +40,8 @@ struct LightActor
 {
   Vec3f pos; // light position, in logical units
   Vec3f color;
+  float pulsePeriod = 0;
+  float pulseAmplitude = 0;
 };
 
 // This interface should act as a message sink.

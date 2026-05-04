@@ -298,7 +298,7 @@ struct GameState : Scene, private IGame
       m_staticLevelLights.clear();
 
       for(auto& light : level.lights)
-        m_staticLevelLights.push_back({ light.pos, light.color });
+        m_staticLevelLights.push_back({ light.pos, light.color, 3, 0.2 });
     }
 
     resetPhysics();

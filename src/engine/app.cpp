@@ -10,6 +10,7 @@
 
 #include "app.h"
 
+#include <cmath>
 #include <memory>
 #include <string>
 #include <vector>
@@ -200,7 +201,14 @@ private:
     }
 
     for(auto& actor : m_lightActors)
-      m_renderer->drawLight(actor.pos, actor.color);
+    {
+      auto color = actor.color;
+
+      if(actor.pulsePeriod > 0)
+        color = color * (1 + sin(GetSteadyClockMs() / 1000.0 * 2 * PI / actor.pulsePeriod) * actor.pulseAmplitude);
+
+      m_renderer->drawLight(actor.pos, color);
+    }
 
     if(m_running == AppState::ConfirmExit)
       m_renderer->drawText(Vec2f(0, 0), "QUIT? [Y/N]");
