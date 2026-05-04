@@ -72,15 +72,15 @@ struct PostProcessing
     backend->enableVertexAttribute(BloomShader::Attribute::positionLoc, 2, sizeof(QuadVertex), OFFSET(QuadVertex, x));
     backend->enableVertexAttribute(BloomShader::Attribute::uvLoc, 2, sizeof(QuadVertex), OFFSET(QuadVertex, u));
 
-    auto oneBlurringPass = [&] (ITexture* inputTex, IFrameBuffer* outputFramebuffer, bool isThreshold = false)
+    auto oneBlurringPass = [&] (ITexture* inputTex, IFrameBuffer* outputFramebuffer, int passType)
       {
         struct MyUniformBlock
         {
-          int IsThreshold;
+          int PassType; // 0:horizontal, 1:vertical, 2:threshold
         };
 
         MyUniformBlock block {};
-        block.IsThreshold = isThreshold ? 1 : 0;
+        block.PassType = passType;
 
         backend->setUniformBlock(&block, sizeof block);
 
@@ -91,14 +91,14 @@ struct PostProcessing
         backend->draw(6);
       };
 
-    oneBlurringPass(m_hdrFramebuffer->getColorTexture(), m_bloomFramebuffer[0].get(), true);
+    oneBlurringPass(m_hdrFramebuffer->getColorTexture(), m_bloomFramebuffer[0].get(), 2);
 
     auto srcFb = m_bloomFramebuffer[0].get();
     auto dstFb = m_bloomFramebuffer[1].get();
 
     for(int k = 0; k < 6; ++k)
     {
-      oneBlurringPass(srcFb->getColorTexture(), dstFb);
+      oneBlurringPass(srcFb->getColorTexture(), dstFb, k % 2);
       std::swap(srcFb, dstFb);
     }
 
