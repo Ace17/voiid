@@ -108,6 +108,7 @@ struct PostProcessing
 
   void drawHdrBuffer()
   {
+    // tone mapping happens here
     backend->useGpuProgram(m_hdrShader.get());
 
     // Texture Unit 0
