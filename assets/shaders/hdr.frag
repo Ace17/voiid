@@ -31,12 +31,12 @@ vec3 Tonemap_Reinhard(vec3 hdrColor)
 
 void main()
 {
-  const float gamma = 1.2;
+  const float gamma = 1.0;
   vec3 hdrColor = texture(InputTex1, UV).rgb + texture(InputTex2, UV).rgb;
 
   vec3 mapped;
 
-  if(ToneMappingType == 0)
+  if(ToneMappingType == 1)
     mapped = Tonemap_ACES(hdrColor);
   else
     mapped = Tonemap_Reinhard(hdrColor);
