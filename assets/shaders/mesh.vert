@@ -1,6 +1,16 @@
 #version 310 es
 
+precision mediump float;
+
 // Uniforms
+struct ShaderLight
+{
+  vec3 pos;
+  float pad;
+  vec3 color;
+  float pad2;
+};
+
 layout(binding=0, std140) uniform MyUniformBlock
 {
   mat4 M;
@@ -8,8 +18,7 @@ layout(binding=0, std140) uniform MyUniformBlock
   vec4 fragOffset;
   vec3 CameraPos;
   vec3 ambientLight;
-  vec3 LightPos[32];
-  vec3 LightColor[32];
+  ShaderLight Lights[32];
   int LightCount;
 };
 

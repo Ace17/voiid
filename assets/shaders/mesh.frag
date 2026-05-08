@@ -3,6 +3,14 @@
 precision mediump float;
 
 // Uniforms
+struct ShaderLight
+{
+  vec3 pos;
+  float pad;
+  vec3 color;
+  float pad2;
+};
+
 layout(binding=0, std140) uniform MyUniformBlock
 {
   mat4 M;
@@ -10,8 +18,7 @@ layout(binding=0, std140) uniform MyUniformBlock
   vec4 fragOffset;
   vec3 CameraPos;
   vec3 ambientLight;
-  vec3 LightPos[32];
-  vec3 LightColor[32];
+  ShaderLight Lights[32];
   int LightCount;
 };
 
@@ -47,13 +54,13 @@ void main()
   // dynamic lights
   for(int i=0;i < LightCount;++i)
   {
-    vec3 lightDir = normalize(LightPos[i] - vPos);
-    float lightDist = length(LightPos[i] - vPos);
+    vec3 lightDir = normalize(Lights[i].pos - vPos);
+    float lightDist = length(Lights[i].pos - vPos);
     float attenuation = 10.0/(lightDist*lightDist*lightDist);
     float incidenceRatio = max(0.0, dot(lightDir, normal));
 
     // diffuse
-    totalLight += LightColor[i] * incidenceRatio * attenuation * diffuse.rgb * diffuse.a;
+    totalLight += Lights[i].color * incidenceRatio * attenuation * diffuse.rgb * diffuse.a;
 
     // specular
     const float material_shininess = 256.0;
@@ -62,7 +69,7 @@ void main()
     vec3 halfwayDir = normalize((viewDir + lightDir) * 0.5);
     float angle = max(dot(normal, halfwayDir), 0.0);
     float spec = pow(angle, material_shininess);
-    totalLight += LightColor[i] * (spec * material_specular);
+    totalLight += Lights[i].color * (spec * material_specular);
   }
 
   color.rgb = totalLight;

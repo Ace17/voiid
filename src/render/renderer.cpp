@@ -88,6 +88,12 @@ struct MeshRenderPass
     backend->useGpuProgram(m_meshShader.get());
 
     // Must match the uniform block in mesh.frag and mesh.vert
+    struct ShaderLight
+    {
+      Vec4f pos;
+      Vec4f color;
+    };
+
     struct MyUniformBlock
     {
       Matrix4f M;
@@ -95,8 +101,7 @@ struct MeshRenderPass
       Vec4f fragOffset;
       Vec4f cameraPos;
       Vec4f ambientLight;
-      Vec4f lightPos[32];
-      Vec4f lightColor[32];
+      ShaderLight Lights[32];
       int lightCount;
     };
 
@@ -136,8 +141,8 @@ struct MeshRenderPass
       for(auto& light : m_lights)
       {
         const auto i = int(&light - m_lights.data());
-        ub.lightPos[i] = { light.pos.x, light.pos.y, light.pos.z, 1 };
-        ub.lightColor[i] = { light.color.x, light.color.y, light.color.z, 1 };
+        ub.Lights[i].pos = { light.pos.x, light.pos.y, light.pos.z, 1 };
+        ub.Lights[i].color = { light.color.x, light.color.y, light.color.z, 1 };
       }
 
       if(cmd.blinking)
