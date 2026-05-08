@@ -116,6 +116,7 @@ struct MeshRenderPass
       Vec4f cameraPos;
       Vec4f ambientLight;
       ShaderCluster lightClusters[CX * CY * CZ];
+      float near, far;
     };
 
     // Binding #1: Diffuse
@@ -147,17 +148,8 @@ struct MeshRenderPass
     {
       MyUniformBlock ub {};
       ub.ambientLight = { m_ambientLight, m_ambientLight, m_ambientLight, 0 };
-      ub.lightClusters[0].LightCount = m_lights.size();
 
-      assert(m_lights.size() < 32);
-
-      for(auto& light : m_lights)
-      {
-        const auto i = int(&light - m_lights.data());
-        ub.lightClusters[0].Lights[i].pos = light.pos;
-        ub.lightClusters[0].Lights[i].range = light.range;
-        ub.lightClusters[0].Lights[i].color = light.color;
-      }
+      clusterizeLights(m_lights, ub.lightClusters, m_aspectRatio, fovy, near_, far_, view);
 
       if(cmd.blinking)
       {
@@ -170,6 +162,8 @@ struct MeshRenderPass
       ub.M = transpose(MV);
       ub.MVP = transpose(MVP);
       ub.cameraPos = { cmd.camera.pos.x, cmd.camera.pos.y, cmd.camera.pos.z, 1 };
+      ub.near = near_;
+      ub.far = far_;
 
       backend->setUniformBlock(&ub, sizeof ub);
     }
@@ -203,6 +197,103 @@ struct MeshRenderPass
     float range;
     Vec3f color;
   };
+
+  static void clusterizeLights(Span<const MeshRenderPass::Light> lights, Span<ShaderCluster> clusters, float aspectRatio, float fovY, float near, float far, const Matrix4f& view)
+  {
+    assert(clusters.len == CX * CY * CZ);
+
+    Vec3f planesX[CX + 1];
+    Vec3f planesY[CY + 1];
+
+    // compute the normals of the planes splitting the frustum.
+    // all those planes contain (0;0;0)
+    const float tanHalfFovY = tan(fovY / 2);
+
+    // pencil of planes on the Y axis
+    const float fhx = far * tanHalfFovY * aspectRatio;
+
+    for(int ix = 0; ix <= CX; ++ix)
+    {
+      const auto rx = float(ix) / float(CX);
+      Vec3f ray{ blend(-fhx, +fhx, rx), 0, -far };
+      planesX[ix] = normalize(crossProduct(ray, Vec3f(0, 1, 0)));
+    }
+
+    // pencil of planes on the X axis
+    const float fhy = far * tanHalfFovY;
+
+    for(int iy = 0; iy <= CY; ++iy)
+    {
+      const auto ry = float(iy) / float(CY);
+      Vec3f ray{ 0, blend(-fhy, +fhy, ry), -far };
+      planesY[iy] = normalize(crossProduct(ray, Vec3f(-1, 0, 0)));
+    }
+
+    for(auto& cluster : clusters)
+      cluster.LightCount = 0;
+
+    // add each light to the appropriate clusters
+    for(auto& light : lights)
+    {
+      const auto posH = view * Vec4f{ light.pos.x, light.pos.y, light.pos.z, 1 };
+      const auto pos = Vec3f(posH.x, posH.y, posH.z);
+      // determine which planes are the tightest boundaries for the sphere
+      int minPlaneX, maxPlaneX;
+      {
+        minPlaneX = 0;
+        maxPlaneX = CX;
+
+        for(int ix = 0; ix <= CX; ++ix)
+        {
+          if(dotProduct(planesX[ix], pos) > light.range)
+            minPlaneX = std::max(minPlaneX, ix);
+
+          if(dotProduct(planesX[ix], pos) < -light.range)
+            maxPlaneX = std::min(maxPlaneX, ix);
+        }
+      }
+
+      int minPlaneY, maxPlaneY;
+      {
+        minPlaneY = 0;
+        maxPlaneY = CY;
+
+        for(int iy = 0; iy <= CY; ++iy)
+        {
+          if(dotProduct(planesY[iy], pos) > light.range)
+            minPlaneY = std::max(minPlaneY, iy);
+
+          if(dotProduct(planesY[iy], pos) < -light.range)
+            maxPlaneY = std::min(maxPlaneY, iy);
+        }
+      }
+
+      const int minPlaneZ = std::max<int>(0, (-pos.z - light.range - near) * CZ / (far - near));
+      const int maxPlaneZ = std::min<int>(CZ, (-pos.z + light.range - near) * CZ / (far - near) + 1);
+
+      for(int z = minPlaneZ; z < maxPlaneZ; ++z)
+      {
+        for(int y = minPlaneY; y < maxPlaneY; ++y)
+        {
+          for(int x = minPlaneX; x < maxPlaneX; ++x)
+          {
+            auto& cluster = clusters[(z * CX * CY) + (y * CX) + x];
+
+            if(cluster.LightCount >= 64)
+            {
+              fprintf(stderr, "Too many lights in one cluster\n");
+              continue;
+            }
+
+            cluster.Lights[cluster.LightCount].pos = light.pos;
+            cluster.Lights[cluster.LightCount].color = light.color;
+            cluster.Lights[cluster.LightCount].range = light.range;
+            ++cluster.LightCount;
+          }
+        }
+      }
+    }
+  }
 
   IGraphicsBackend* backend {};
   std::unique_ptr<IGpuProgram> m_meshShader;

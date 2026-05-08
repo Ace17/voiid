@@ -30,6 +30,7 @@ layout(binding=0, std140) uniform MyUniformBlock
   vec3 CameraPos;
   vec3 ambientLight;
   LightCluster lightClusters[CX*CY*CZ];
+  float near, far;
 };
 
 // Input Vertex Attributes
@@ -43,9 +44,11 @@ layout(location = 4) in vec3 a_tangent;
 layout(location = 0) out vec2 UV;
 layout(location = 1) out vec3 vPos;
 layout(location = 2) out mat3 TBN;
+layout(location = 8) out vec4 posClip;
 
 void main()
 {
+  posClip = MVP * vertexPos_model;
   gl_Position = MVP * vertexPos_model;
   UV = vertexUV;
 
