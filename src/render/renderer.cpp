@@ -90,7 +90,8 @@ struct MeshRenderPass
     // Must match the uniform block in mesh.frag and mesh.vert
     struct ShaderLight
     {
-      Vec4f pos;
+      Vec3f pos;
+      float range;
       Vec4f color;
     };
 
@@ -141,7 +142,8 @@ struct MeshRenderPass
       for(auto& light : m_lights)
       {
         const auto i = int(&light - m_lights.data());
-        ub.Lights[i].pos = { light.pos.x, light.pos.y, light.pos.z, 1 };
+        ub.Lights[i].pos = light.pos;
+        ub.Lights[i].range = light.range;
         ub.Lights[i].color = { light.color.x, light.color.y, light.color.z, 1 };
       }
 
@@ -186,6 +188,7 @@ struct MeshRenderPass
   struct Light
   {
     Vec3f pos;
+    float range;
     Vec3f color;
   };
 
@@ -363,9 +366,9 @@ struct Renderer : IRenderer, IScreenSizeListener
     m_meshRenderPass.m_ambientLight = ambientLight;
   }
 
-  void drawLight(Vec3f pos, Vec3f color) override
+  void drawLight(Vec3f pos, float range, Vec3f color) override
   {
-    m_meshRenderPass.m_lights.push_back({ pos, color });
+    m_meshRenderPass.m_lights.push_back({ pos, range, color });
   }
 
 private:

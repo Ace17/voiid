@@ -207,7 +207,7 @@ private:
       if(actor.pulsePeriod > 0)
         color = color * (1 + sin(GetSteadyClockMs() / 1000.0 * 2 * PI / actor.pulsePeriod) * actor.pulseAmplitude);
 
-      m_renderer->drawLight(actor.pos, color);
+      m_renderer->drawLight(actor.pos, actor.range, color);
     }
 
     if(m_running == AppState::ConfirmExit)

@@ -6,7 +6,7 @@ precision mediump float;
 struct ShaderLight
 {
   vec3 pos;
-  float pad;
+  float range;
   vec3 color;
   float pad2;
 };

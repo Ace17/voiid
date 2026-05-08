@@ -40,6 +40,7 @@ struct LightActor
 {
   Vec3f pos; // light position, in logical units
   Vec3f color;
+  float range = 15;
   float pulsePeriod = 0;
   float pulseAmplitude = 0;
 };

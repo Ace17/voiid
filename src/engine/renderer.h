@@ -28,7 +28,7 @@ struct IRenderer
   virtual void endDraw() = 0;
 
   virtual void drawActor(Rect3f where, Quaternion orientation, int modelId, bool blinking) = 0;
-  virtual void drawLight(Vec3f pos, Vec3f color) = 0;
+  virtual void drawLight(Vec3f pos, float range, Vec3f color) = 0;
   virtual void drawText(Vec2f pos, String text) = 0;
 };
 

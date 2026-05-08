@@ -6,7 +6,7 @@ precision mediump float;
 struct ShaderLight
 {
   vec3 pos;
-  float pad;
+  float range;
   vec3 color;
   float pad2;
 };
@@ -34,6 +34,11 @@ layout(location = 2) in mat3 TBN;
 // Ouput data
 layout(location = 0) out vec4 color;
 
+float sqr(float x)
+{
+  return x * x;
+}
+
 void main()
 {
   vec3 totalLight = vec3(0, 0, 0);
@@ -55,8 +60,12 @@ void main()
   for(int i=0;i < LightCount;++i)
   {
     vec3 lightDir = normalize(Lights[i].pos - vPos);
-    float lightDist = length(Lights[i].pos - vPos);
-    float attenuation = 10.0/(lightDist*lightDist*lightDist);
+
+    // https://lisyarus.github.io/blog/graphics/2022/07/30/point-light-attenuation.html
+    float s = clamp(length(Lights[i].pos - vPos)/Lights[i].range, 0.0, 1.0);
+    float F = 16.0;
+    float attenuation = sqr(1.0 - sqr(s))/(1.0 + F * sqr(s));
+
     float incidenceRatio = max(0.0, dot(lightDir, normal));
 
     // diffuse
