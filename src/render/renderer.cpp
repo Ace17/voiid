@@ -45,6 +45,11 @@ T blend(T a, T b, float alpha)
 const int COLS = 16;
 const int ROWS = 16;
 
+// clustering configuration
+const int CX = 16;
+const int CY = 8;
+const int CZ = 8;
+
 struct DrawCommand
 {
   SingleRenderMesh* pMesh;
@@ -52,6 +57,22 @@ struct DrawCommand
   Quaternion orientation;
   Camera camera;
   bool blinking;
+};
+
+// Must match the uniform block in mesh.frag and mesh.vert
+struct ShaderLight
+{
+  Vec3f pos;
+  float range;
+  Vec3f color;
+  float pad;
+};
+
+struct ShaderCluster
+{
+  int LightCount;
+  int pad[3];
+  ShaderLight Lights[64];
 };
 
 struct MeshRenderPass
@@ -87,14 +108,6 @@ struct MeshRenderPass
 
     backend->useGpuProgram(m_meshShader.get());
 
-    // Must match the uniform block in mesh.frag and mesh.vert
-    struct ShaderLight
-    {
-      Vec3f pos;
-      float range;
-      Vec4f color;
-    };
-
     struct MyUniformBlock
     {
       Matrix4f M;
@@ -102,8 +115,7 @@ struct MeshRenderPass
       Vec4f fragOffset;
       Vec4f cameraPos;
       Vec4f ambientLight;
-      ShaderLight Lights[32];
-      int lightCount;
+      ShaderCluster lightClusters[CX * CY * CZ];
     };
 
     // Binding #1: Diffuse
@@ -135,16 +147,16 @@ struct MeshRenderPass
     {
       MyUniformBlock ub {};
       ub.ambientLight = { m_ambientLight, m_ambientLight, m_ambientLight, 0 };
-      ub.lightCount = m_lights.size();
+      ub.lightClusters[0].LightCount = m_lights.size();
 
       assert(m_lights.size() < 32);
 
       for(auto& light : m_lights)
       {
         const auto i = int(&light - m_lights.data());
-        ub.Lights[i].pos = light.pos;
-        ub.Lights[i].range = light.range;
-        ub.Lights[i].color = { light.color.x, light.color.y, light.color.z, 1 };
+        ub.lightClusters[0].Lights[i].pos = light.pos;
+        ub.lightClusters[0].Lights[i].range = light.range;
+        ub.lightClusters[0].Lights[i].color = light.color;
       }
 
       if(cmd.blinking)

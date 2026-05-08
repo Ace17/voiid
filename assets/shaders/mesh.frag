@@ -1,14 +1,25 @@
 #version 310 es
 
 precision mediump float;
+precision mediump int;
 
 // Uniforms
+const int CX = 16;
+const int CY = 8;
+const int CZ = 8;
+
 struct ShaderLight
 {
   vec3 pos;
   float range;
   vec3 color;
-  float pad2;
+  float pad;
+};
+
+struct LightCluster
+{
+  int LightCount;
+  ShaderLight Lights[64];
 };
 
 layout(binding=0, std140) uniform MyUniformBlock
@@ -18,8 +29,7 @@ layout(binding=0, std140) uniform MyUniformBlock
   vec4 fragOffset;
   vec3 CameraPos;
   vec3 ambientLight;
-  ShaderLight Lights[32];
-  int LightCount;
+  LightCluster lightClusters[CX*CY*CZ];
 };
 
 layout(binding = 1) uniform sampler2D DiffuseTex;
@@ -39,6 +49,35 @@ float sqr(float x)
   return x * x;
 }
 
+vec3 computeDynamicLightContribution(in LightCluster cluster, vec3 normal, vec4 diffuse)
+{
+  vec3 totalLight = vec3(0);
+  for(int i=0;i < cluster.LightCount;++i)
+  {
+    vec3 lightDir = normalize(cluster.Lights[i].pos - vPos);
+
+    // https://lisyarus.github.io/blog/graphics/2022/07/30/point-light-attenuation.html
+    float s = clamp(length(cluster.Lights[i].pos - vPos)/cluster.Lights[i].range, 0.0, 1.0);
+    float F = 16.0;
+    float attenuation = sqr(1.0 - sqr(s))/(1.0 + F * sqr(s));
+
+    float incidenceRatio = max(0.0, dot(lightDir, normal));
+
+    // diffuse
+    totalLight += cluster.Lights[i].color * incidenceRatio * attenuation * diffuse.rgb * diffuse.a;
+
+    // specular
+    const float material_shininess = 256.0;
+    const float material_specular = 0.01;
+    vec3 viewDir = normalize(CameraPos - vPos);
+    vec3 halfwayDir = normalize((viewDir + lightDir) * 0.5);
+    float angle = max(dot(normal, halfwayDir), 0.0);
+    float spec = pow(angle, material_shininess);
+    totalLight += cluster.Lights[i].color * (spec * material_specular);
+  }
+  return totalLight;
+}
+
 void main()
 {
   vec3 totalLight = vec3(0, 0, 0);
@@ -53,33 +92,10 @@ void main()
   // emissive
   totalLight += texture(EmissiveTex, UV).rgb * 5.0;
 
-  vec3 localN = texture(NormalTex, UV).rgb * 2.0 - 1.0;
-  vec3 normal = normalize(TBN * localN);
-
   // dynamic lights
-  for(int i=0;i < LightCount;++i)
-  {
-    vec3 lightDir = normalize(Lights[i].pos - vPos);
-
-    // https://lisyarus.github.io/blog/graphics/2022/07/30/point-light-attenuation.html
-    float s = clamp(length(Lights[i].pos - vPos)/Lights[i].range, 0.0, 1.0);
-    float F = 16.0;
-    float attenuation = sqr(1.0 - sqr(s))/(1.0 + F * sqr(s));
-
-    float incidenceRatio = max(0.0, dot(lightDir, normal));
-
-    // diffuse
-    totalLight += Lights[i].color * incidenceRatio * attenuation * diffuse.rgb * diffuse.a;
-
-    // specular
-    const float material_shininess = 256.0;
-    const float material_specular = 0.01;
-    vec3 viewDir = normalize(CameraPos - vPos);
-    vec3 halfwayDir = normalize((viewDir + lightDir) * 0.5);
-    float angle = max(dot(normal, halfwayDir), 0.0);
-    float spec = pow(angle, material_shininess);
-    totalLight += Lights[i].color * (spec * material_specular);
-  }
+  int clusterIndex = 0;
+  vec3 localN = texture(NormalTex, UV).rgb * 2.0 - 1.0;
+  totalLight += computeDynamicLightContribution(lightClusters[clusterIndex], normalize(TBN * localN), diffuse);
 
   color.rgb = totalLight;
   color.a = diffuse.a;
