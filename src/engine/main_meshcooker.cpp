@@ -105,6 +105,14 @@ void writeRenderMesh(std::string path, const RenderMesh& renderMesh)
 
   File::write(path, data);
 }
+
+std::string stripTrailingSlash(std::string path)
+{
+  if(path.size() && path.back() == '/')
+    path.pop_back();
+
+  return path;
+}
 }
 
 int main(int argc, const char* argv[])
@@ -115,7 +123,7 @@ int main(int argc, const char* argv[])
       return 1;
 
     const auto input = std::string(argv[1]);
-    const auto textureDir = std::string(argv[2]);
+    const auto textureDir = stripTrailingSlash(argv[2]);
     const auto outputPathMesh = argv[3];
 
     auto scene = importMesh(input);
@@ -144,7 +152,7 @@ int main(int argc, const char* argv[])
         ///////////////////////////////////////////////////////////////////////
         // Diffuse map
 
-        auto const inputPathDiffuse = textureDir + "/" + textureFiles[meshIndex];
+        auto const inputPathDiffuse = textureDir + "/" + setExtension(textureFiles[meshIndex], "d.png");
         auto const outputPathDiffuse = setExtension(outputPathMesh, std::to_string(meshIndex) + ".diffuse.png");
 
         if(File::exists(inputPathDiffuse))
@@ -154,8 +162,19 @@ int main(int argc, const char* argv[])
         }
         else
         {
-          fprintf(stderr, "File doesn't exist: '%s'\n", inputPathDiffuse.c_str());
-          File::write(outputPathDiffuse, gray_png);
+          auto const inputPathDiffuse = textureDir + "/" + textureFiles[meshIndex];
+          auto const outputPathDiffuse = setExtension(outputPathMesh, std::to_string(meshIndex) + ".diffuse.png");
+
+          if(File::exists(inputPathDiffuse))
+          {
+            auto pngData = File::read(inputPathDiffuse);
+            File::write(outputPathDiffuse, { (uint8_t*)pngData.data(), (int)pngData.size() });
+          }
+          else
+          {
+            fprintf(stderr, "File doesn't exist: '%s'\n", inputPathDiffuse.c_str());
+            File::write(outputPathDiffuse, gray_png);
+          }
         }
 
         ///////////////////////////////////////////////////////////////////////
