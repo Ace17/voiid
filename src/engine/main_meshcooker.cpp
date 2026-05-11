@@ -190,7 +190,6 @@ int main(int argc, const char* argv[])
         }
         else
         {
-          fprintf(stderr, "File doesn't exist: '%s'\n", inputPathNormalMap.c_str());
           File::write(outputPathNormalMap, blue_png);
         }
 
@@ -207,7 +206,6 @@ int main(int argc, const char* argv[])
         }
         else
         {
-          fprintf(stderr, "File doesn't exist: '%s'\n", inputPathEmissiveMap.c_str());
           File::write(outputPathEmissiveMap, black_png);
         }
       }
