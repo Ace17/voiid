@@ -95,7 +95,7 @@ RenderMesh loadBinaryRenderMesh(String path)
   {
     SingleRenderMesh single;
 
-    read(&single.transparency, 1);
+    read(&single.mat.transparency, 1);
 
     int vertexCount = 0;
     read(&vertexCount, 4);

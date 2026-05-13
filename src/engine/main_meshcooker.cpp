@@ -60,7 +60,7 @@ RenderMesh convertToRenderMesh(std::vector<Mesh> const& meshes, std::vector<std:
 
       SingleRenderMesh& single = singlesByMaterial[materialName];
 
-      single.transparency = mesh.materials_transparency[face.material];
+      single.mat.transparency = mesh.materials_transparency[face.material];
 
       single.vertices.push_back(convert(mesh.vertices[face.i1]));
       single.vertices.push_back(convert(mesh.vertices[face.i2]));
@@ -94,7 +94,7 @@ void writeRenderMesh(std::string path, const RenderMesh& renderMesh)
 
   for(auto& single : renderMesh.singleMeshes)
   {
-    write(&single.transparency, 1);
+    write(&single.mat.transparency, 1);
 
     const int num = (int)single.vertices.size();
     write(&num, 4);

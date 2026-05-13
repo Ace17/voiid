@@ -83,8 +83,8 @@ struct MeshRenderPass
 
     auto byMaterial = [] (const DrawCommand& a, const DrawCommand& b)
       {
-        if(a.pMesh->transparency != b.pMesh->transparency)
-          return a.pMesh->transparency < b.pMesh->transparency;
+        if(a.pMesh->mat.transparency != b.pMesh->mat.transparency)
+          return a.pMesh->mat.transparency < b.pMesh->mat.transparency;
 
         return false;
       };
@@ -120,13 +120,13 @@ struct MeshRenderPass
     };
 
     // Binding #1: Diffuse
-    model.diffuse->bind(1);
+    model.mat.diffuse->bind(1);
 
     // Binding #2: Normalmap
-    model.normal->bind(2);
+    model.mat.normal->bind(2);
 
     // Binding #3: Emissive
-    model.emissive->bind(3);
+    model.mat.emissive->bind(3);
 
     auto const forward = cmd.camera.dir.rotate(Vec3f(1, 0, 0));
     auto const up = cmd.camera.dir.rotate(Vec3f(0, 0, 1));
@@ -358,9 +358,9 @@ struct Renderer : IRenderer, IScreenSizeListener
 
     for(auto& single : m_Models[modelId].singleMeshes)
     {
-      single.diffuse = m_textureCache.fetch(setExtension(std::string(path.data), std::to_string(i) + ".diffuse.png"));
-      single.normal = m_textureCache.fetch(setExtension(std::string(path.data), std::to_string(i) + ".normal.png"));
-      single.emissive = m_textureCache.fetch(setExtension(std::string(path.data), std::to_string(i) + ".emissive.png"));
+      single.mat.diffuse = m_textureCache.fetch(setExtension(std::string(path.data), std::to_string(i) + ".diffuse.png"));
+      single.mat.normal = m_textureCache.fetch(setExtension(std::string(path.data), std::to_string(i) + ".normal.png"));
+      single.mat.emissive = m_textureCache.fetch(setExtension(std::string(path.data), std::to_string(i) + ".emissive.png"));
 
       ++i;
     }

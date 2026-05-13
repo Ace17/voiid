@@ -16,14 +16,19 @@
 struct IVertexBuffer;
 struct ITexture;
 
-struct SingleRenderMesh
+struct Material
 {
-  // renderer stuff
-  std::shared_ptr<IVertexBuffer> vb;
   std::shared_ptr<ITexture> diffuse;
   std::shared_ptr<ITexture> normal;
   std::shared_ptr<ITexture> emissive;
   bool transparency;
+};
+
+struct SingleRenderMesh
+{
+  // renderer stuff
+  std::shared_ptr<IVertexBuffer> vb;
+  Material mat;
 
   // mesh data
   struct Vertex
