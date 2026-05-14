@@ -115,7 +115,6 @@ struct MeshRenderPass
       Vec4f fragOffset;
       Vec4f cameraPos;
       Vec4f ambientLight;
-      ShaderCluster lightClusters[CX * CY * CZ];
       float near, far;
     };
 
@@ -149,7 +148,11 @@ struct MeshRenderPass
       MyUniformBlock ub {};
       ub.ambientLight = { m_ambientLight, m_ambientLight, m_ambientLight, 0 };
 
-      clusterizeLights(m_lights, ub.lightClusters, m_aspectRatio, fovy, near_, far_, view);
+      ShaderCluster lightClusters[CX * CY * CZ] {};
+      clusterizeLights(m_lights, lightClusters, m_aspectRatio, fovy, near_, far_, view);
+
+      lightShaderBuffer->upload(lightClusters, sizeof(lightClusters));
+      lightShaderBuffer->bind(10);
 
       if(cmd.blinking)
       {
@@ -297,6 +300,7 @@ struct MeshRenderPass
 
   IGraphicsBackend* backend {};
   std::unique_ptr<IGpuProgram> m_meshShader;
+  std::unique_ptr<IShaderStorageBuffer> lightShaderBuffer;
   std::vector<DrawCommand> m_drawCommands;
   std::vector<Light> m_lights;
   float m_ambientLight = 0;
@@ -314,6 +318,7 @@ struct Renderer : IRenderer, IScreenSizeListener
     backend->setScreenSizeListener(this);
 
     m_meshRenderPass.m_meshShader = backend->createGpuProgram("mesh", true);
+    m_meshRenderPass.lightShaderBuffer = backend->createShaderStorageBuffer();
     m_meshRenderPass.backend = backend;
 
     m_postprocRenderPass.setup(backend, m_screenSize);

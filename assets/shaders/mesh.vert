@@ -4,23 +4,6 @@ precision mediump float;
 precision mediump int;
 
 // Uniforms
-const int CX = 16;
-const int CY = 8;
-const int CZ = 8;
-
-struct ShaderLight
-{
-  vec3 pos;
-  float range;
-  vec3 color;
-  float pad;
-};
-
-struct LightCluster
-{
-  int LightCount;
-  ShaderLight Lights[64];
-};
 
 layout(binding=0, std140) uniform MyUniformBlock
 {
@@ -29,7 +12,6 @@ layout(binding=0, std140) uniform MyUniformBlock
   vec4 fragOffset;
   vec3 CameraPos;
   vec3 ambientLight;
-  LightCluster lightClusters[CX*CY*CZ];
   float near, far;
 };
 

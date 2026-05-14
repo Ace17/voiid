@@ -13,7 +13,6 @@ struct ShaderLight
   vec3 pos;
   float range;
   vec3 color;
-  float pad;
 };
 
 struct LightCluster
@@ -29,13 +28,17 @@ layout(binding=0, std140) uniform MyUniformBlock
   vec4 fragOffset;
   vec3 CameraPos;
   vec3 ambientLight;
-  LightCluster lightClusters[CX*CY*CZ];
   float near, far;
 };
 
 layout(binding = 1) uniform sampler2D DiffuseTex;
 layout(binding = 2) uniform sampler2D NormalTex;
 layout(binding = 3) uniform sampler2D EmissiveTex;
+
+layout(binding = 10, std140) buffer LightClusterSSBO
+{
+  LightCluster lightClusters[];
+};
 
 // Input Vertex Attributes
 layout(location = 0) in vec2 UV;

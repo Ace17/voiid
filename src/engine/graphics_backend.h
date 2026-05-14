@@ -35,6 +35,13 @@ struct ITexture
   virtual void bind(int unit) = 0;
 };
 
+struct IShaderStorageBuffer
+{
+  virtual ~IShaderStorageBuffer() = default;
+  virtual void upload(const void* data, size_t len) = 0;
+  virtual void bind(int unit) = 0;
+};
+
 struct IVertexBuffer
 {
   virtual ~IVertexBuffer() = default;
@@ -59,6 +66,7 @@ struct IGraphicsBackend
 
   virtual std::unique_ptr<ITexture> createTexture() = 0;
   virtual std::unique_ptr<IVertexBuffer> createVertexBuffer(bool dynamic = false) = 0;
+  virtual std::unique_ptr<IShaderStorageBuffer> createShaderStorageBuffer() = 0;
   virtual std::unique_ptr<IFrameBuffer> createFrameBuffer(Vec2i resolution, bool depth = true) = 0;
   virtual std::unique_ptr<IGpuProgram> createGpuProgram(String name, bool zTest) = 0;
 
