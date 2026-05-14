@@ -268,6 +268,27 @@ struct OpenGlVertexBuffer : IVertexBuffer
   const bool dynamic;
 };
 
+struct OpenGlShaderStorageBuffer : IShaderStorageBuffer
+{
+  OpenGlShaderStorageBuffer() { SAFE_GL(glGenBuffers(1, &ssbo)); }
+
+  ~OpenGlShaderStorageBuffer() { glDeleteBuffers(1, &ssbo); }
+
+  void upload(const void* data, size_t len) override
+  {
+    SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, ssbo));
+    SAFE_GL(glBufferData(GL_ARRAY_BUFFER, len, data, GL_DYNAMIC_DRAW));
+    SAFE_GL(glBindBuffer(GL_ARRAY_BUFFER, 0));
+  }
+
+  void bind(int bindingPoint) override
+  {
+    SAFE_GL(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, bindingPoint, ssbo));
+  }
+
+  GLuint ssbo;
+};
+
 struct OpenGlGraphicsBackend : IGraphicsBackend
 {
   OpenGlGraphicsBackend(Vec2i resolution)
@@ -439,6 +460,11 @@ struct OpenGlGraphicsBackend : IGraphicsBackend
   std::unique_ptr<IVertexBuffer> createVertexBuffer(bool dynamic) override
   {
     return std::make_unique<OpenGlVertexBuffer>(dynamic);
+  }
+
+  std::unique_ptr<IShaderStorageBuffer> createShaderStorageBuffer() override
+  {
+    return std::make_unique<OpenGlShaderStorageBuffer>();
   }
 
   std::unique_ptr<IFrameBuffer> createFrameBuffer(Vec2i resolution, bool depth) override
