@@ -280,12 +280,12 @@ struct OpenGlGraphicsBackend : IGraphicsBackend
 
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-    // require GLES 3.0.
+    // require GLES 3.1.
     {
       // SDL_GL_CONTEXT_PROFILE_ES: works in both browser and native
       SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
       SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-      SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+      SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
     }
 
     m_window = SDL_CreateWindow(
