@@ -83,6 +83,9 @@ struct MeshRenderPass
 
     auto byMaterial = [] (const DrawCommand& a, const DrawCommand& b)
       {
+        if(!(a.camera == b.camera))
+          return a.camera < b.camera;
+
         if(a.pMesh->mat.transparency != b.pMesh->mat.transparency)
           return a.pMesh->mat.transparency < b.pMesh->mat.transparency;
 
@@ -91,8 +94,36 @@ struct MeshRenderPass
 
     std::sort(m_drawCommands.begin(), m_drawCommands.end(), byMaterial);
 
+    Camera currCamera = {};
+    ShaderCluster lightClusters[CX * CY * CZ] {};
+    Matrix4f VP = {};
+    static const float near_ = 0.1f;
+    static const float far_ = 1000.0f;
+
     for(auto& cmd : m_drawCommands)
-      executeDrawCommand(cmd);
+    {
+      if(!(cmd.camera == currCamera))
+      {
+        // compute shader inputs depending on camera
+        auto const forward = cmd.camera.dir.rotate(Vec3f(1, 0, 0));
+        auto const up = cmd.camera.dir.rotate(Vec3f(0, 0, 1));
+
+        auto const target = cmd.camera.pos + forward;
+        auto const view = ::lookAt(cmd.camera.pos, target, up);
+
+        static const float fovy = (float)((60.0f / 180) * PI);
+        auto const perspective = ::perspective(fovy, m_aspectRatio, near_, far_);
+
+        VP = perspective * view;
+
+        // clustered lighting
+        clusterizeLights(m_lights, lightClusters, m_aspectRatio, fovy, near_, far_, view);
+        lightShaderBuffer->upload(lightClusters, sizeof(lightClusters));
+        lightShaderBuffer->bind(10);
+      }
+
+      executeDrawCommand(cmd, VP, near_, far_);
+    }
 
     backend->enableVertexAttribute(MeshShader::Attribute::positionLoc, 0, 0, 0);
     backend->enableVertexAttribute(MeshShader::Attribute::normalLoc, 0, 0, 0);
@@ -101,7 +132,7 @@ struct MeshRenderPass
     backend->enableVertexAttribute(MeshShader::Attribute::uvDiffuseLoc, 0, 0, 0);
   }
 
-  void executeDrawCommand(const DrawCommand& cmd)
+  void executeDrawCommand(const DrawCommand& cmd, const Matrix4f& VP, float near_, float far_)
   {
     auto& model = *cmd.pMesh;
     auto& where = cmd.where;
@@ -127,32 +158,16 @@ struct MeshRenderPass
     // Binding #3: Emissive
     model.mat.emissive->bind(3);
 
-    auto const forward = cmd.camera.dir.rotate(Vec3f(1, 0, 0));
-    auto const up = cmd.camera.dir.rotate(Vec3f(0, 0, 1));
-
-    auto const target = cmd.camera.pos + forward;
-    auto const view = ::lookAt(cmd.camera.pos, target, up);
     auto const pos = ::translate(where.pos);
     auto const scale = ::scale(where.size);
     auto const rotate = quaternionToMatrix(cmd.orientation);
 
-    static const float fovy = (float)((60.0f / 180) * PI);
-    static const float near_ = 0.1f;
-    static const float far_ = 1000.0f;
-    const auto perspective = ::perspective(fovy, m_aspectRatio, near_, far_);
-
     const auto MV = pos * rotate * scale;
-    const auto MVP = perspective * view * MV;
+    const auto MVP = VP * MV;
 
     {
       MyUniformBlock ub {};
       ub.ambientLight = { m_ambientLight, m_ambientLight, m_ambientLight, 0 };
-
-      ShaderCluster lightClusters[CX * CY * CZ] {};
-      clusterizeLights(m_lights, lightClusters, m_aspectRatio, fovy, near_, far_, view);
-
-      lightShaderBuffer->upload(lightClusters, sizeof(lightClusters));
-      lightShaderBuffer->bind(10);
 
       if(cmd.blinking)
       {
