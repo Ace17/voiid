@@ -35,6 +35,8 @@ std::unique_ptr<RenderPass> CreateSkyboxPass(IGraphicsBackend* backend, const Ca
 namespace
 {
 Gauge ggRenderTime("Render time (ms)");
+Gauge ggClusteringTime("Light clustering time (ms)");
+Gauge ggUploadTime("Light clustering upload time (ms)");
 
 template<typename T>
 T blend(T a, T b, float alpha)
@@ -100,6 +102,9 @@ struct MeshRenderPass
     static const float near_ = 0.1f;
     static const float far_ = 1000.0f;
 
+    float totalClusteringTime = 0;
+    float totalUploadTime = 0;
+
     for(auto& cmd : m_drawCommands)
     {
       if(!(cmd.camera == currCamera))
@@ -117,13 +122,23 @@ struct MeshRenderPass
         VP = perspective * view;
 
         // clustered lighting
+        const auto t0 = std::chrono::high_resolution_clock::now();
         clusterizeLights(m_lights, lightClusters, m_aspectRatio, fovy, near_, far_, view);
+        const auto t1 = std::chrono::high_resolution_clock::now();
         lightShaderBuffer->upload(lightClusters, sizeof(lightClusters));
+        const auto t2 = std::chrono::high_resolution_clock::now();
+
         lightShaderBuffer->bind(10);
+
+        totalClusteringTime += std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() / 1000.0;
+        totalUploadTime += std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count() / 1000.0;
       }
 
       executeDrawCommand(cmd, VP, near_, far_);
     }
+
+    ggClusteringTime = totalClusteringTime;
+    ggUploadTime = totalUploadTime;
 
     backend->enableVertexAttribute(MeshShader::Attribute::positionLoc, 0, 0, 0);
     backend->enableVertexAttribute(MeshShader::Attribute::normalLoc, 0, 0, 0);
