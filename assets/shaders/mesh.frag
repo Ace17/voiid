@@ -97,7 +97,7 @@ void main()
   vec3 ndc = posClip.xyz/posClip.w;
   int ix = int(floor((ndc.x*0.5+0.5)*float(CX)));
   int iy = int(floor((ndc.y*0.5+0.5)*float(CY)));
-  int iz = int(floor(posClip.w/(far - near)*float(CZ)));
+  int iz = int(floor(clamp(1.0-posClip.w/(far - near), 0.0, 1.0)*float(CZ)));
 
   int clusterIndex = (iz * CX * CY) + (iy * CX) + ix;
 

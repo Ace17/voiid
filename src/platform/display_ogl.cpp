@@ -466,7 +466,10 @@ struct OpenGlGraphicsBackend : IGraphicsBackend
   void enableZTest(bool enable)
   {
     if(enable)
+    {
       SAFE_GL(glEnable(GL_DEPTH_TEST));
+      SAFE_GL(glDepthFunc(GL_GREATER)); // reversed-Z
+    }
     else
       SAFE_GL(glDisable(GL_DEPTH_TEST));
   }
@@ -480,6 +483,7 @@ struct OpenGlGraphicsBackend : IGraphicsBackend
   void clear() override
   {
     SAFE_GL(glClearColor(0, 0, 0, 1));
+    SAFE_GL(glClearDepthf(0.0f)); // reversed-Z
     SAFE_GL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
   }
 

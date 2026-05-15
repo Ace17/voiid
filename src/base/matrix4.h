@@ -257,9 +257,9 @@ Matrix4f perspective(float fovy, float aspect, float zNear, float zFar)
   Matrix4f r(0);
   r[0][0] = 1.0 / (aspect * tanHalfFovy);
   r[1][1] = 1.0 / (tanHalfFovy);
-  r[2][2] = -(zFar + zNear) / (zFar - zNear);
+  r[2][2] = zNear / (zFar - zNear);
   r[3][2] = -1.0;
-  r[2][3] = -(2.0 * zFar * zNear) / (zFar - zNear);
+  r[2][3] = (zFar * zNear) / (zFar - zNear);
   return r;
 }
 
