@@ -7,14 +7,14 @@ layout(std140, binding=0) uniform MyUniformBlock
 };
 
 // Attributes
-layout(location = 0) in vec4 vertexPos_model;
+layout(location = 0) in vec3 vertexPos_model;
 
 // Output data; will be interpolated for each fragment
 layout(location = 0) out vec3 vPos;
 
 void main()
 {
-  vec4 pos = vertexPos_model;
+  vec4 pos = vec4(vertexPos_model, 1);
   pos.xyz *= -1.0; // invert the box inside-out
 
   gl_Position = MVP * pos;
