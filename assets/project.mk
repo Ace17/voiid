@@ -53,13 +53,13 @@ RESOURCES+=$(SHADERS_SRC:assets/%=res/%)
 res/%.frag: assets/%.frag
 	@mkdir -p $(dir $@)
 	@mkdir -p $(dir $(BIN)/$*)
-	glslangValidator --quiet -G -S frag -o "$(BIN)/$*.frag.spv" "$<"
+	glslc -O -fshader-stage=fragment -o "$(BIN)/$*.frag.spv" "$<"
 	@cp "$<" "$@"
 
 res/%.vert: assets/%.vert
 	@mkdir -p $(dir $@)
 	@mkdir -p $(dir $(BIN)/$*)
-	glslangValidator --quiet -G -S vert -o "$(BIN)/$*.vert.spv" "$<"
+	glslc -O -fshader-stage=vertex -o "$(BIN)/$*.vert.spv" "$<"
 	@cp "$<" "$@"
 
 #-----------------------------------
