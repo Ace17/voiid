@@ -62,7 +62,7 @@ vec3 computeDynamicLightContribution(in ShaderLight light, vec3 normal, vec4 dif
 
   // https://lisyarus.github.io/blog/graphics/2022/07/30/point-light-attenuation.html
   float s = clamp(length(light.pos - vPos)/light.range, 0.0, 1.0);
-  float F = 16.0;
+  const float F = 16.0;
   float attenuation = sqr(1.0 - sqr(s))/(1.0 + F * sqr(s));
 
   float incidenceRatio = max(0.0, dot(lightDir, normal));
@@ -105,8 +105,9 @@ void main()
   int clusterIndex = (iz * CX * CY) + (iy * CX) + ix;
 
   vec3 localN = texture(NormalTex, UV).rgb * 2.0 - 1.0;
+  vec3 normal = normalize(TBN * localN);
   for(int i=0;i < lightClusters[clusterIndex].LightCount;++i)
-    totalLight += computeDynamicLightContribution(lightClusters[clusterIndex].Lights[i], normalize(TBN * localN), diffuse);
+    totalLight += computeDynamicLightContribution(lightClusters[clusterIndex].Lights[i], normal, diffuse);
 
   color.rgb = totalLight;
   color.a = diffuse.a;
